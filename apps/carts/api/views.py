@@ -39,13 +39,3 @@ class MoveItemsAPIView(APIView):
             return Response(CourseManagementSerializer(course_mngt).data, status=status.HTTP_200_OK)
 
         return Response({"message": "Cannot find document or course."}, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
-
-
-

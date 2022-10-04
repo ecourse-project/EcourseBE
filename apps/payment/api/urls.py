@@ -6,4 +6,5 @@ urlpatterns = [
     path("order/create/", views.CreateOrderView.as_view()),
     path("order/detail/", views.OrderRetrieveView.as_view()),
     path("order/cancel/", views.CancelOrderView.as_view()),
+    path("order/calculate/", views.CalculatePriceView.as_view()),
 ]
