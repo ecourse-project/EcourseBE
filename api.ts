@@ -343,13 +343,14 @@ const apiURL = {
 
     getCart: () => `api/carts/info/`,
     getFavoriteList: () => `api/carts/favorite/info/`,
-    moveItems: (id, start, end) => `api/carts/move/?item_id=${id}&start=${start}&end=${end}`,
+    moveDoc: (id, start, end) => `api/carts/document/move/?document_id=${id}&start=${start}&end=${end}`,
+    moveCourse: (id, start, end) => `api/carts/course/move/?course_id=${id}&start=${start}&end=${end}`,
 
     getAllOrders: (limit, page) => `api/payment/orders/?limit=${limit}&page=${page}`,
     getOrder: (id) => `api/payment/order/detail/?order_id=${id}`,
     createOrder: () => `/api/payment/order/create/`,
     cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
-    calculatePrice: () => `pi/payment/order/calculate/`
+    calculatePrice: () => `pi/payment/order/calculate/`,
 
     getAllCourses: (limit, page) => `api/courses/?limit=${limit}&page=${page}`,
     getMostDownloadCourses: () => `api/courses/most-download/`,
@@ -417,8 +418,12 @@ class CourseService {
 		return apiClient.get(apiURL.getFavoriteList());
 	}
 
-    static moveItems(id: string, start: MoveEnum, end: MoveEnum): Promise<Document|Course|OutputAdd> {
-        return apiClient.get(apiURL.moveItems(id, start, end));
+    static moveDoc(id: string, start: MoveEnum, end: MoveEnum): Promise<Document> {
+        return apiClient.get(apiURL.moveDoc(id, start, end));
+    }
+
+    static moveCourse(id: string, start: MoveEnum, end: MoveEnum): Promise<Course> {
+        return apiClient.get(apiURL.moveCourse(id, start, end));
     }
 
     static getAllOrders(params: PaginationParams): Promise<Pagination<OutputOrder>> {

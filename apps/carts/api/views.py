@@ -23,19 +23,21 @@ class FavoriteListInfoAPIView(APIView):
         return Response(data=favorite_list_service.custom_favorite_list_data, status=status.HTTP_200_OK)
 
 
-class MoveItemsAPIView(APIView):
+class MoveDocument(APIView):
     def get(self, request, *args, **kwargs):
         move_items = MoveItems(self.request.user)
         start = self.request.query_params.get('start')
         end = self.request.query_params.get('end')
-        document = Document.objects.filter(id=self.request.query_params.get('item_id')).first()
-        course = Course.objects.filter(id=self.request.query_params.get('item_id')).first()
+        document = Document.objects.filter(id=self.request.query_params.get('document_id')).first()
+        doc_mngt = move_items.move_doc(start=start, end=end, doc=document)
+        return Response(DocumentManagementSerializer(doc_mngt).data, status=status.HTTP_200_OK)
 
-        if document:
-            doc_mngt = move_items.move_doc(start=start, end=end, doc=document)
-            return Response(DocumentManagementSerializer(doc_mngt).data, status=status.HTTP_200_OK)
-        elif course:
-            course_mngt = move_items.move_course(start=start, end=end, course=course)
-            return Response(CourseManagementSerializer(course_mngt).data, status=status.HTTP_200_OK)
 
-        return Response({"message": "Cannot find document or course."}, status=status.HTTP_200_OK)
+class MoveCourse(APIView):
+    def get(self, request, *args, **kwargs):
+        move_items = MoveItems(self.request.user)
+        start = self.request.query_params.get('start')
+        end = self.request.query_params.get('end')
+        course = Course.objects.filter(id=self.request.query_params.get('course_id')).first()
+        course_mngt = move_items.move_course(start=start, end=end, course=course)
+        return Response(CourseManagementSerializer(course_mngt).data, status=status.HTTP_200_OK)
