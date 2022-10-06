@@ -350,7 +350,7 @@ const apiURL = {
     getOrder: (id) => `api/payment/order/detail/?order_id=${id}`,
     createOrder: () => `/api/payment/order/create/`,
     cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
-    calculatePrice: () => `pi/payment/order/calculate/`,
+    calculatePrice: () => `api/payment/order/calculate/`,
 
     getAllCourses: (limit, page) => `api/courses/?limit=${limit}&page=${page}`,
     getMostDownloadCourses: () => `api/courses/most-download/`,

@@ -31,7 +31,7 @@ BASE_URL = "http://localhost"
 SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 INTERNAL_IPS = [
     '127.0.0.1'
