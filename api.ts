@@ -14,7 +14,7 @@ export interface Pagination<T> {
   results: Array<T>;
 }
 
-export enum SaleStatus {
+export enum SaleStatusEnum {
   AVAILABLE = 'AVAILABLE',
   IN_CART = 'IN_CART',
   PENDING = 'PENDING',
@@ -123,7 +123,7 @@ export interface Document {
     sold: number;
     thumbnail: OImageUpload;
     file: OFileUpload;
-    sale_status: SaleStatus;
+    sale_status: SaleStatusEnum;
     is_selling: boolean;
     views: number;
     rating: number;
@@ -166,7 +166,7 @@ export interface IDocumentUpdate {
 }
 
 // ===========================================Courses===========================================
-export enum ProgressStatus {
+export enum ProgressStatusEnum {
     IN_PROGRESS = 'IN_PROGRESS',
     DONE = 'DONE'
 }
@@ -202,7 +202,6 @@ export interface Lesson {
     content: string;
     videos: OFileUpload[];
     documents: CourseDocument[];
-    is_done: boolean;
     progress: number;
 }
 
@@ -217,9 +216,9 @@ export interface Course {
     sold: number;
     lessons: Lesson[],
     progress: number;
-    status: ProgressStatus;
+    status: ProgressStatusEnum;
     thumbnail: OImageUpload;
-    sale_status: SaleStatus;
+    sale_status: SaleStatusEnum;
     is_selling: boolean;
     views: number;
     rating: number;

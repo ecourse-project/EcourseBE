@@ -59,7 +59,7 @@ class CourseRetrieveView(generics.RetrieveAPIView):
 class UpdateCourseDocumentProgress(APIView):
     def get(self, request, *args, **kwargs):
         course_mngt = CourseManagement.objects.filter(
-            course_id=self.request.query_params.get('course_id'), user=request.user).first()
+            course_id=self.request.query_params.get('course_id'), user=request.user, sale_status=BOUGHT).first()
         course_doc = CourseDocument.objects.filter(id=self.request.query_params.get('course_doc_id')).first()
         if not course_mngt:
             raise NoItemException
@@ -72,7 +72,7 @@ class UpdateCourseDocumentProgress(APIView):
 class UpdateCourseVideoProgress(APIView):
     def get(self, request, *args, **kwargs):
         course_mngt = CourseManagement.objects.filter(
-            course_id=self.request.query_params.get('course_id'), user=request.user).first()
+            course_id=self.request.query_params.get('course_id'), user=request.user, sale_status=BOUGHT).first()
         video = UploadFile.objects.filter(id=self.request.query_params.get('file_id')).first()
         if not course_mngt:
             raise NoItemException

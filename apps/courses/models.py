@@ -40,12 +40,18 @@ class Lesson(TimeStampedModel):
     content = models.TextField(null=True, blank=True)
     videos = models.ManyToManyField(UploadFile, blank=True)
     documents = models.ManyToManyField(CourseDocument, blank=True)
+    total_documents = models.PositiveSmallIntegerField(default=0)
+    total_videos = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["lesson_number"]
 
     def __str__(self):
         return self.name
+
+    @property
+    def total_docs_videos(self):
+        return self.total_videos + self.total_documents
 
 
 class Course(TimeStampedModel):
@@ -63,6 +69,7 @@ class Course(TimeStampedModel):
     views = models.PositiveIntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     num_of_rates = models.PositiveIntegerField(default=0)
+    total_lessons = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["name"]
@@ -90,6 +97,10 @@ class CourseManagement(TimeStampedModel):
 
     def __str__(self):
         return f"{self.course.name} - {self.user.__str__()}"
+
+    @property
+    def total_completed(self):
+        return self.docs_completed.all().count() + self.videos_completed.all().count()
 
 
 

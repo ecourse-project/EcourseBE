@@ -51,6 +51,7 @@ class CourseManagementService:
 
     @staticmethod
     def add_doc_completed(course_mngt, doc):
+
         docs_completed = course_mngt.docs_completed.all()
         is_completed = False
         signal = False
@@ -84,5 +85,3 @@ class CourseManagementService:
         if not signal:
             raise CheckElementExistException("Video is not in course.")
         return is_completed
-
-
