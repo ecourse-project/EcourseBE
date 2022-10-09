@@ -93,7 +93,6 @@ export interface IFileUpload {
 export interface OFileUpload {
     id: string;
     file_path: string;
-    file_size: string;
     file_type: string;
     file_name: string;
     duration: number;
@@ -106,7 +105,6 @@ export interface IImageUpload {
 export interface OImageUpload {
     id: string;
     image_path: string;
-    image_size: string;
     image_type: string;
 }
 
@@ -178,7 +176,6 @@ export interface UpdateProgressOutput {
 
 export interface CourseDocument {
     id: string;
-    created: string;
     modified: string;
     name: string;
     description: string;
@@ -188,15 +185,11 @@ export interface CourseDocument {
 
 export interface Topic {
     id: string;
-    created: string;
-    modified: string;
     name: string;
 }
 
 export interface Lesson {
     id: string;
-    created: string;
-    modified: string;
     name: string;
     lesson_number: number;
     content: string;
@@ -205,9 +198,25 @@ export interface Lesson {
     progress: number;
 }
 
+export interface CourseList {
+    id: string;
+    modified: string;
+    name: string;
+    topic: Topic;
+    description: string;
+    price: number;
+    sold: number;
+    status: ProgressStatusEnum;
+    thumbnail: OImageUpload;
+    sale_status: SaleStatusEnum;
+    views: number;
+    rating: number;
+    num_of_rates: number;
+    is_favorite: boolean;
+}
+
 export interface Course {
     id: string;
-    created: string;
     modified: string;
     name: string;
     topic: Topic;
@@ -219,7 +228,6 @@ export interface Course {
     status: ProgressStatusEnum;
     thumbnail: OImageUpload;
     sale_status: SaleStatusEnum;
-    is_selling: boolean;
     views: number;
     rating: number;
     num_of_rates: number;
@@ -458,15 +466,15 @@ class CourseService {
         return apiClient.post(apiURL.calculatePrice(), params);
     }
 
-    static getAllCourses(params: PaginationParams): Promise<Pagination<Course>> {
+    static getAllCourses(params: PaginationParams): Promise<Pagination<CourseList>> {
 		return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
 	}
 
-    static getMostDownloadCourses(): Promise<Course[]> {
+    static getMostDownloadCourses(): Promise<CourseList[]> {
 		return apiClient.get(apiURL.getMostDownloadCourses());
 	}
 
-    static getUserCourses(params: PaginationParams): Promise<Pagination<Course>> {
+    static getUserCourses(params: PaginationParams): Promise<Pagination<CourseList>> {
 		return apiClient.get(apiURL.getUCourses(params.limit, params.page));
 	}
 

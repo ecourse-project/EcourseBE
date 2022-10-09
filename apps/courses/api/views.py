@@ -1,11 +1,10 @@
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.courses.models import CourseManagement, Lesson, CourseDocument
-from apps.courses.api.serializers import CourseManagementSerializer
+from apps.courses.models import CourseManagement, CourseDocument
+from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
 from apps.courses.services import CourseManagementService
 from apps.courses.enums import BOUGHT
 from apps.courses.exceptions import NoItemException
@@ -13,7 +12,7 @@ from apps.upload.models import UploadFile
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
@@ -22,7 +21,7 @@ class MostDownloadedCourseView(generics.ListAPIView):
 
 
 class CourseListView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -32,7 +31,7 @@ class CourseListView(generics.ListAPIView):
 
 
 class UserCoursesListView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):

@@ -10,7 +10,6 @@ class CourseDocumentSerializer(serializers.ModelSerializer):
         model = CourseDocument
         fields = (
             "id",
-            "created",
             "modified",
             "name",
             "description",
@@ -24,8 +23,6 @@ class TopicSerializer(serializers.ModelSerializer):
         model = Topic
         fields = (
             "id",
-            "created",
-            "modified",
             "name",
         )
 
@@ -38,8 +35,6 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = (
             "id",
-            "created",
-            "modified",
             "name",
             "lesson_number",
             "content",
@@ -57,7 +52,6 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = (
             "id",
-            "created",
             "modified",
             "name",
             "topic",
@@ -66,7 +60,6 @@ class CourseSerializer(serializers.ModelSerializer):
             "sold",
             "lessons",
             "thumbnail",
-            "is_selling",
             "views",
             "rating",
             "num_of_rates",
@@ -133,4 +126,45 @@ class CourseManagementSerializer(serializers.ModelSerializer):
     #     profile.save()
     #
     #     return instance
+
+
+class ListCourseSerializer(serializers.ModelSerializer):
+    thumbnail = UploadImageSerializer()
+    topic = TopicSerializer()
+
+    class Meta:
+        model = Course
+        fields = (
+            "id",
+            "modified",
+            "name",
+            "topic",
+            "description",
+            "price",
+            "sold",
+            "thumbnail",
+            "views",
+            "rating",
+            "num_of_rates",
+        )
+
+
+class ListCourseManagementSerializer(serializers.ModelSerializer):
+    course = ListCourseSerializer()
+
+    class Meta:
+        model = CourseManagement
+        fields = (
+            "course",
+            "is_favorite",
+            "status",
+        )
+
+    def to_representation(self, obj):
+        """Move fields from profile to user representation."""
+        representation = super().to_representation(obj)
+        course_representation = representation.pop('course')
+        for key in course_representation:
+            representation[key] = course_representation[key]
+        return representation
 
