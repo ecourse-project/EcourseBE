@@ -1,6 +1,6 @@
 from django.contrib import admin
-from apps.courses.models import Course, Lesson, Topic, CourseDocument
-from apps.upload.models import UploadFile
+from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
+from apps.courses.enums import AVAILABLE
 
 
 @admin.register(CourseDocument)
@@ -35,6 +35,7 @@ class LessonAdmin(admin.ModelAdmin):
     def get_documents(self, obj):
         return ", ".join([doc.name for doc in obj.documents.all()])
 
+    # Query objects for many to many
     # def formfield_for_manytomany(self, db_field, request, **kwargs):
     #     if db_field.name == "documents":
     #         kwargs["queryset"] = CourseDocument.objects.exclude(
@@ -59,7 +60,16 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = (
         "name",
     )
-    readonly_fields = ("sold",)
+    readonly_fields = ("sold", "views", "rating", "num_of_rates")
+
+    def save_model(self, request, obj, form, change):
+        if not Course.objects.filter(id=obj.id).exists():
+            CourseManagement.objects.bulk_create([
+                CourseManagement(course=obj, sale_status=AVAILABLE, user_id=user)
+                for user in
+                CourseManagement.objects.order_by('user_id').values_list('user_id', flat=True).distinct('user_id')
+            ])
+        obj.save()
 
     # def formfield_for_manytomany(self, db_field, request, **kwargs):
     #     if db_field.name == "lessons":

@@ -15,7 +15,6 @@ from datetime import timedelta
 from ecourse import env
 import os
 from django.core.management.commands.runserver import Command as runserver
-import django_heroku
 
 runserver.default_port = "4000"
 
@@ -31,7 +30,7 @@ BASE_URL = "http://localhost"
 SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -233,5 +232,3 @@ EMAIL_HOST = env.EMAIL_HOST
 EMAIL_HOST_USER = env.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
 EMAIL_PORT = env.EMAIL_PORT
-
-django_heroku.settings(locals())

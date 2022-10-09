@@ -95,6 +95,8 @@ export interface OFileUpload {
     file_path: string;
     file_size: string;
     file_type: string;
+    file_name: string;
+    duration: number;
 }
 
 export interface IImageUpload {
@@ -169,6 +171,11 @@ export enum ProgressStatus {
     DONE = 'DONE'
 }
 
+export interface UpdateProgressOutput {
+    is_completed: boolean;
+}
+
+
 export interface CourseDocument {
     id: string;
     created: string;
@@ -195,6 +202,8 @@ export interface Lesson {
     content: string;
     videos: OFileUpload[];
     documents: CourseDocument[];
+    is_done: boolean;
+    progress: number;
 }
 
 export interface Course {
@@ -218,6 +227,8 @@ export interface Course {
     mark: number;
     is_done_quiz: boolean;
     is_favorite: boolean;
+    docs_completed: string[],
+    videos_completed: string[],
 }
 
 
@@ -356,6 +367,8 @@ const apiURL = {
     getMostDownloadCourses: () => `api/courses/most-download/`,
     getUCourses: (limit, page) => `api/courses/my-courses/?limit=${limit}&page=${page}`,
     getCourseDetail: (id) => `api/courses/detail/?course_id=${id}`,
+    UpdateCourseDocumentProgress: (course_id, doc_id) => `api/courses/course-progress/document/?course_id=${course_id}&course_doc_id=${doc_id}`,
+    UpdateCourseVideoProgress: (course_id, file_id) => `api/courses/course-progress/video/?course_id=${course_id}&file_id=${file_id}`,
 
     createComment: () => `api/comments/create/`,
     listComments: (id) => `api/comments/list/?course_id=${id}`,
@@ -461,6 +474,14 @@ class CourseService {
     static getCourseDetail(id: string): Promise<Course> {
 		return apiClient.get(apiURL.getCourseDetail(id));
 	}
+
+    static UpdateCourseDocumentProgress(course_id: string, doc_id: string): Promise<UpdateProgressOutput> {
+        return apiClient.get(apiURL.UpdateCourseDocumentProgress(course_id, doc_id));
+    }
+
+    static UpdateCourseVideoProgress(course_id: string, file_id: string): Promise<UpdateProgressOutput> {
+        return apiClient.get(apiURL.UpdateCourseVideoProgress(course_id, file_id));
+    }
 
     static createComment(owner_id: string, course_id: string, user_id: string, content: string) : Promise<Comment> {
 		return apiClient.post(apiURL.createComment(), {owner_id: owner_id, course_id: course_id, user_id: user_id, content: content});

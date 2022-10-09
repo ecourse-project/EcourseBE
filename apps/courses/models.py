@@ -82,6 +82,8 @@ class CourseManagement(TimeStampedModel):
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
+    docs_completed = models.ManyToManyField(CourseDocument, blank=True)
+    videos_completed = models.ManyToManyField(UploadFile, blank=True)
 
     class Meta:
         ordering = ["course__name"]

@@ -7,4 +7,6 @@ urlpatterns = [
     path("most-download/", views.MostDownloadedCourseView.as_view()),
     path("my-courses/", views.UserCoursesListView.as_view()),
     path("detail/", views.CourseRetrieveView.as_view()),
+    path("course-progress/document/", views.UpdateCourseDocumentProgress.as_view()),
+    path("course-progress/video/", views.UpdateCourseVideoProgress.as_view()),
 ]

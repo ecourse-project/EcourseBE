@@ -8,10 +8,11 @@ from apps.users.models import User
 
 class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file_name = models.CharField(max_length=255, null=True, blank=True)
     file_path = models.FileField(max_length=128, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True)
     file_type = models.CharField(max_length=10, null=True, blank=True)
-    # user = models.ForeignKey(User, related_name="upload_files", on_delete=models.CASCADE, null=True)
+    duration = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return str(self.file_path)
@@ -29,7 +30,6 @@ class UploadImage(TimeStampedModel):
     image_path = models.ImageField(max_length=128, null=True, blank=True)
     image_size = models.PositiveBigIntegerField(null=True)
     image_type = models.CharField(max_length=10, null=True, blank=True)
-    # user = models.ForeignKey(User, related_name="upload_images", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return str(self.image_path)
