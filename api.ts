@@ -198,23 +198,6 @@ export interface Lesson {
     progress: number;
 }
 
-export interface CourseList {
-    id: string;
-    modified: string;
-    name: string;
-    topic: Topic;
-    description: string;
-    price: number;
-    sold: number;
-    status: ProgressStatusEnum;
-    thumbnail: OImageUpload;
-    sale_status: SaleStatusEnum;
-    views: number;
-    rating: number;
-    num_of_rates: number;
-    is_favorite: boolean;
-}
-
 export interface Course {
     id: string;
     modified: string;
@@ -223,8 +206,8 @@ export interface Course {
     description: string;
     price: number;
     sold: number;
-    lessons: Lesson[],
-    progress: number;
+    lessons?: Lesson[],
+    progress?: number;
     status: ProgressStatusEnum;
     thumbnail: OImageUpload;
     sale_status: SaleStatusEnum;
@@ -232,10 +215,10 @@ export interface Course {
     rating: number;
     num_of_rates: number;
     mark: number;
-    is_done_quiz: boolean;
+    is_done_quiz?: boolean;
     is_favorite: boolean;
-    docs_completed: string[],
-    videos_completed: string[],
+    docs_completed?: string[],
+    videos_completed?: string[],
 }
 
 
@@ -466,15 +449,15 @@ class CourseService {
         return apiClient.post(apiURL.calculatePrice(), params);
     }
 
-    static getAllCourses(params: PaginationParams): Promise<Pagination<CourseList>> {
+    static getAllCourses(params: PaginationParams): Promise<Pagination<Course>> {
 		return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
 	}
 
-    static getMostDownloadCourses(): Promise<CourseList[]> {
+    static getMostDownloadCourses(): Promise<Course> {
 		return apiClient.get(apiURL.getMostDownloadCourses());
 	}
 
-    static getUserCourses(params: PaginationParams): Promise<Pagination<CourseList>> {
+    static getUserCourses(params: PaginationParams): Promise<Pagination<Course>> {
 		return apiClient.get(apiURL.getUCourses(params.limit, params.page));
 	}
 

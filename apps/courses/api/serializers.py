@@ -158,6 +158,7 @@ class ListCourseManagementSerializer(serializers.ModelSerializer):
             "course",
             "is_favorite",
             "status",
+            "sale_status"
         )
 
     def to_representation(self, obj):
