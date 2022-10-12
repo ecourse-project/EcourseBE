@@ -3,7 +3,9 @@ from django.utils.timezone import localtime
 
 from apps.courses.models import Course, CourseManagement, Lesson, CourseDocument
 from apps.courses.enums import BOUGHT, PENDING
-from apps.courses.exceptions import CheckElementExistException
+from apps.courses.exceptions import CheckElementExistException, NoItemException
+from apps.upload.models import UploadFile
+
 
 
 class CourseService:
@@ -50,38 +52,36 @@ class CourseManagementService:
         return self.get_course_management_queryset.filter(query)
 
     @staticmethod
-    def add_doc_completed(course_mngt, doc):
-
-        docs_completed = course_mngt.docs_completed.all()
-        is_completed = False
-        signal = False
-
+    def check_docs_videos_in_course(course_mngt, docs_set, videos_set):
+        total = 0
         for lesson in course_mngt.course.lessons.all():
-            if doc in lesson.documents.all():
-                if doc not in docs_completed:
-                    course_mngt.docs_completed.add(doc)
-                    is_completed = True
-                else:
-                    course_mngt.docs_completed.remove(doc)
-                signal = True
-        if not signal:
-            raise CheckElementExistException
-        return is_completed
+            same_docs = docs_set.intersection(set(lesson.documents.all()))
+            same_videos = videos_set.intersection(set(lesson.videos.all()))
+            total += len(same_docs) + len(same_videos)
+        if total != len(docs_set) + len(videos_set):
+            raise CheckElementExistException("Some documents or videos are not in course")
 
-    @staticmethod
-    def add_video_completed(course_mngt, video):
-        videos_completed = course_mngt.videos_completed.all()
-        is_completed = False
-        signal = False
+    def update_lesson_progress(self, course_id, docs_id, videos_id):
+        course_mngt = CourseManagement.objects.filter(
+            course_id=course_id, user=self.user, sale_status=BOUGHT).first()
+        if not course_mngt:
+            raise NoItemException
 
-        for lesson in course_mngt.course.lessons.all():
-            if video in lesson.videos.all():
-                if video not in videos_completed:
-                    course_mngt.videos_completed.add(video)
-                    is_completed = True
-                else:
-                    course_mngt.videos_completed.remove(video)
-                signal = True
-        if not signal:
-            raise CheckElementExistException("Video is not in course.")
-        return is_completed
+        docs = set(CourseDocument.objects.filter(id__in=docs_id))
+        videos = set(UploadFile.objects.filter(id__in=videos_id))
+        self.check_docs_videos_in_course(course_mngt, docs, videos)
+
+        docs_completed = set(course_mngt.docs_completed.all())
+        videos_completed = set(course_mngt.videos_completed.all())
+
+        course_mngt.docs_completed.remove(*docs.intersection(docs_completed))
+        course_mngt.docs_completed.add(*docs.difference(docs_completed))
+        course_mngt.videos_completed.remove(*videos.intersection(videos_completed))
+        course_mngt.videos_completed.add(*videos.difference(videos_completed))
+
+        return dict(
+            course_id=course_id,
+            docs_completed=course_mngt.docs_completed.all().values_list('id', flat=True),
+            videos_complated=course_mngt.videos_completed.all().values_list('id', flat=True),
+        )
+

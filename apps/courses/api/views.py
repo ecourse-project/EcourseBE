@@ -7,8 +7,6 @@ from apps.courses.models import CourseManagement, CourseDocument
 from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
 from apps.courses.services import CourseManagementService
 from apps.courses.enums import BOUGHT
-from apps.courses.exceptions import NoItemException
-from apps.upload.models import UploadFile
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
@@ -55,38 +53,12 @@ class CourseRetrieveView(generics.RetrieveAPIView):
         return Response(self.get_serializer(instance).data)
 
 
-class UpdateCourseDocumentProgress(APIView):
-    def get(self, request, *args, **kwargs):
-        course_mngt = CourseManagement.objects.filter(
-            course_id=self.request.query_params.get('course_id'), user=request.user, sale_status=BOUGHT).first()
-        course_doc = CourseDocument.objects.filter(id=self.request.query_params.get('course_doc_id')).first()
-        if not course_mngt:
-            raise NoItemException
-        if not course_doc:
-            raise NoItemException("Document does not exist.")
-        is_completed = CourseManagementService(request.user).add_doc_completed(course_mngt, course_doc)
-        return Response({'is_completed': is_completed}, status=status.HTTP_200_OK)
+class UpdateLessonProgress(APIView):
+    def post(self, request, *args, **kwargs):
+        data = self.request.data
+        completed_data = CourseManagementService(request.user).update_lesson_progress(
+            data.get('course_id'), data.get('documents', []), data.get('videos', [])
+        )
+        return Response(data=completed_data, status=status.HTTP_200_OK)
 
 
-class UpdateCourseVideoProgress(APIView):
-    def get(self, request, *args, **kwargs):
-        course_mngt = CourseManagement.objects.filter(
-            course_id=self.request.query_params.get('course_id'), user=request.user, sale_status=BOUGHT).first()
-        video = UploadFile.objects.filter(id=self.request.query_params.get('file_id')).first()
-        if not course_mngt:
-            raise NoItemException
-        if not video:
-            raise NoItemException("Video does not exist.")
-        is_completed = CourseManagementService(request.user).add_video_completed(course_mngt, video)
-        return Response({'is_completed': is_completed}, status=status.HTTP_200_OK)
-
-
-# class UpdateLessonProgress(APIView):
-#     def get(self, request, *args, **kwargs):
-#         course_mngt = CourseManagement.objects.filter(
-#             course_id=self.request.query_params.get('course_id'), user=request.user, sale_status=BOUGHT).first()
-#         if not course_mngt:
-#             raise NoItemException
-#
-#         videos_id = self.request.query_params.get('videos', [])
-#         docs_id = self.request.query_params.get('documents', [])

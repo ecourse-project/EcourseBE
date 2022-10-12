@@ -175,6 +175,11 @@ export interface UpdateProgressOutput {
     is_completed: boolean;
 }
 
+export interface UpdateLessonArgs {
+    course_id: string;
+    documents: string[];
+    videos: string[];
+}
 
 export interface CourseDocument {
     id: string;
@@ -228,12 +233,14 @@ export interface Course {
 export interface ReplyComment {
     id: string;
     user: User;
+    created: string;
     content: string;
 }
 
-export interface Comment {
+export interface CourseComment {
     id: string;
     user: User;
+    created: string;
     content: string;
     course_id: string;
     reply_comments: ReplyComment[];
@@ -359,8 +366,7 @@ const apiURL = {
     getMostDownloadCourses: () => `api/courses/most-download/`,
     getUCourses: (limit, page) => `api/courses/my-courses/?limit=${limit}&page=${page}`,
     getCourseDetail: (id) => `api/courses/detail/?course_id=${id}`,
-    UpdateCourseDocumentProgress: (course_id, doc_id) => `api/courses/course-progress/document/?course_id=${course_id}&course_doc_id=${doc_id}`,
-    UpdateCourseVideoProgress: (course_id, file_id) => `api/courses/course-progress/video/?course_id=${course_id}&file_id=${file_id}`,
+    updateLessonProgress: () => `api/courses/update-lesson-progress/`,
 
     createComment: () => `api/comments/create/`,
     listComments: (id) => `api/comments/list/?course_id=${id}`,
@@ -467,19 +473,15 @@ class CourseService {
 		return apiClient.get(apiURL.getCourseDetail(id));
 	}
 
-    static UpdateCourseDocumentProgress(course_id: string, doc_id: string): Promise<UpdateProgressOutput> {
-        return apiClient.get(apiURL.UpdateCourseDocumentProgress(course_id, doc_id));
+    static updateLessonProgress(params: UpdateLessonArgs): Promise<UpdateLessonArgs> {
+        return apiClient.post(apiURL.updateLessonProgress(), params)
     }
 
-    static UpdateCourseVideoProgress(course_id: string, file_id: string): Promise<UpdateProgressOutput> {
-        return apiClient.get(apiURL.UpdateCourseVideoProgress(course_id, file_id));
-    }
-
-    static createComment(owner_id: string, course_id: string, user_id: string, content: string) : Promise<Comment> {
+    static createComment(owner_id: string, course_id: string, user_id: string, content: string) : Promise<CourseComment> {
 		return apiClient.post(apiURL.createComment(), {owner_id: owner_id, course_id: course_id, user_id: user_id, content: content});
 	}
 
-    static listComments(id: string): Promise<Comment[]> {
+    static listComments(id: string): Promise<CourseComment[]> {
 		return apiClient.get(apiURL.listComments(id));
 	}
 
