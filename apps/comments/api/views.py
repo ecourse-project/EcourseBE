@@ -10,7 +10,7 @@ from apps.comments.services import get_comments_queryset
 class CreateCommentView(APIView):
     def post(self, request, *args, **kwargs):
         comment_data = self.request.data
-        if comment_data.get("owner_id") is None:
+        if not comment_data.get("owner_id"):
             comment = Comment.objects.create(
                 content=comment_data.get("content"),
                 user_id=comment_data.get("user_id"),

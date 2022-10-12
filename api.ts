@@ -93,6 +93,7 @@ export interface IFileUpload {
 export interface OFileUpload {
     id: string;
     file_path: string;
+    file_size: number;
     file_type: string;
     file_name: string;
     duration: number;
@@ -104,6 +105,7 @@ export interface IImageUpload {
 
 export interface OImageUpload {
     id: string;
+    image_size: number;
     image_path: string;
     image_type: string;
 }
@@ -453,7 +455,7 @@ class CourseService {
 		return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
 	}
 
-    static getMostDownloadCourses(): Promise<Course> {
+    static getMostDownloadCourses(): Promise<Course[]> {
 		return apiClient.get(apiURL.getMostDownloadCourses());
 	}
 

@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.db.models import Q
 from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
 from apps.courses.enums import AVAILABLE
 from apps.courses.signals import calculate_progress
+from apps.upload.models import UploadFile
+from apps.upload.enums import video_ext_list
 
 
 @admin.register(CourseDocument)
@@ -27,14 +30,14 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "lesson_number",
-        "get_documents",
+        "list_documents",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("total_documents", "total_videos")
 
-    def get_documents(self, obj):
+    def list_documents(self, obj):
         return ", ".join([doc.name for doc in obj.documents.all()])
 
     def save_related(self, request, form, formsets, change):
@@ -45,14 +48,19 @@ class LessonAdmin(admin.ModelAdmin):
         instance.save(update_fields=["total_documents", "total_videos"])
 
     # Query objects for many to many
-    # def formfield_for_manytomany(self, db_field, request, **kwargs):
-    #     if db_field.name == "documents":
-    #         kwargs["queryset"] = CourseDocument.objects.exclude(
-    #             id__in=Lesson.documents.through.objects.all().values_list('coursedocument_id', flat=True)
-    #         )
-    #     if db_field.name == "videos":
-    #         kwargs["queryset"] = UploadFile.objects.filter(file_type__iexact="mov")
-    #     return super().formfield_for_manytomany(db_field, request, **kwargs)
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # if db_field.name == "documents":
+        #     kwargs["queryset"] = CourseDocument.objects.exclude(
+        #         id__in=Lesson.documents.through.objects.all().values_list('coursedocument_id', flat=True)
+        #     )
+
+        if db_field.name == "videos":
+            q_list = Q()
+            for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
+                q_list |= q
+            kwargs["queryset"] = UploadFile.objects.filter(q_list)
+            # kwargs["queryset"] = UploadFile.objects.filter(file_type__iexact="mov")
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 @admin.register(Course)

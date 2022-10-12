@@ -10,6 +10,7 @@ class UploadFileSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "file_name",
+            "file_size",
             "file_path",
             "file_type",
             "duration",
@@ -27,6 +28,7 @@ class UploadImageSerializer(serializers.ModelSerializer):
         model = UploadImage
         fields = (
             "id",
+            "image_size",
             "image_path",
             "image_type",
         )

@@ -15,7 +15,7 @@ class UploadFile(TimeStampedModel):
     duration = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return str(self.file_path)
+        return str(self.file_name)
 
     def delete_file(self):
         self.file_path.delete()
