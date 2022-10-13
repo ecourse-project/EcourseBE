@@ -25,7 +25,6 @@ class UploadFileAdmin(admin.ModelAdmin):
             obj.file_path = save_path
             obj.file_size = obj.file_path.size
             obj.file_type = obj.file_path.name.split(".")[-1]
-            print(obj.file_type.upper())
             if obj.file_type.upper() in video_ext_list:
                 obj.duration = VideoFileClip(obj.file_path.path).duration
 

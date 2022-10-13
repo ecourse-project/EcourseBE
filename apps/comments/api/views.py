@@ -6,6 +6,7 @@ from apps.comments.models import Comment, ReplyComment
 from apps.comments.api.serializers import CommentSerializer
 from apps.comments.services import get_comments_queryset
 from apps.comments.exceptions import CheckContentLengthException
+from apps.core.pagination import StandardResultsSetPagination
 
 
 class CreateCommentView(APIView):
@@ -36,6 +37,7 @@ class CreateCommentView(APIView):
 
 class ListAllCommentsView(generics.ListAPIView):
     serializer_class = CommentSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         return get_comments_queryset().filter(course_id=self.request.query_params.get("course_id"))

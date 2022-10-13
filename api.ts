@@ -52,6 +52,11 @@ export interface OTokenRefresh {
     access: string;
 }
 
+export interface OVerifyToken {
+    detail?: string;
+    code?: string;
+}
+
 
 // ===========================================Users===========================================
 export interface User {
@@ -345,6 +350,7 @@ const apiURL = {
 	existEmail: (email) => `api/users/exists/?email=${email}`,
 	resetPwd: () => 'api/users/password-reset/',
 	changePwd: () => 'api/users/password-change/',
+    verifyToken: () => `api/users-auth/token/verify/`,
 
     getAllDocs: (limit, page) => `api/documents/?limit=${limit}&page=${page}`,
     getMostDownloadDocs: () => `api/documents/most-download/`,
@@ -369,7 +375,7 @@ const apiURL = {
     updateLessonProgress: () => `api/courses/update-lesson-progress/`,
 
     createComment: () => `api/comments/create/`,
-    listComments: (id) => `api/comments/list/?course_id=${id}`,
+    listComments: (id, limit, page) => `api/comments/list/?course_id=${id}&limit=${limit}&page=${page}`,
 
     rateDocument: () => `api/rating/document/rate/`,
     rateCourse: () => `api/rating/course/rate/`,
@@ -396,6 +402,10 @@ class CourseService {
     static changePwd(old_password: string, password1: string, password2: string) : Promise<OPasswordChange> {
 		return apiClient.post(apiURL.changePwd(), {old_password: old_password, password1: password1, password2: password2});
 	}
+
+    static verifyToken(token: string): Promise<OVerifyToken> {
+        return apiClient.post(apiURL.verifyToken(), {token: token})
+    }
 
 	static getAllDocs(params: PaginationParams): Promise<Pagination<Document>> {
 		return apiClient.get(apiURL.getAllDocs(params.limit, params.page));
@@ -481,8 +491,8 @@ class CourseService {
 		return apiClient.post(apiURL.createComment(), {owner_id: owner_id, course_id: course_id, user_id: user_id, content: content});
 	}
 
-    static listComments(id: string): Promise<CourseComment[]> {
-		return apiClient.get(apiURL.listComments(id));
+    static listComments(id: string, limit: number, page: number): Promise<CourseComment[]> {
+		return apiClient.get(apiURL.listComments(id, limit, page));
 	}
 
     static rateDocument(params: RateDocArgs): Promise<Rating> {
