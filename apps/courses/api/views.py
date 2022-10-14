@@ -1,15 +1,16 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.courses.models import CourseManagement
-from apps.courses.api.serializers import CourseManagementSerializer
+from apps.courses.models import CourseManagement, CourseDocument
+from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
 from apps.courses.services import CourseManagementService
 from apps.courses.enums import BOUGHT
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
@@ -18,7 +19,7 @@ class MostDownloadedCourseView(generics.ListAPIView):
 
 
 class CourseListView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -28,7 +29,7 @@ class CourseListView(generics.ListAPIView):
 
 
 class UserCoursesListView(generics.ListAPIView):
-    serializer_class = CourseManagementSerializer
+    serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
@@ -50,3 +51,14 @@ class CourseRetrieveView(generics.RetrieveAPIView):
             course.views += 1
             course.save(update_fields=['views'])
         return Response(self.get_serializer(instance).data)
+
+
+class UpdateLessonProgress(APIView):
+    def post(self, request, *args, **kwargs):
+        data = self.request.data
+        completed_data = CourseManagementService(request.user).update_lesson_progress(
+            data.get('course_id'), data.get('documents', []), data.get('videos', [])
+        )
+        return Response(data=completed_data, status=status.HTTP_200_OK)
+
+

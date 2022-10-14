@@ -12,6 +12,7 @@ class ReplyCommentSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "user",
+            "created",
             "content",
         )
 
@@ -26,6 +27,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "user",
+            "created",
             "content",
             "course_id",
             "reply_comments",

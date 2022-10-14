@@ -9,9 +9,11 @@ class UploadFileSerializer(serializers.ModelSerializer):
         model = UploadFile
         fields = (
             "id",
-            "file_path",
+            "file_name",
             "file_size",
+            "file_path",
             "file_type",
+            "duration",
         )
 
     @classmethod
@@ -26,8 +28,8 @@ class UploadImageSerializer(serializers.ModelSerializer):
         model = UploadImage
         fields = (
             "id",
-            "image_path",
             "image_size",
+            "image_path",
             "image_type",
         )
 

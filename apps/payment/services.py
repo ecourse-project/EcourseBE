@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from django.utils.timezone import localtime
+from django.db.models import Sum
 
 from apps.documents import enums as doc_enums
-from apps.documents.models import DocumentManagement
+from apps.documents.models import DocumentManagement, Document
 from apps.documents.api.serializers import DocumentManagementSerializer
 from apps.courses import enums as course_enums
-from apps.courses.models import CourseManagement
+from apps.courses.models import CourseManagement, Course
 from apps.courses.api.serializers import CourseManagementSerializer
 from apps.payment.enums import FAILED
-from apps.payment.api.serializers import OrderSerializer
 
 
 class OrderService:
@@ -71,3 +71,13 @@ def generate_code(user) -> str:
     user_id = str(user.id)
     user_uuid_node = user_id[len(user_id) - 12:].upper()
     return f"{timestamp}-{user_uuid_node}"
+
+
+def calculate_price(docs, courses) -> int:
+    docs_price = Document.objects.filter(id__in=docs).aggregate(total=Sum('price'))['total']
+    courses_price = Course.objects.filter(id__in=courses).aggregate(total=Sum('price'))['total']
+    if not docs_price:
+        docs_price = 0
+    if not courses_price:
+        courses_price = 0
+    return docs_price + courses_price

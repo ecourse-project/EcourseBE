@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from apps.payment.services import OrderService, generate_code
+from apps.payment.services import OrderService, generate_code, calculate_price
 from apps.payment.models import Order
 from apps.payment.api.serializers import OrderSerializer
 from apps.payment.exceptions import NoItemsException
@@ -56,6 +56,17 @@ class CancelOrderView(APIView):
         order = Order.objects.get(id=order_id)
         OrderService(order).cancel_order()
         return Response({'message': 'Cancel order success.'}, status=status.HTTP_200_OK)
+
+
+class CalculatePriceView(APIView):
+    def post(self, request, *args, **kwargs):
+        documents = Document.objects.filter(id__in=self.request.data.get('documents', []))
+        courses = Course.objects.filter(id__in=self.request.data.get('courses', []))
+        if (not documents) and (not courses):
+            raise NoItemsException
+
+        return Response({'total_price': calculate_price(documents, courses)}, status=status.HTTP_200_OK)
+
 
 
 

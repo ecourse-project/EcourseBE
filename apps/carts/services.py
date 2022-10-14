@@ -1,8 +1,8 @@
 from django.db.models import Sum
 from django.utils.timezone import localtime
 
-from apps.courses.exceptions import NoCourseException
-from apps.documents.exceptions import NoDocumentException
+from apps.courses.exceptions import NoItemException
+from apps.documents.exceptions import NoDocumentException, CheckSaleStatusException
 from apps.carts.exceptions import ListDocumentsEmptyException, ListCoursesEmptyException
 from apps.carts.exceptions import (
     DocumentExistException,
@@ -87,10 +87,10 @@ class MoveItems:
                 raise ListDocumentsEmptyException
             if not docs.filter(id=document.id).exists():
                 raise DocumentNotExistException
-        if cart:
+        elif cart:
             if cart.documents.all().filter(id=document.id).exists():
                 raise DocumentExistException
-        if favorite_list:
+        elif favorite_list:
             if favorite_list.documents.all().filter(id=document.id).exists():
                 raise DocumentExistException
 
@@ -115,6 +115,8 @@ class MoveItems:
         cart = self.user.cart
         favorite_list = self.user.favorite_list
         doc_mngt = DocumentManagement.objects.get(user=self.user, document=doc)
+        if doc_mngt.sale_status == doc_enums.PENDING or doc_mngt.sale_status == doc_enums.BOUGHT:
+            raise CheckSaleStatusException
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_doc(cart=cart, favorite_list=favorite_list, document=doc)
@@ -149,10 +151,10 @@ class MoveItems:
                 raise ListCoursesEmptyException
             if not courses.filter(id=course.id).exists():
                 raise CourseNotExistException
-        if cart:
+        elif cart:
             if cart.courses.all().filter(id=course.id).exists():
                 raise CourseExistException
-        if favorite_list:
+        elif favorite_list:
             if favorite_list.courses.all().filter(id=course.id).exists():
                 raise CourseExistException
 
@@ -173,10 +175,12 @@ class MoveItems:
 
     def move_course(self, start, end, course):
         if not course:
-            raise NoCourseException
+            raise NoItemException
         cart = self.user.cart
         favorite_list = self.user.favorite_list
         course_mngt = CourseManagement.objects.get(user=self.user, course=course)
+        if course_mngt.sale_status == course_enums.PENDING or course_mngt.sale_status == course_enums.BOUGHT:
+            raise CheckSaleStatusException("Course has been checkout or bought.")
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_course(cart=cart, favorite_list=favorite_list, course=course)

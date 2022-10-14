@@ -15,7 +15,6 @@ from datetime import timedelta
 from ecourse import env
 import os
 from django.core.management.commands.runserver import Command as runserver
-import django_heroku
 
 runserver.default_port = "4000"
 
@@ -233,5 +232,3 @@ EMAIL_HOST = env.EMAIL_HOST
 EMAIL_HOST_USER = env.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
 EMAIL_PORT = env.EMAIL_PORT
-
-django_heroku.settings(locals())

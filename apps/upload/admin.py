@@ -1,20 +1,22 @@
 from django.contrib import admin
+from django.core.files.storage import default_storage
 
 from apps.upload.models import UploadImage, UploadFile
 from apps.upload.services.storage.base import get_file_path
-from django.core.files.storage import default_storage
+from apps.upload.enums import video_ext_list
+from moviepy.editor import VideoFileClip
 
 
 @admin.register(UploadFile)
 class UploadFileAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
+        "file_name",
         "file_path",
         "file_size",
         "file_type",
         "created",
     )
-    readonly_fields = ("file_size", "file_type")
+    readonly_fields = ("file_size", "file_type", "duration")
 
     def save_model(self, request, obj, form, change):
         if not change:
@@ -23,6 +25,9 @@ class UploadFileAdmin(admin.ModelAdmin):
             obj.file_path = save_path
             obj.file_size = obj.file_path.size
             obj.file_type = obj.file_path.name.split(".")[-1]
+            if obj.file_type.upper() in video_ext_list:
+                obj.duration = VideoFileClip(obj.file_path.path).duration
+
         obj.save()
 
     def has_change_permission(self, request, obj=None):

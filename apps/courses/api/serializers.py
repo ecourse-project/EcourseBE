@@ -10,7 +10,6 @@ class CourseDocumentSerializer(serializers.ModelSerializer):
         model = CourseDocument
         fields = (
             "id",
-            "created",
             "modified",
             "name",
             "description",
@@ -24,8 +23,6 @@ class TopicSerializer(serializers.ModelSerializer):
         model = Topic
         fields = (
             "id",
-            "created",
-            "modified",
             "name",
         )
 
@@ -38,8 +35,6 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = (
             "id",
-            "created",
-            "modified",
             "name",
             "lesson_number",
             "content",
@@ -57,7 +52,6 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = (
             "id",
-            "created",
             "modified",
             "name",
             "topic",
@@ -66,14 +60,13 @@ class CourseSerializer(serializers.ModelSerializer):
             "sold",
             "lessons",
             "thumbnail",
-            "is_selling",
             "views",
             "rating",
             "num_of_rates",
         )
 
 
-class CourseManagementSerializer(serializers.HyperlinkedModelSerializer):
+class CourseManagementSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
 
     class Meta:
@@ -86,15 +79,29 @@ class CourseManagementSerializer(serializers.HyperlinkedModelSerializer):
             "mark",
             "is_done_quiz",
             "is_favorite",
+            "docs_completed",
+            "videos_completed",
         )
 
     def to_representation(self, obj):
         """Move fields from profile to user representation."""
         representation = super().to_representation(obj)
         course_representation = representation.pop('course')
+
         for key in course_representation:
             representation[key] = course_representation[key]
-
+            if key == 'lessons':
+                for count, lesson in enumerate(representation[key], start=0):
+                    lesson_obj = Lesson.objects.filter(id=representation[key][count]['id']).first()
+                    lesson_video_complete = lesson_obj.videos.all().filter(id__in=representation["videos_completed"]).count()
+                    lesson_doc_complete = lesson_obj.documents.all().filter(id__in=representation["docs_completed"]).count()
+                    if (lesson_obj.total_documents + lesson_obj.total_videos) != 0:
+                        representation[key][count]['progress'] = round(
+                            (lesson_video_complete + lesson_doc_complete) * 100 /
+                            (lesson_obj.total_documents + lesson_obj.total_videos)
+                        )
+                    else:
+                        representation[key][count]['progress'] = 0
         return representation
 
     # def to_internal_value(self, data):
@@ -119,4 +126,46 @@ class CourseManagementSerializer(serializers.HyperlinkedModelSerializer):
     #     profile.save()
     #
     #     return instance
+
+
+class ListCourseSerializer(serializers.ModelSerializer):
+    thumbnail = UploadImageSerializer()
+    topic = TopicSerializer()
+
+    class Meta:
+        model = Course
+        fields = (
+            "id",
+            "modified",
+            "name",
+            "topic",
+            "description",
+            "price",
+            "sold",
+            "thumbnail",
+            "views",
+            "rating",
+            "num_of_rates",
+        )
+
+
+class ListCourseManagementSerializer(serializers.ModelSerializer):
+    course = ListCourseSerializer()
+
+    class Meta:
+        model = CourseManagement
+        fields = (
+            "course",
+            "is_favorite",
+            "status",
+            "sale_status"
+        )
+
+    def to_representation(self, obj):
+        """Move fields from profile to user representation."""
+        representation = super().to_representation(obj)
+        course_representation = representation.pop('course')
+        for key in course_representation:
+            representation[key] = course_representation[key]
+        return representation
 
