@@ -491,7 +491,7 @@ class CourseService {
 		return apiClient.post(apiURL.createComment(), {owner_id: owner_id, course_id: course_id, user_id: user_id, content: content});
 	}
 
-    static listComments(id: string, limit: number, page: number): Promise<CourseComment[]> {
+    static listComments(id: string, limit: number, page: number): Promise<Pagination<CourseComment>> {
 		return apiClient.get(apiURL.listComments(id, limit, page));
 	}
 
