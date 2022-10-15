@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from apps.quiz.models import Quiz, Answer
 from apps.quiz.api.serializers import QuizSerializer, QuizResultResponseSerializer
+from apps.quiz.exceptions import CompletedQuizException
 from apps.courses.models import CourseManagement
 
 
@@ -22,6 +23,8 @@ class QuizResultView(APIView):
         course_id = data.get('course_id')
         user = self.request.user
         answers = data.get('answers')
+        if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
+            raise CompletedQuizException
 
         quiz_list = []
         user_answers_list = []
