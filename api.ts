@@ -340,6 +340,47 @@ export interface Rating {
     rating: RatingEnum;
 }
 
+// ===========================================Quiz===========================================
+export enum AnswerChoiceEnum {
+    A = "A",
+    B = "B",
+    C = "C",
+    D = "D",
+}
+
+export interface Quiz {
+    id: string;
+    course: string;
+    question_number: number;
+    question: string;
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+}
+
+export interface UserAnswersArgs {
+    quiz_id: string;
+    answer_choice: AnswerChoiceEnum;
+}
+
+export interface QuizResultArgs {
+    course_id: string;
+    answers: UserAnswersArgs[];
+}
+
+export interface CorrectAnswer {
+    id: string;
+    correct_answer: AnswerChoiceEnum;
+}
+
+export interface QuizResult {
+    mark: number;
+    correct_answers: number;
+    total_quiz: number;
+    quiz_answer: CorrectAnswer[];
+}
+
 
 
 
@@ -379,6 +420,9 @@ const apiURL = {
 
     rateDocument: () => `api/rating/document/rate/`,
     rateCourse: () => `api/rating/course/rate/`,
+
+    listQuiz: (id) => `api/quiz/?course_id=${id}`,
+    getQuizResult: () => `api/quiz/result/`,
 };
 
 
@@ -501,6 +545,14 @@ class CourseService {
 
     static rateCourse(params: RateCourseArgs): Promise<Rating> {
         return apiClient.post(apiURL.rateCourse(), params);
+    }
+
+    static listQuiz(id: string): Promise<Quiz[]> {
+        return apiClient.get(apiURL.listQuiz(id));
+    }
+
+    static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
+        return apiClient.post(apiURL.getQuizResult(), params);
     }
 }
 export default CourseService;

@@ -16,15 +16,6 @@ class AnswerChoices(TimeStampedModel):
         return self.choice
 
 
-class Answer(TimeStampedModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    choice = models.CharField(max_length=5, choices=ANSWER_CHOICES)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return self.choice
-
-
 class Quiz(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     question = models.CharField(max_length=200)
@@ -33,10 +24,20 @@ class Quiz(TimeStampedModel):
     B = models.CharField(max_length=255)
     C = models.CharField(max_length=255)
     D = models.CharField(max_length=255)
-    correct_answer = models.ForeignKey(AnswerChoices, on_delete=models.SET_NULL, null=True, blank=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    correct_answer = models.ForeignKey(AnswerChoices, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.question
+
+
+class Answer(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    choice = models.CharField(max_length=5, choices=ANSWER_CHOICES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.choice
 
 
