@@ -12,6 +12,9 @@ class ReplyComment(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     content = models.CharField(max_length=100, null=True, blank=True)
 
+    class Meta:
+        ordering = ['-created']
+
 
 class Comment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
