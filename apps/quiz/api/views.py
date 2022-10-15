@@ -41,15 +41,12 @@ class QuizResultView(APIView):
         Answer.objects.bulk_create(user_answers_list)
         CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
 
-        return Response(data={
-            "mark": mark,
-            "correct_answers": correct_answers,
-            "total_quiz": len(answers),
-            "quiz_answers": QuizResultResponseSerializer(quiz_list, many=True).data
-        }, status=status.HTTP_200_OK)
-
-
-
-
-
-
+        return Response(
+            data={
+                "mark": mark,
+                "correct_answers": correct_answers,
+                "total_quiz": len(answers),
+                "quiz_answers": QuizResultResponseSerializer(quiz_list, many=True).data
+            },
+            status=status.HTTP_200_OK,
+        )

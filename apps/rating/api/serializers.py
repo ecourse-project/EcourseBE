@@ -15,6 +15,7 @@ class RatingSerializer(serializers.ModelSerializer):
             "modified",
             "user",
             "rating",
+            "comment",
         )
 
 
@@ -23,7 +24,11 @@ class DocumentRatingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentRating
-        fields = "__all__"
+        fields = (
+            "id",
+            "document",
+            "rating",
+        )
 
 
 class CourseRatingSerializer(serializers.ModelSerializer):
@@ -31,4 +36,8 @@ class CourseRatingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CourseRating
-        fields = "__all__"
+        fields = (
+            "id",
+            "course",
+            "rating",
+        )

@@ -325,11 +325,13 @@ export enum RatingEnum {
 export interface RateDocArgs {
     document_id: string;
     rating: RatingEnum;
+    comment: string;
 }
 
 export interface RateCourseArgs {
     course_id: string;
     rating: RatingEnum;
+    comment: string;
 }
 
 export interface Rating {
