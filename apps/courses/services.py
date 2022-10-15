@@ -74,9 +74,9 @@ class CourseManagementService:
         docs_completed = set(course_mngt.docs_completed.all())
         videos_completed = set(course_mngt.videos_completed.all())
 
-        course_mngt.docs_completed.remove(*docs.intersection(docs_completed))
+        course_mngt.docs_completed.remove(*docs_completed.difference(docs))
         course_mngt.docs_completed.add(*docs.difference(docs_completed))
-        course_mngt.videos_completed.remove(*videos.intersection(videos_completed))
+        course_mngt.videos_completed.remove(*videos_completed.difference(videos))
         course_mngt.videos_completed.add(*videos.difference(videos_completed))
 
         return dict(
