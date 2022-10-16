@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
+from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement, LessonManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
 
 
@@ -79,8 +79,6 @@ class CourseManagementSerializer(serializers.ModelSerializer):
             "mark",
             "is_done_quiz",
             "is_favorite",
-            "docs_completed",
-            "videos_completed",
         )
 
     def to_representation(self, obj):
@@ -90,18 +88,7 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 
         for key in course_representation:
             representation[key] = course_representation[key]
-            if key == 'lessons':
-                for count, lesson in enumerate(representation[key], start=0):
-                    lesson_obj = Lesson.objects.filter(id=representation[key][count]['id']).first()
-                    lesson_video_complete = lesson_obj.videos.all().filter(id__in=representation["videos_completed"]).count()
-                    lesson_doc_complete = lesson_obj.documents.all().filter(id__in=representation["docs_completed"]).count()
-                    if (lesson_obj.total_documents + lesson_obj.total_videos) != 0:
-                        representation[key][count]['progress'] = round(
-                            (lesson_video_complete + lesson_doc_complete) * 100 /
-                            (lesson_obj.total_documents + lesson_obj.total_videos)
-                        )
-                    else:
-                        representation[key][count]['progress'] = 0
+
         return representation
 
     # def to_internal_value(self, data):

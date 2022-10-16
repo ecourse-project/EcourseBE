@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from apps.core.pagination import StandardResultsSetPagination
 from apps.courses.models import CourseManagement, CourseDocument
 from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
-from apps.courses.services import CourseManagementService
+from apps.courses.services import CourseManagementService, LessonManagementService
 from apps.courses.enums import BOUGHT
 
 
@@ -13,9 +13,10 @@ class MostDownloadedCourseView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
 
     def get_queryset(self):
-        service = CourseManagementService(self.request.user)
-        service.init_courses_management()
-        return service.get_course_mngt_queryset_by_selling.order_by('-course__sold')
+        course_mngt_service = CourseManagementService(self.request.user)
+        course_mngt_service.init_courses_management()
+        LessonManagementService(self.request.user).init_lessons_management()
+        return course_mngt_service.get_course_mngt_queryset_by_selling.order_by('-course__sold')
 
 
 class CourseListView(generics.ListAPIView):
@@ -23,9 +24,10 @@ class CourseListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        service = CourseManagementService(self.request.user)
-        service.init_courses_management()
-        return service.get_course_mngt_queryset_by_selling.order_by('course__name')
+        course_mngt_service = CourseManagementService(self.request.user)
+        course_mngt_service.init_courses_management()
+        LessonManagementService(self.request.user).init_lessons_management()
+        return course_mngt_service.get_course_mngt_queryset_by_selling.order_by('course__name')
 
 
 class UserCoursesListView(generics.ListAPIView):
@@ -50,15 +52,15 @@ class CourseRetrieveView(generics.RetrieveAPIView):
             course = instance.course
             course.views += 1
             course.save(update_fields=['views'])
-        return Response(self.get_serializer(instance).data)
+        service = CourseManagementService(request.user)
+        return Response(
+            service.custom_course_detail_data(self.get_serializer(instance).data)
+        )
 
 
 class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
-        data = self.request.data
-        completed_data = CourseManagementService(request.user).update_lesson_progress(
-            data.get('course_id'), data.get('documents', []), data.get('videos', [])
-        )
-        return Response(data=completed_data, status=status.HTTP_200_OK)
+        CourseManagementService(request.user).update_lesson_progress(lessons=self.request.data)
+        return Response(status=status.HTTP_200_OK)
 
 

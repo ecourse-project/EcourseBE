@@ -80,7 +80,7 @@ class Course(TimeStampedModel):
 
 class CourseManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mgmt", null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     last_update = models.DateTimeField(null=True, blank=True)
     progress = models.SmallIntegerField(default=0, null=True, blank=True)
@@ -89,8 +89,6 @@ class CourseManagement(TimeStampedModel):
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
-    docs_completed = models.ManyToManyField(CourseDocument, blank=True)
-    videos_completed = models.ManyToManyField(UploadFile, blank=True)
 
     class Meta:
         ordering = ["course__name"]
@@ -99,8 +97,47 @@ class CourseManagement(TimeStampedModel):
         return f"{self.course.name} - {self.user.__str__()}"
 
     @property
-    def total_completed(self):
-        return self.docs_completed.all().count() + self.videos_completed.all().count()
+    def total_docs_videos(self):
+        total = 0
+        for lesson in self.course.lessons.all():
+            total += lesson.total_docs_videos
+        return total
+
+    @property
+    def total_docs_videos_completed(self):
+        total = 0
+        for lesson_mngt in LessonManagement.objects.filter(user=self.user, course=self.course):
+            total += lesson_mngt.total_docs_videos_completed
+        return total
+
+
+class LessonManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_mngt", null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lesson_mngt", null=True, blank=True)
+    progress = models.SmallIntegerField(default=0, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    docs_completed = models.ManyToManyField(CourseDocument, blank=True)
+    videos_completed = models.ManyToManyField(UploadFile, blank=True)
+
+    def __str__(self):
+        return f"{self.lesson.name} - {self.user.__str__()}"
+
+    @property
+    def total_docs_completed(self):
+        return self.docs_completed.all().count()
+
+    @property
+    def total_videos_completed(self):
+        return self.videos_completed.all().count()
+
+    @property
+    def total_docs_videos_completed(self):
+        return self.total_docs_completed + self.total_videos_completed
+
+    @property
+    def total_docs_videos(self):
+        return self.lesson.total_docs_videos
 
 
 

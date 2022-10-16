@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Q
 from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
 from apps.courses.enums import AVAILABLE
-from apps.courses.signals import calculate_progress
+from apps.courses.signals import calculate_lesson_progress, calculate_course_progress
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 
@@ -90,27 +90,27 @@ class CourseAdmin(admin.ModelAdmin):
             ])
         obj.save()
 
-    def save_related(self, request, form, formsets, change):
-        before_lesson = set(form.instance.lessons.all())
-        super().save_related(request, form, formsets, change)
-        after_lesson = set(form.instance.lessons.all())
-
-        instance = form.instance
-        instance.total_lessons = instance.lessons.all().count()
-        instance.save(update_fields=['total_lessons'])
-
-        # remove lesson from course
-        if len(after_lesson) < len(before_lesson):
-            diff_lesson = before_lesson ^ after_lesson
-            for lesson in diff_lesson:
-                for course_mngt in CourseManagement.objects.filter(course=instance):
-                    course_mngt.docs_completed.remove(*lesson.documents.all())
-                    course_mngt.videos_completed.remove(*lesson.videos.all())
-
-        # add lesson to course
-        elif len(after_lesson) > len(before_lesson):
-            for course_mngt in CourseManagement.objects.filter(course=instance):
-                calculate_progress(course_mngt)
+    # def save_related(self, request, form, formsets, change):
+    #     before_lesson = set(form.instance.lessons.all())
+    #     super().save_related(request, form, formsets, change)
+    #     after_lesson = set(form.instance.lessons.all())
+    #
+    #     instance = form.instance
+    #     instance.total_lessons = instance.lessons.all().count()
+    #     instance.save(update_fields=['total_lessons'])
+    #
+    #     # remove lesson from course
+    #     if len(after_lesson) < len(before_lesson):
+    #         diff_lesson = before_lesson ^ after_lesson
+    #         for lesson in diff_lesson:
+    #             for course_mngt in CourseManagement.objects.filter(course=instance):
+    #                 course_mngt.docs_completed.remove(*lesson.documents.all())
+    #                 course_mngt.videos_completed.remove(*lesson.videos.all())
+    #
+    #     # add lesson to course
+    #     elif len(after_lesson) > len(before_lesson):
+    #         for course_mngt in CourseManagement.objects.filter(course=instance):
+    #             calculate_course_progress(course_mngt)
 
 
     # def formfield_for_manytomany(self, db_field, request, **kwargs):

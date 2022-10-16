@@ -340,6 +340,7 @@ export interface Rating {
     modified: string;
     user: User;
     rating: RatingEnum;
+    comment: string;
 }
 
 // ===========================================Quiz===========================================
