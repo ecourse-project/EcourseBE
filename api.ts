@@ -176,14 +176,10 @@ export enum ProgressStatusEnum {
     DONE = 'DONE'
 }
 
-export interface UpdateProgressOutput {
-    is_completed: boolean;
-}
-
 export interface UpdateLessonArgs {
-    course_id: string;
-    documents: string[];
-    videos: string[];
+    lesson_id: string;
+    completed_docs: string[];
+    completed_videos: string[];
 }
 
 export interface CourseDocument {
@@ -530,7 +526,7 @@ class CourseService {
 		return apiClient.get(apiURL.getCourseDetail(id));
 	}
 
-    static updateLessonProgress(params: UpdateLessonArgs): Promise<UpdateLessonArgs> {
+    static updateLessonProgress(params: UpdateLessonArgs[]): Promise<Any> {
         return apiClient.post(apiURL.updateLessonProgress(), params)
     }
 
