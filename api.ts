@@ -206,6 +206,8 @@ export interface Lesson {
     videos: OFileUpload[];
     documents: CourseDocument[];
     progress: number;
+    docs_completed?: string[],
+    videos_completed?: string[],
 }
 
 export interface Course {
@@ -227,8 +229,6 @@ export interface Course {
     mark: number;
     is_done_quiz?: boolean;
     is_favorite: boolean;
-    docs_completed?: string[],
-    videos_completed?: string[],
     rating_detail?: Rating[],
 }
 
