@@ -134,7 +134,9 @@ export interface Document {
     rating: number;
     num_of_rates: number;
     is_favorite: boolean;
+    rating_detail?: Rating[];
 }
+
 
 export interface IDocumentUpload {
     name: string;
@@ -227,6 +229,7 @@ export interface Course {
     is_favorite: boolean;
     docs_completed?: string[],
     videos_completed?: string[],
+    rating_detail?: Rating[],
 }
 
 
@@ -277,7 +280,6 @@ export interface OutputRemove {
 
 
 
-
 // ===========================================Payment===========================================
 export interface CreateOrderArg {
     documents: string[];
@@ -318,6 +320,11 @@ export enum RatingEnum {
   FIVE = 5
 }
 
+export interface UserRatingInfo {
+    full_name: string;
+    avatar: string;
+}
+
 export interface RateDocArgs {
     document_id: string;
     rating: RatingEnum;
@@ -333,8 +340,7 @@ export interface RateCourseArgs {
 export interface Rating {
     id: string;
     created: string;
-    modified: string;
-    user: User;
+    user: UserRatingInfo;
     rating: RatingEnum;
     comment: string;
 }

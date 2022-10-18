@@ -24,7 +24,7 @@ class Rating(TimeStampedModel):
 
 class DocumentRating(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    document = models.OneToOneField(Document, on_delete=models.CASCADE)
+    document = models.OneToOneField(Document, related_name='ratings', on_delete=models.CASCADE)
     rating = models.ManyToManyField(Rating, blank=True)
 
     def __str__(self):
@@ -33,7 +33,7 @@ class DocumentRating(models.Model):
 
 class CourseRating(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course = models.OneToOneField(Course, on_delete=models.CASCADE)
+    course = models.OneToOneField(Course, related_name='ratings', on_delete=models.CASCADE)
     rating = models.ManyToManyField(Rating, blank=True)
 
     def __str__(self):

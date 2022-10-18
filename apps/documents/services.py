@@ -4,6 +4,8 @@ from django.db.models import Prefetch, Q
 from apps.documents.models import DocumentManagement, Document
 from apps.documents.api.serializers import DocumentSerializer
 from apps.documents.enums import BOUGHT, PENDING
+from apps.rating.api.serializers import RatingSerializer
+from apps.rating.models import DocumentRating
 
 
 class DocumentService:
@@ -47,3 +49,8 @@ class DocumentManagementService:
         query = Q(document__is_selling=True)
         query |= Q(document__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
         return self.get_doc_management_queryset.filter(query)
+
+    def custom_doc_detail_data(self, data):
+        document_rating = DocumentRating.objects.filter(document_id=data['id']).first()
+        data['rating_detail'] = RatingSerializer(document_rating.rating.all(), many=True).data if document_rating else []
+        return data

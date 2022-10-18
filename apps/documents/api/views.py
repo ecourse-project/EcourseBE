@@ -50,7 +50,10 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
             doc = instance.document
             doc.views += 1
             doc.save(update_fields=['views'])
-        return Response(self.get_serializer(instance).data)
+        service = DocumentManagementService(request.user)
+        return Response(
+            service.custom_doc_detail_data(self.get_serializer(instance).data)
+        )
 
     # Not used
     # def perform_update(self, serializer):

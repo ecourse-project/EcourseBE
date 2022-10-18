@@ -5,6 +5,8 @@ from apps.courses.models import Course, CourseManagement, CourseDocument, Lesson
 from apps.courses.enums import BOUGHT, PENDING
 from apps.courses.exceptions import CheckElementExistException, NoItemException
 from apps.upload.models import UploadFile
+from apps.rating.api.serializers import RatingSerializer
+from apps.rating.models import CourseRating
 
 
 class CourseService:
@@ -54,6 +56,8 @@ class CourseManagementService:
             data['lessons'][count]['docs_completed'] = lesson_mngt.docs_completed.all().values_list('id', flat=True)
             data['lessons'][count]['videos_completed'] = lesson_mngt.videos_completed.all().values_list('id', flat=True)
             data['lessons'][count]['progress'] = lesson_mngt.progress
+        course_rating = CourseRating.objects.filter(course_id=data['id']).first()
+        data['rating_detail'] = RatingSerializer(course_rating.rating.all(), many=True).data if course_rating else []
         return data
 
     @staticmethod
@@ -70,14 +74,16 @@ class CourseManagementService:
 
     def update_lesson_progress(self, lessons: list):
         for lesson in lessons:
-            lesson_mngt = LessonManagement.objects.filter(user=self.user, lesson_id=lesson['lesson_id']).first()
+            # A lesson maybe belong to more courses
+            lesson_mngt_queryset = LessonManagement.objects.filter(user=self.user, lesson_id=lesson['lesson_id'])
             docs = CourseDocument.objects.filter(id__in=lesson['completed_docs'])
             videos = UploadFile.objects.filter(id__in=lesson['completed_videos'])
-            self.check_docs_videos_in_lesson(lesson_mngt, docs, videos)
-            lesson_mngt.docs_completed.clear()
-            lesson_mngt.docs_completed.add(*docs)
-            lesson_mngt.videos_completed.clear()
-            lesson_mngt.videos_completed.add(*videos)
+            for lesson_mngt in lesson_mngt_queryset:
+                self.check_docs_videos_in_lesson(lesson_mngt, docs, videos)
+                lesson_mngt.docs_completed.clear()
+                lesson_mngt.docs_completed.add(*docs)
+                lesson_mngt.videos_completed.clear()
+                lesson_mngt.videos_completed.add(*videos)
 
 
 
