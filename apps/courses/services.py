@@ -56,8 +56,17 @@ class CourseManagementService:
             data['lessons'][count]['docs_completed'] = lesson_mngt.docs_completed.all().values_list('id', flat=True)
             data['lessons'][count]['videos_completed'] = lesson_mngt.videos_completed.all().values_list('id', flat=True)
             data['lessons'][count]['progress'] = lesson_mngt.progress
+
         course_rating = CourseRating.objects.filter(course_id=data['id']).first()
-        data['rating_detail'] = RatingSerializer(course_rating.rating.all(), many=True).data if course_rating else []
+        if not course_rating:
+            data['rating_detail'] = []
+            data['my_rating'] = {}
+            return data
+
+        all_ratings = course_rating.rating.all()
+        my_rating = course_rating.rating.filter(user=self.user).first()
+        data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
+        data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
         return data
 
     @staticmethod
@@ -84,6 +93,8 @@ class CourseManagementService:
                 lesson_mngt.docs_completed.add(*docs)
                 lesson_mngt.videos_completed.clear()
                 lesson_mngt.videos_completed.add(*videos)
+
+
 
 
 

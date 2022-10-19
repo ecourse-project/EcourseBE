@@ -135,6 +135,7 @@ export interface Document {
     num_of_rates: number;
     is_favorite: boolean;
     rating_detail?: Rating[];
+    my_rating?: Rating,
 }
 
 
@@ -230,6 +231,7 @@ export interface Course {
     is_done_quiz?: boolean;
     is_favorite: boolean;
     rating_detail?: Rating[],
+    my_rating?: Rating,
 }
 
 
@@ -532,7 +534,7 @@ class CourseService {
 		return apiClient.get(apiURL.getCourseDetail(id));
 	}
 
-    static updateLessonProgress(params: UpdateLessonArgs[]): Promise<Any> {
+    static updateLessonProgress(params: UpdateLessonArgs[]): Promise<any> {
         return apiClient.post(apiURL.updateLessonProgress(), params)
     }
 

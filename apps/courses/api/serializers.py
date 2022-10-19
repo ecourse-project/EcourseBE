@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement, LessonManagement
+from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
+from apps.rating.api.serializers import RatingSerializer
+from apps.rating.models import CourseRating
 
 
 class CourseDocumentSerializer(serializers.ModelSerializer):
