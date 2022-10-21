@@ -4,14 +4,11 @@ from apps.quiz.models import Quiz, AnswerChoices
 
 
 class QuizSerializer(serializers.ModelSerializer):
-
-
     class Meta:
         model = Quiz
         fields = (
             "id",
             "course",
-            "question_number",
             "question",
             "A",
             "B",

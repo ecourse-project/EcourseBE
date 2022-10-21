@@ -14,7 +14,7 @@ class ListQuizView(generics.ListAPIView):
 
     def get_queryset(self):
         course_id = self.request.query_params.get("course_id")
-        return Quiz.objects.filter(course_id=course_id).order_by('question_number')
+        return Quiz.objects.filter(course_id=course_id)
 
 
 class QuizResultView(APIView):
@@ -23,8 +23,8 @@ class QuizResultView(APIView):
         course_id = data.get('course_id')
         user = self.request.user
         answers = data.get('answers')
-        if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
-            raise CompletedQuizException
+        # if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
+        #     raise CompletedQuizException
 
         quiz_list = []
         user_answers_list = []
