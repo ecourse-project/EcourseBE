@@ -39,14 +39,15 @@ class QuizResultView(APIView):
 
         mark = round(10 * correct_answers / len(answers), 1)
         Answer.objects.bulk_create(user_answers_list)
-        CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
+        # CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
 
         return Response(
             data={
                 "mark": mark,
                 "correct_answers": correct_answers,
                 "total_quiz": len(answers),
-                "quiz_answers": QuizResultResponseSerializer(quiz_list, many=True).data
+                "quiz_answers": QuizResultResponseSerializer(quiz_list, many=True).data,
+                "user_answers": answers,
             },
             status=status.HTTP_200_OK,
         )

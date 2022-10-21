@@ -349,16 +349,16 @@ export interface Rating {
 
 // ===========================================Quiz===========================================
 export enum AnswerChoiceEnum {
-    A = "A",
-    B = "B",
-    C = "C",
-    D = "D",
+	A = 'A',
+	B = 'B',
+	C = 'C',
+	D = 'D',
+	NO_CHOICE = '-1',
 }
 
 export interface Quiz {
     id: string;
     course: string;
-    question_number: number;
     question: string;
     A: string;
     B: string;
@@ -385,7 +385,8 @@ export interface QuizResult {
     mark: number;
     correct_answers: number;
     total_quiz: number;
-    quiz_answer: CorrectAnswer[];
+    quiz_answers: CorrectAnswer[];
+    user_answers: UserAnswersArgs[];
 }
 
 
