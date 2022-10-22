@@ -369,6 +369,7 @@ export interface Quiz {
 export interface UserAnswersArgs {
     quiz_id: string;
     answer_choice: AnswerChoiceEnum;
+    correct_answer?: AnswerChoiceEnum;
 }
 
 export interface QuizResultArgs {
@@ -385,8 +386,7 @@ export interface QuizResult {
     mark: number;
     correct_answers: number;
     total_quiz: number;
-    quiz_answers: CorrectAnswer[];
-    user_answers: UserAnswersArgs[];
+    quiz_answers: UserAnswersArgs[];
 }
 
 
