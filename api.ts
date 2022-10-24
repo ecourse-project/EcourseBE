@@ -185,6 +185,11 @@ export interface UpdateLessonArgs {
     completed_videos: string[];
 }
 
+export interface UpdateProgressArgs {
+    course_id: string;
+    lessons: UpdateLessonArgs[];
+}
+
 export interface CourseDocument {
     id: string;
     modified: string;
@@ -206,7 +211,6 @@ export interface Lesson {
     content: string;
     videos: OFileUpload[];
     documents: CourseDocument[];
-    progress: number;
     docs_completed?: string[],
     videos_completed?: string[],
 }
@@ -232,6 +236,7 @@ export interface Course {
     is_favorite: boolean;
     rating_detail?: Rating[],
     my_rating?: Rating,
+    quiz_detail: QuizResult,
 }
 
 
@@ -383,12 +388,11 @@ export interface CorrectAnswer {
 }
 
 export interface QuizResult {
-    mark: number;
+    mark?: number;
     correct_answers: number;
     total_quiz: number;
     quiz_answers: UserAnswersArgs[];
 }
-
 
 
 
@@ -535,7 +539,7 @@ class CourseService {
 		return apiClient.get(apiURL.getCourseDetail(id));
 	}
 
-    static updateLessonProgress(params: UpdateLessonArgs[]): Promise<any> {
+    static updateLessonProgress(params: UpdateProgressArgs): Promise<any> {
         return apiClient.post(apiURL.updateLessonProgress(), params)
     }
 

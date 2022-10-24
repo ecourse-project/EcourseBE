@@ -1,11 +1,13 @@
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
+from apps.users.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.courses.models import CourseManagement, CourseDocument
+from apps.courses.models import CourseManagement
 from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
-from apps.courses.services import CourseManagementService, LessonManagementService
+from apps.courses.services.services import CourseManagementService, UserDataManagementService
 from apps.courses.enums import BOUGHT
 
 
@@ -13,10 +15,8 @@ class MostDownloadedCourseView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
 
     def get_queryset(self):
-        course_mngt_service = CourseManagementService(self.request.user)
-        course_mngt_service.init_courses_management()
-        LessonManagementService(self.request.user).init_lessons_management()
-        return course_mngt_service.get_course_mngt_queryset_by_selling.order_by('-course__sold')
+        UserDataManagementService(self.request.user).init_user_data()
+        return CourseManagementService(self.request.user).get_course_mngt_queryset_by_selling.order_by('-course__sold')
 
 
 class CourseListView(generics.ListAPIView):
@@ -24,10 +24,8 @@ class CourseListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        course_mngt_service = CourseManagementService(self.request.user)
-        course_mngt_service.init_courses_management()
-        LessonManagementService(self.request.user).init_lessons_management()
-        return course_mngt_service.get_course_mngt_queryset_by_selling.order_by('course__name')
+        UserDataManagementService(self.request.user).init_user_data()
+        return CourseManagementService(self.request.user).get_course_mngt_queryset_by_selling.order_by('course__name')
 
 
 class UserCoursesListView(generics.ListAPIView):
@@ -60,7 +58,11 @@ class CourseRetrieveView(generics.RetrieveAPIView):
 
 class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
-        CourseManagementService(request.user).update_lesson_progress(lessons=self.request.data)
+        data = self.request.data
+        CourseManagementService(request.user).update_lesson_progress(
+            course_id=data.get('course_id'),
+            lessons=data.get('lessons'),
+        )
         return Response(status=status.HTTP_200_OK)
 
 

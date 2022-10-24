@@ -22,17 +22,17 @@ def calculate_lesson_progress(lesson_mngt):
     lesson_mngt.save(update_fields=['progress'])
 
 
-@receiver(m2m_changed, sender=LessonManagement.docs_completed.through)
-def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
-    if action == "post_add" or action == "post_remove":
-        calculate_lesson_progress(instance)
-        course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
-        calculate_course_progress(course_mngt)
-
-
-@receiver(m2m_changed, sender=LessonManagement.videos_completed.through)
-def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
-    if action == "post_add" or action == "post_remove":
-        calculate_lesson_progress(instance)
-        course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
-        calculate_course_progress(course_mngt)
+# @receiver(m2m_changed, sender=LessonManagement.docs_completed.through)
+# def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
+#     if action == "post_add" or action == "post_remove":
+#         calculate_lesson_progress(instance)
+#         course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
+#         calculate_course_progress(course_mngt)
+#
+#
+# @receiver(m2m_changed, sender=LessonManagement.videos_completed.through)
+# def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
+#     if action == "post_add" or action == "post_remove":
+#         calculate_lesson_progress(instance)
+#         course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
+#         calculate_course_progress(course_mngt)

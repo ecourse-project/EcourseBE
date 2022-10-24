@@ -35,8 +35,8 @@ class QuizResultView(APIView):
             user_answers_list.append(Answer(choice=answer.get('answer_choice'), user=user, quiz=quiz))
             answers[count]['correct_answer'] = quiz.correct_answer.choice
 
-        mark = round(10 * correct_answers / len(answers), 1)
         Answer.objects.bulk_create(user_answers_list)
+        mark = round(10 * correct_answers / len(answers), 1)
         # CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
 
         return Response(

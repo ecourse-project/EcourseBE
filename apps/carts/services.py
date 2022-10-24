@@ -13,11 +13,11 @@ from apps.carts.exceptions import (
 
 from apps.carts.models import Cart
 from apps.documents.api.serializers import DocumentManagementSerializer
-from apps.documents.services import DocumentManagementService
+from apps.documents.services.services import DocumentManagementService
 from apps.documents.models import DocumentManagement
 from apps.documents import enums as doc_enums
 from apps.courses.api.serializers import CourseManagementSerializer
-from apps.courses.services import CourseManagementService
+from apps.courses.services.services import CourseManagementService
 from apps.courses.models import CourseManagement
 from apps.courses import enums as course_enums
 

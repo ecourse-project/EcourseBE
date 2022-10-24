@@ -21,7 +21,7 @@ class User(AbstractUser):
     phone = models.CharField(default="", blank=True, max_length=30)
 
     def __str__(self):
-        return self.full_name
+        return self.email
 
     def get_avatar(self):
         if self.avatar:

@@ -2,7 +2,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 
 from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-from apps.documents.services import DocumentManagementService
+from apps.documents.services.services import DocumentManagementService
 from apps.documents.enums import BOUGHT
 from apps.documents.models import DocumentManagement
 from apps.upload.services.upload import upload_files, upload_images

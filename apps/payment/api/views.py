@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from apps.payment.services import OrderService, generate_code, calculate_price
+from apps.payment.services.services import OrderService, generate_code, calculate_price
 from apps.payment.models import Order
 from apps.payment.api.serializers import OrderSerializer
 from apps.payment.exceptions import NoItemsException

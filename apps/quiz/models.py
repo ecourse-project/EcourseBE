@@ -40,3 +40,9 @@ class Answer(TimeStampedModel):
         return self.choice
 
 
+# class UserQuizManagement(TimeStampedModel):
+#     user = models.ForeignKey(User, related_name="my_quiz", on_delete=models.CASCADE, null=True, blank=True)
+#     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True)
+#     mark = models.
+
+
