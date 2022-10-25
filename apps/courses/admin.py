@@ -6,23 +6,14 @@ from apps.courses.models import (
     Topic,
     CourseDocument,
     LessonManagement,
-    CourseDocumentManagement,
-    VideoManagement,
 )
-from apps.courses.enums import BOUGHT
 from apps.courses.services.admin import (
     init_course_mngt,
-    update_course_doc_mngt,
-    update_video_mngt,
-    get_users_by_course_sale_status,
-    add_docs_to_lesson,
-    add_videos_to_lesson,
+    insert_remove_docs_videos,
 )
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 from apps.users.services import get_active_users
-from apps.users.models import User
-from apps.courses.services.services import CourseManagementService
 from apps.rating.models import CourseRating
 
 
@@ -68,23 +59,13 @@ class LessonAdmin(admin.ModelAdmin):
         after_documents = set(instance.documents.all())
         after_videos = set(instance.videos.all())
 
-        courses_include_lesson = (
-            LessonManagement.objects.filter(lesson=instance, is_available=True)
-            .distinct("course_id")
-            .values_list("course_id", flat=True)
-        )
-
-        update_course_doc_mngt(
+        insert_remove_docs_videos(
+            course_id=None,
+            lesson_id=instance.id,
             docs_remove=before_documents.difference(after_documents),
-            docs_add=after_documents.difference(before_documents),
-            lesson=instance,
-            courses_include_lesson=courses_include_lesson,
-        )
-        update_video_mngt(
             videos_remove=before_videos.difference(after_videos),
+            docs_add=after_documents.difference(before_documents),
             videos_add=after_videos.difference(before_videos),
-            lesson=instance,
-            courses_include_lesson=courses_include_lesson,
         )
 
     # Query objects for many to many
@@ -138,28 +119,18 @@ class CourseAdmin(admin.ModelAdmin):
         super().save_related(request, form, formsets, change)
         after_lessons = set(instance.lessons.all())
 
-        users_id = get_users_by_course_sale_status(course_id=instance.id, sale_status=BOUGHT)
-        if users_id and (before_lessons or after_lessons):
-            lessons_remove = before_lessons.difference(after_lessons)
-            lessons_add = after_lessons.difference(before_lessons)
+        lessons_remove = before_lessons.difference(after_lessons)
+        lessons_add = after_lessons.difference(before_lessons)
 
-            if lessons_remove:
-                LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
-                CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
-                VideoManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
-                for user_id in users_id:
-                    CourseManagementService(User.objects.get(id=user_id)).calculate_course_progress(course_id=instance.id)
+        if lessons_remove:
+            LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
+            for lesson in lessons_remove:
+                insert_remove_docs_videos(instance.id, lesson.id, lesson.documents.all(), lesson.videos.all(), None, None)
+        if lessons_add:
+            lesson_mngt_list = []
+            for lesson in lessons_add:
+                lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
+                insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
+            LessonManagement.objects.bulk_create(lesson_mngt_list)
 
-            if lessons_add:
-                list_lesson_objs = []
-                for user_id in users_id:
-                    for lesson in lessons_add:
-                        lesson_obj, _ = LessonManagement.objects.get_or_create(course=instance, lesson=lesson, user_id=user_id)
-                        if lesson_obj:
-                            lesson_obj.is_available = True
-                            list_lesson_objs.append(lesson_obj)
-                LessonManagement.objects.bulk_update(list_lesson_objs, ["is_available"])
 
-                for lesson in lessons_add:
-                    add_docs_to_lesson(lesson.documents.all(), lesson, [instance.id])
-                    add_videos_to_lesson(lesson.videos.all(), lesson, [instance.id])

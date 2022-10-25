@@ -11,8 +11,6 @@ from apps.courses.models import (
     VideoManagement,
 )
 from apps.courses.enums import BOUGHT, PENDING
-from apps.courses.exceptions import CheckElementExistException, NoItemException
-from apps.upload.models import UploadFile
 from apps.rating.api.serializers import RatingSerializer
 from apps.rating.models import CourseRating
 from apps.quiz.models import Answer
@@ -105,9 +103,7 @@ class CourseManagementService:
         quiz_detail = {}
         quiz_answers = []
         correct_answers = 0
-
         total_answers = Answer.objects.filter(quiz__course_id=data['id'])
-
         for answer in total_answers:
             quiz_answers.append({
                 "quiz_id": answer.quiz_id,
@@ -120,9 +116,7 @@ class CourseManagementService:
         quiz_detail['correct_answers'] = correct_answers
         quiz_detail['total_quiz'] = len(total_answers)
         quiz_detail['quiz_answers'] = quiz_answers
-        # print(quiz_detail)
         data['quiz_detail'] = quiz_detail
-        print(data)
 
         return data
 

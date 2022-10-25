@@ -12,12 +12,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-# from ecourse import env
-from urllib.parse import urlparse
+from ecourse import env
 import os
-import io
-import environ
-# from google.cloud import secretmanager
 from django.core.management.commands.runserver import Command as runserver
 
 runserver.default_port = "4000"
@@ -35,48 +31,6 @@ SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-env = environ.Env(DEBUG=(bool, False))
-env_file = os.path.join(BASE_DIR, ".env")
-
-if os.path.isfile(env_file):
-    # Use a local secret file, if provided
-
-    env.read_env(env_file)
-# ...
-# elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
-#     # Pull secrets from Secret Manager
-#     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-#
-#     client = secretmanager.SecretManagerServiceClient()
-#     settings_name = os.environ.get("SETTINGS_NAME", "ecourse_settings")
-#     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-#     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-#
-#     env.read_env(io.StringIO(payload))
-# else:
-#     raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
-
-
-APPENGINE_URL = env("APPENGINE_URL", default=None)
-if APPENGINE_URL:
-    # Ensure a scheme is present in the URL before it's processed.
-    if not urlparse(APPENGINE_URL).scheme:
-        APPENGINE_URL = f"https://{APPENGINE_URL}"
-
-    ALLOWED_HOSTS = [urlparse(APPENGINE_URL).netloc]
-    CSRF_TRUSTED_ORIGINS = [APPENGINE_URL]
-    SECURE_SSL_REDIRECT = True
-else:
-    ALLOWED_HOSTS = ["*"]
-
-# Use django-environ to parse the connection string
-DATABASES = {"default": env.db()}
-
-# If the flag as been set, configure to use proxy
-if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
-    DATABASES["default"]["HOST"] = "127.0.0.1"
-    DATABASES["default"]["PORT"] = 5432
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -172,35 +126,6 @@ DATABASES = {
         }
     }
 
-# DATABASES = {"default": env.db()}
-#
-# if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
-#     print(1111111111111111111111111)
-#     DATABASES["default"]["HOST"] = "127.0.0.1"
-#     DATABASES["default"]["PORT"] = 5432
-
-# if os.getenv('GAE_APPLICATION', None):
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': 'ecourse-test',
-#             'USER': 'diephaibinh',
-#             'PASSWORD': 'DIEPhaibinh@1999',
-#             'HOST': '/cloudsql/ecourse-365516:asia-east1:ecourse',
-#             'PORT': '3306',
-#         }
-#     }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': 'ecourses',
-#             'USER': 'postgres',
-#             'PASSWORD': 'haibinh232',
-#             'HOST': '127.0.0.1',
-#             'PORT': '5432',
-#         }
-#     }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -300,8 +225,8 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# EMAIL_USE_TLS = env.EMAIL_USE_TLS
-# EMAIL_HOST = env.EMAIL_HOST
-# EMAIL_HOST_USER = env.EMAIL_HOST_USER
-# EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
-# EMAIL_PORT = env.EMAIL_PORT
+EMAIL_USE_TLS = env.EMAIL_USE_TLS
+EMAIL_HOST = env.EMAIL_HOST
+EMAIL_HOST_USER = env.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
+EMAIL_PORT = env.EMAIL_PORT
