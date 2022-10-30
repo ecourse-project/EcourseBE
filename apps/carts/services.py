@@ -50,6 +50,7 @@ class CartService:
             docs_price = 0
         if not courses_price:
             courses_price = 0
+
         self.cart.total_price = docs_price + courses_price
         self.cart.save(update_fields=['total_price'])
 
@@ -206,10 +207,3 @@ class MoveItems:
         course_mngt.last_update = localtime()
         course_mngt.save(update_fields=['sale_status', 'is_favorite', 'last_update'])
         return course_mngt
-
-
-
-
-
-
-

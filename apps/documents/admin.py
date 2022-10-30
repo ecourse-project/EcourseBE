@@ -1,9 +1,13 @@
 from django.contrib import admin
+from django.db.models import Q
+
 from apps.documents.models import Document, DocumentManagement
 from apps.documents.enums import AVAILABLE, IN_CART
 from apps.documents.services.admin import init_doc_mngt
 from apps.rating.models import DocumentRating
 from apps.users.services import get_active_users
+from apps.upload.enums import video_ext_list
+from apps.upload.models import UploadFile
 
 
 @admin.register(Document)
@@ -39,6 +43,14 @@ class DocumentAdmin(admin.ModelAdmin):
     def delete_model(self, request, obj):
         DocumentManagement.objects.filter(document=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
         obj.delete()
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(DocumentAdmin, self).get_form(request, obj, **kwargs)
+        q_list = Q()
+        for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
+            q_list |= q
+        form.base_fields['file'].queryset = UploadFile.objects.filter(~q_list)
+        return form
 
 
 

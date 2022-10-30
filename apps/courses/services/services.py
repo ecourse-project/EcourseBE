@@ -71,7 +71,7 @@ class CourseManagementService:
     def custom_course_detail_data(self, data):
         """ Docs & videos completed """
         for count, lesson in enumerate(data['lessons'], start=0):
-            lesson_mngt = LessonManagement.objects.filter(user=self.user, lesson_id=lesson['id']).first()
+            lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
                 lesson_obj = lesson_mngt.lesson
                 data['lessons'][count]['docs_completed'] = \
@@ -124,8 +124,8 @@ class CourseManagementService:
         documents_id = []
         videos_id = []
         for lesson in lessons:
-            documents_id.extend(lesson["documents"])
-            videos_id.extend(lesson['videos'])
+            documents_id.extend(lesson["completed_docs"])
+            videos_id.extend(lesson["completed_videos"])
 
         # set False only this course, set True for all course
         CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id).update(is_completed=False)

@@ -6,11 +6,13 @@ from apps.courses.models import (
     Topic,
     CourseDocument,
     LessonManagement,
+    CourseManagement,
 )
 from apps.courses.services.admin import (
     init_course_mngt,
     insert_remove_docs_videos,
 )
+from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 from apps.users.services import get_active_users
@@ -23,6 +25,14 @@ class CourseDocumentAdmin(admin.ModelAdmin):
         "name",
         "title",
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CourseDocumentAdmin, self).get_form(request, obj, **kwargs)
+        q_list = Q()
+        for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
+            q_list |= q
+        form.base_fields['file'].queryset = UploadFile.objects.filter(~q_list)
+        return form
 
 
 @admin.register(Topic)
@@ -132,5 +142,9 @@ class CourseAdmin(admin.ModelAdmin):
                 lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
                 insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
             LessonManagement.objects.bulk_create(lesson_mngt_list)
+
+    def delete_model(self, request, obj):
+        CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
+        obj.delete()
 
 
