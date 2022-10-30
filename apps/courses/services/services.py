@@ -98,6 +98,11 @@ class CourseManagementService:
         my_rating = course_rating.ratings.filter(user=self.user).first()
         data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
         data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
+        # Rating stats
+        response = {}
+        for score in range(1, 6):
+            response["score_" + str(score)] = all_ratings.filter(rating=score).count()
+        data['rating_stats'] = response
 
         """ Quiz detail """
         quiz_detail = {}
@@ -128,10 +133,10 @@ class CourseManagementService:
             videos_id.extend(lesson["completed_videos"])
 
         # set False only this course, set True for all course
-        CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id).update(is_completed=False)
-        CourseDocumentManagement.objects.filter(user=self.user, document_id__in=documents_id).update(is_completed=True)
-        VideoManagement.objects.filter(user=self.user, course_id=course_id).update(is_completed=False)
-        VideoManagement.objects.filter(user=self.user, video_id__in=videos_id).update(is_completed=True)
+        CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True).update(is_completed=False)
+        CourseDocumentManagement.objects.filter(user=self.user, document_id__in=documents_id, is_available=True).update(is_completed=True)
+        VideoManagement.objects.filter(user=self.user, course_id=course_id, is_available=True).update(is_completed=False)
+        VideoManagement.objects.filter(user=self.user, video_id__in=videos_id, is_available=True).update(is_completed=True)
 
         self.calculate_course_progress(course_id)
 

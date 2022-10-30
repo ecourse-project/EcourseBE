@@ -237,6 +237,7 @@ export interface Course {
     rating_detail?: Rating[],
     my_rating?: Rating,
     quiz_detail: QuizResult,
+    rating_stats: RatingStats,
 }
 
 

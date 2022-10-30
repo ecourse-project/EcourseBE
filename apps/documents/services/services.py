@@ -56,4 +56,8 @@ class DocumentManagementService:
         my_rating = document_rating.ratings.filter(user=self.user).first()
         data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
         data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
+        response = {}
+        for score in range(1, 6):
+            response["score_" + str(score)] = all_ratings.filter(rating=score).count()
+        data['rating_stats'] = response
         return data
