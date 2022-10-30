@@ -94,8 +94,8 @@ class CourseManagementService:
 
         """ Rating """
         course_rating = CourseRating.objects.filter(course_id=data['id']).first()
-        all_ratings = course_rating.rating.all()
-        my_rating = course_rating.rating.filter(user=self.user).first()
+        all_ratings = course_rating.ratings.all()
+        my_rating = course_rating.ratings.filter(user=self.user).first()
         data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
         data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
 

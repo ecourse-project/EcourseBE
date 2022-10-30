@@ -19,7 +19,7 @@ class DocumentRatingAdmin(admin.ModelAdmin):
         "id",
         "document",
     )
-    readonly_fields = ('rating',)
+    readonly_fields = ('ratings',)
 
 
 @admin.register(CourseRating)
@@ -28,4 +28,4 @@ class CourseRatingAdmin(admin.ModelAdmin):
         "id",
         "course",
     )
-    readonly_fields = ('rating',)
+    readonly_fields = ('ratings',)

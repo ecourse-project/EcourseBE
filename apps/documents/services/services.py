@@ -52,8 +52,8 @@ class DocumentManagementService:
 
     def custom_doc_detail_data(self, data):
         document_rating = DocumentRating.objects.filter(document_id=data['id']).first()
-        all_ratings = document_rating.rating.all()
-        my_rating = document_rating.rating.filter(user=self.user).first()
+        all_ratings = document_rating.ratings.all()
+        my_rating = document_rating.ratings.filter(user=self.user).first()
         data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
         data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
         return data

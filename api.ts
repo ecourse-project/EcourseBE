@@ -352,6 +352,14 @@ export interface Rating {
     comment: string;
 }
 
+export interface RatingStats {
+    score_1: number;
+    score_2: number;
+    score_3: number;
+    score_4: number;
+    score_5: number;
+}
+
 // ===========================================Quiz===========================================
 export enum AnswerChoiceEnum {
 	A = 'A',
@@ -432,6 +440,10 @@ const apiURL = {
 
     rateDocument: () => `api/rating/document/rate/`,
     rateCourse: () => `api/rating/course/rate/`,
+    documentRatingStats: (document_id) => `document/rating/stats/?document_id=${document_id}`,
+    courseRatingStats: (course_id) => `course/rating/stats/?course_id=${course_id}`,
+    documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
+    courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
     listQuiz: (id) => `api/quiz/?course_id=${id}`,
     getQuizResult: () => `api/quiz/result/`,
@@ -557,6 +569,22 @@ class CourseService {
 
     static rateCourse(params: RateCourseArgs): Promise<Rating> {
         return apiClient.post(apiURL.rateCourse(), params);
+    }
+
+    static documentRatingStats(document_id: string): Promise<RatingStats> {
+        return apiClient.get(apiURL.documentRatingStats(document_id))
+    }
+
+    static courseRatingStats(course_id: string): Promise<RatingStats> {
+        return apiClient.get(apiURL.courseRatingStats(course_id))
+    }
+
+    static documentRatingFilter(document_id: string, score: RatingEnum): Promise<Rating> {
+        return apiClient.get(apiURL.documentRatingFilter(document_id, score))
+    }
+
+    static courseRatingFilter(course_id: string, score: RatingEnum): Promise<Rating> {
+        return apiClient.get(apiURL.courseRatingFilter(course_id, score))
     }
 
     static listQuiz(id: string): Promise<Quiz[]> {

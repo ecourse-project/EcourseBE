@@ -17,7 +17,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     list_display = (
         "name",
-        "description",
+        # "description",
         "title",
         "thumbnail",
         "file",

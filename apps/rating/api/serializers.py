@@ -35,24 +35,24 @@ class RatingSerializer(serializers.ModelSerializer):
 
 
 class DocumentRatingSerializer(serializers.ModelSerializer):
-    rating = RatingSerializer(many=True)
+    ratings = RatingSerializer(many=True)
 
     class Meta:
         model = DocumentRating
         fields = (
             "id",
             "document",
-            "rating",
+            "ratings",
         )
 
 
 class CourseRatingSerializer(serializers.ModelSerializer):
-    rating = RatingSerializer(many=True)
+    ratings = RatingSerializer(many=True)
 
     class Meta:
         model = CourseRating
         fields = (
             "id",
             "course",
-            "rating",
+            "ratings",
         )
