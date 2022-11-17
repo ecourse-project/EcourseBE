@@ -181,7 +181,8 @@ class MoveItems:
         favorite_list = self.user.favorite_list
         course_mngt = CourseManagement.objects.get(user=self.user, course=course)
         if course_mngt.sale_status == course_enums.PENDING or course_mngt.sale_status == course_enums.BOUGHT:
-            raise CheckSaleStatusException("Course has been checkout or bought.")
+            if start.lower() != 'favorite' and end.lower() != 'favorite':
+                raise CheckSaleStatusException("Course has been checkout or bought.")
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_course(cart=cart, favorite_list=favorite_list, course=course)
