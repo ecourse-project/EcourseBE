@@ -118,7 +118,7 @@ AUTH_USER_MODEL = "users.User"
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ecourses',
+            'NAME': 'ecourse-release',
             'USER': 'postgres',
             'PASSWORD': 'haibinh232',
             'HOST': '127.0.0.1',

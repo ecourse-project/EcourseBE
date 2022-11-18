@@ -21,13 +21,14 @@ class DocumentAdmin(admin.ModelAdmin):
         "title",
         "thumbnail",
         "file",
+        "price",
         "is_selling",
         "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views")
+    readonly_fields = ("sold", "views", "rating", "num_of_rates")
 
     def save_model(self, request, obj, form, change):
         """ Init document data """

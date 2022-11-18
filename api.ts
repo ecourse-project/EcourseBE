@@ -469,7 +469,7 @@ class CourseService {
 	}
 
     static changePwd(old_password: string, password1: string, password2: string) : Promise<OPasswordChange> {
-		return apiClient.post(apiURL.changePwd(), {old_password: old_password, password1: password1, password2: password2});
+		return apiClient.patch(apiURL.changePwd(), {old_password: old_password, password1: password1, password2: password2});
 	}
 
     static verifyToken(token: string): Promise<OVerifyToken> {

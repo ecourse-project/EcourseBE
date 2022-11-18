@@ -30,9 +30,8 @@ class CourseAdminService:
                     for video in lesson.videos.all()
                 ])
             """ Initial lessons """
-            LessonManagement.objects.bulk_create([
-                LessonManagement(lesson=lesson, course=course) for lesson in all_lessons
-            ])
+            for lesson in all_lessons:
+                LessonManagement.objects.get_or_create(lesson=lesson, course=course)
 
     def disable_courses_data(self, courses):
         CourseDocumentManagement.objects.filter(user=self.user, course__in=courses).update(is_available=False)

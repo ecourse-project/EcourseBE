@@ -117,7 +117,8 @@ class MoveItems:
         favorite_list = self.user.favorite_list
         doc_mngt = DocumentManagement.objects.get(user=self.user, document=doc)
         if doc_mngt.sale_status == doc_enums.PENDING or doc_mngt.sale_status == doc_enums.BOUGHT:
-            raise CheckSaleStatusException
+            if start.lower() != 'favorite' and end.lower() != 'favorite':
+                raise CheckSaleStatusException
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_doc(cart=cart, favorite_list=favorite_list, document=doc)

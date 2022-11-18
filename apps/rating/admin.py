@@ -12,6 +12,12 @@ class RatingAdmin(admin.ModelAdmin):
         "created",
     )
 
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
 
 @admin.register(DocumentRating)
 class DocumentRatingAdmin(admin.ModelAdmin):
@@ -21,6 +27,12 @@ class DocumentRatingAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('ratings',)
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(CourseRating)
 class CourseRatingAdmin(admin.ModelAdmin):
@@ -29,3 +41,9 @@ class CourseRatingAdmin(admin.ModelAdmin):
         "course",
     )
     readonly_fields = ('ratings',)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

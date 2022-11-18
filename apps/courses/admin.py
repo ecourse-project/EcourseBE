@@ -103,6 +103,7 @@ class CourseAdmin(admin.ModelAdmin):
         "name",
         "topic",
         "total_lessons",
+        "price",
         "is_selling",
         "rating",
     )

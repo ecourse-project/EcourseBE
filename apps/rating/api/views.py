@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 from apps.rating.models import Rating, DocumentRating, CourseRating
 from apps.rating.api.serializers import RatingSerializer, DocumentRatingSerializer, CourseRatingSerializer
-from apps.rating.exceptions import UserHasBeenRateException
+from apps.rating.exceptions import UserHasBeenRateException, EmptyFeedbackException
 from apps.documents.models import Document
 from apps.courses.models import Course
 from apps.courses.exceptions import NoItemException
@@ -16,6 +16,9 @@ class DocumentRateAPIView(APIView):
         document_rating, _ = DocumentRating.objects.get_or_create(document_id=data.get("document_id"))
         if document_rating.ratings.filter(user=request.user).first():
             raise UserHasBeenRateException
+        if data.get('comment').strip() == "":
+            raise EmptyFeedbackException
+
         rating = Rating.objects.create(user=request.user, rating=data.get('rating'), comment=data.get('comment'))
         document_rating.ratings.add(rating)
         return Response(RatingSerializer(rating).data, status=status.HTTP_201_CREATED)
@@ -26,7 +29,10 @@ class CourseRateAPIView(APIView):
         data = self.request.data
         course_rating, _ = CourseRating.objects.get_or_create(course_id=data.get("course_id"))
         if course_rating.ratings.filter(user=request.user).first():
-            raise UserHasBeenRateException("User has been rate this course")
+            raise UserHasBeenRateException("User has rated this course")
+        if data.get('comment').strip() == "":
+            raise EmptyFeedbackException
+
         rating = Rating.objects.create(user=request.user, rating=data.get('rating'), comment=data.get('comment'))
         course_rating.ratings.add(rating)
         return Response(RatingSerializer(rating).data, status=status.HTTP_201_CREATED)
