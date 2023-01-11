@@ -8,11 +8,19 @@ from apps.users.models import User
 from apps.documents.enums import STATUSES, AVAILABLE
 
 
+class DocumentTitle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Document(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    title = models.CharField(max_length=50, null=True, blank=True)
+    title = models.ForeignKey(DocumentTitle, null=True, blank=True, related_name="docs", on_delete=models.CASCADE)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
     thumbnail = models.ForeignKey(

@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
@@ -21,10 +22,14 @@ class MostDownloadedDocumentView(generics.ListAPIView):
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentManagementSerializer
     pagination_class = StandardResultsSetPagination
+    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
         service.init_documents_management()
+        title = self.request.query_params.get("title")
+        if title:
+            return service.get_doc_mngt_queryset_by_selling.filter(document__title__name__icontains=title)
         return service.get_doc_mngt_queryset_by_selling
 
 
@@ -69,6 +74,8 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
     #     instance.thumbnail.delete()
     #     instance.file.delete()
     #     instance.delete()
+
+
 
 # Not used
 class DocumentCreateView(generics.CreateAPIView):

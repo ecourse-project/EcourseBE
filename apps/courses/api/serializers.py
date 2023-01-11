@@ -65,6 +65,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
+            "title",
         )
 
 
@@ -120,6 +121,7 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 class ListCourseSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     topic = TopicSerializer()
+    title = serializers.CharField(max_length=50, trim_whitespace=True)
 
     class Meta:
         model = Course
@@ -135,6 +137,7 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
+            "title",
         )
 
 

@@ -4,6 +4,7 @@ from apps.courses.models import (
     Course,
     Lesson,
     Topic,
+    CourseTitle,
     CourseDocument,
     LessonManagement,
     CourseManagement,
@@ -17,6 +18,13 @@ from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 from apps.users.services import get_active_users
 from apps.rating.models import CourseRating
+
+
+@admin.register(CourseTitle)
+class CourseDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+    )
 
 
 @admin.register(CourseDocument)

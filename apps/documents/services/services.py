@@ -33,7 +33,7 @@ class DocumentManagementService:
     def get_doc_management_queryset(self):
         return DocumentManagement.objects.prefetch_related(
             Prefetch('document', queryset=Document.objects.select_related(
-                'thumbnail', 'file'))
+                'thumbnail', 'file', 'title'))
         ).filter(user=self.user)
 
     def init_documents_management(self):

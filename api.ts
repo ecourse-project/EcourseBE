@@ -117,6 +117,11 @@ export interface OImageUpload {
 
 
 // ===========================================Documents===========================================
+export interface DocumentTitle {
+    id: string;
+    name: string;
+}
+
 export interface Document {
     id: string;
     created: string;
@@ -238,6 +243,7 @@ export interface Course {
     my_rating?: Rating,
     quiz_detail: QuizResult,
     rating_stats: RatingStats,
+    title: string;
 }
 
 
@@ -414,7 +420,7 @@ const apiURL = {
 	changePwd: () => 'api/users/password-change/',
     verifyToken: () => `api/users-auth/token/verify/`,
 
-    getAllDocs: (limit, page) => `api/documents/?limit=${limit}&page=${page}`,
+    getAllDocs: (limit, page, title) => `api/documents/?limit=${limit}&page=${page}&title=${title}`,
     getMostDownloadDocs: () => `api/documents/most-download/`,
 	getUDocs: (limit, page) => `api/documents/my-documents/?limit=${limit}&page=${page}`,
 	getDocDetail: (id) => `api/documents/detail/?document_id=${id}`,
@@ -430,7 +436,7 @@ const apiURL = {
     cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
     calculatePrice: () => `api/payment/order/calculate/`,
 
-    getAllCourses: (limit, page) => `api/courses/?limit=${limit}&page=${page}`,
+    getAllCourses: (limit, page, title) => `api/courses/?limit=${limit}&page=${page}&title=${title}`,
     getMostDownloadCourses: () => `api/courses/most-download/`,
     getUCourses: (limit, page) => `api/courses/my-courses/?limit=${limit}&page=${page}`,
     getCourseDetail: (id) => `api/courses/detail/?course_id=${id}`,
@@ -476,8 +482,8 @@ class CourseService {
         return apiClient.post(apiURL.verifyToken(), {token: token})
     }
 
-	static getAllDocs(params: PaginationParams): Promise<Pagination<Document>> {
-		return apiClient.get(apiURL.getAllDocs(params.limit, params.page));
+	static getAllDocs(params: PaginationParams, title?: string): Promise<Pagination<Document>> {
+		return apiClient.get(apiURL.getAllDocs(params.limit, params.page, title));
 	}
 
     static getMostDownloadDocs(): Promise<Document[]> {
@@ -536,8 +542,8 @@ class CourseService {
         return apiClient.post(apiURL.calculatePrice(), params);
     }
 
-    static getAllCourses(params: PaginationParams): Promise<Pagination<Course>> {
-		return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
+    static getAllCourses(params: PaginationParams, title?: string): Promise<Pagination<Course>> {
+		return apiClient.get(apiURL.getAllCourses(params.limit, params.page, title));
 	}
 
     static getMostDownloadCourses(): Promise<Course[]> {

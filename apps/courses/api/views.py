@@ -22,10 +22,15 @@ class MostDownloadedCourseView(generics.ListAPIView):
 class CourseListView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
+    permission_classes = (AllowAny,)
 
     def get_queryset(self):
+        service = CourseManagementService(self.request.user)
         UserDataManagementService(self.request.user).init_user_data()
-        return CourseManagementService(self.request.user).get_course_mngt_queryset_by_selling.order_by('course__name')
+        title = self.request.query_params.get("title")
+        if title:
+            return service.get_course_mngt_queryset_by_selling.filter(course__title__name__icontains=title).order_by('course__name')
+        return service.get_course_mngt_queryset_by_selling.order_by('course__name')
 
 
 class UserCoursesListView(generics.ListAPIView):

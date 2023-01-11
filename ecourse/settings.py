@@ -12,16 +12,20 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from ecourse import env
 import os
+import environ
 from django.core.management.commands.runserver import Command as runserver
 
-runserver.default_port = "4000"
+
+env = environ.Env()
+env.read_env()
+
+runserver.default_port = env("PORT", default="4000")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = "http://localhost"
+BASE_URL = env("BASE_URL", default="http://localhost")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -30,7 +34,7 @@ BASE_URL = "http://localhost"
 SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG", default=True)
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -49,6 +53,7 @@ LOCAL_APPS = [
     'apps.comments.apps.CommentsConfig',
     'apps.quiz.apps.QuizConfig',
     'apps.rating.apps.RatingConfig',
+    'apps.settings.apps.SettingsConfig',
 ]
 
 DJANGO_APPS = [
@@ -116,15 +121,8 @@ AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'ecourse-release',
-            'USER': 'postgres',
-            'PASSWORD': 'haibinh232',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
-        }
-    }
+    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourse"),
+}
 
 
 # Password validation
@@ -213,11 +211,11 @@ CORS_ALLOW_HEADERS = (
     "app-version",
 )
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOSTS", default="*")]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env("ACCESS_TOKEN_LIFETIME_MINUTES", default=60)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env("REFRESH_TOKEN_LIFETIME_MINUTES", default=60)),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -243,8 +241,8 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-EMAIL_USE_TLS = env.EMAIL_USE_TLS
-EMAIL_HOST = env.EMAIL_HOST
-EMAIL_HOST_USER = env.EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
-EMAIL_PORT = env.EMAIL_PORT
+EMAIL_USE_TLS = env("EMAIL_USE_TLS", default="EMAIL_USE_TLS")
+EMAIL_HOST = env("EMAIL_HOST", default="EMAIL_HOST")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env("EMAIL_PORT", default="EMAIL_PORT")

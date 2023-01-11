@@ -33,6 +33,14 @@ class Topic(TimeStampedModel):
         return self.name
 
 
+class CourseTitle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True)
@@ -58,6 +66,7 @@ class Course(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(Topic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.ForeignKey(CourseTitle, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
