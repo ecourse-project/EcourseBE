@@ -3,8 +3,9 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-from apps.documents.models import DocumentTitle
-from apps.courses.models import CourseTitle
+from apps.documents.models import DocumentTitle, Document
+from apps.courses.models import CourseTitle, Course
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 
 class Header(models.Model):
@@ -22,3 +23,11 @@ class HeaderDetail(models.Model):
     document_title = models.ForeignKey(DocumentTitle, null=True, blank=True, on_delete=models.CASCADE)
     course_title = models.ForeignKey(CourseTitle, null=True, blank=True, on_delete=models.CASCADE)
     header = models.ForeignKey(Header, null=True, blank=True, related_name="header_detail", on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=1)
+
+
+class HomePageDetail(models.Model):
+    display_name = models.CharField(max_length=100, null=True, blank=True)
+    documents = ArrayField(models.UUIDField(), null=True, blank=True)
+    courses = ArrayField(models.UUIDField(), null=True, blank=True)
+

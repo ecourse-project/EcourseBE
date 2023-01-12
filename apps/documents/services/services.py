@@ -8,13 +8,10 @@ from apps.rating.api.serializers import RatingSerializer
 from apps.rating.models import DocumentRating
 
 
-class DocumentService:
-    def __init__(self, user):
-        self.user = user
-
+class DocumentService(object):
     @property
     def get_all_documents_queryset(self):
-        return Document.objects.select_related('thumbnail', 'file')
+        return Document.objects.select_related('thumbnail', 'file', 'title').all().order_by('name')
 
     # Not used
     def get_documents_sale_status(self, documents) -> list:
@@ -61,3 +58,6 @@ class DocumentManagementService:
             response["score_" + str(score)] = all_ratings.filter(rating=score).count()
         data['rating_stats'] = response
         return data
+
+
+

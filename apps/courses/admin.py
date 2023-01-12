@@ -105,9 +105,11 @@ class LessonAdmin(admin.ModelAdmin):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     search_fields = (
+        "id",
         "name",
     )
     list_display = (
+        "id",
         "name",
         "topic",
         "total_lessons",
@@ -120,16 +122,8 @@ class CourseAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("sold", "views", "rating", "num_of_rates", "total_lessons")
 
-    def save_model(self, request, obj, form, change):
-        if not Course.objects.filter(id=obj.id).first():
-            """ Init course data """
-            users = get_active_users()
-            if users.count() > 0:
-                init_course_mngt(obj, users)
-        obj.save()
-
-        """ Init course rating """
-        rating, _ = CourseRating.objects.get_or_create(course=obj)
+    # def save_model(self, request, obj, form, change):
+    #     obj.save()
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance

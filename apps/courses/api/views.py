@@ -6,8 +6,8 @@ from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
 from apps.courses.models import CourseManagement
-from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer
-from apps.courses.services.services import CourseManagementService, UserDataManagementService
+from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer, ListCourseSerializer
+from apps.courses.services.services import CourseManagementService, UserDataManagementService, CourseService
 from apps.courses.enums import BOUGHT
 
 
@@ -29,8 +29,23 @@ class CourseListView(generics.ListAPIView):
         UserDataManagementService(self.request.user).init_user_data()
         title = self.request.query_params.get("title")
         if title:
-            return service.get_course_mngt_queryset_by_selling.filter(course__title__name__icontains=title).order_by('course__name')
-        return service.get_course_mngt_queryset_by_selling.order_by('course__name')
+            return service.get_course_mngt_queryset_by_selling.filter(course__title__name__icontains=title)
+        return service.get_course_mngt_queryset_by_selling
+
+
+class HomepageCourseListAPIView(generics.ListAPIView):
+    serializer_class = ListCourseSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        title = self.request.query_params.get("title")
+        if title:
+            return CourseService().get_all_courses_queryset.filter(
+                title__name__icontains=title,
+                is_selling=True,
+            )
+        return CourseService().get_all_courses_queryset(is_selling=True)
 
 
 class UserCoursesListView(generics.ListAPIView):
@@ -69,5 +84,4 @@ class UpdateLessonProgress(APIView):
             lessons=data.get('lessons'),
         )
         return Response(status=status.HTTP_200_OK)
-
 

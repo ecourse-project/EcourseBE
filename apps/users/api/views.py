@@ -27,6 +27,7 @@ class UsersProfileView(generics.RetrieveUpdateAPIView):
 
 class UserExistView(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
         email = request.query_params.get("email")

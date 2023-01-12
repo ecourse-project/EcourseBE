@@ -17,9 +17,6 @@ from apps.quiz.models import Answer
 
 
 class CourseService:
-    def __init__(self, user):
-        self.user = user
-
     @property
     def get_all_courses_queryset(self):
         return Course.objects.prefetch_related(
@@ -27,7 +24,7 @@ class CourseService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
                      )
-        ).select_related('topic', 'thumbnail')
+        ).select_related('topic', 'thumbnail', 'title')
 
 
 class CourseManagementService:
@@ -47,7 +44,7 @@ class CourseManagementService:
     def get_course_mngt_queryset_by_selling(self):
         query = Q(course__is_selling=True)
         query |= Q(course__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
-        return self.get_course_management_queryset.filter(query)
+        return self.get_course_management_queryset.filter(query).order_by('course__name')
 
     def calculate_course_progress(self, course_id):
         all_docs = CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)

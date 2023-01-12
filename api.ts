@@ -133,12 +133,12 @@ export interface Document {
     sold: number;
     thumbnail: OImageUpload;
     file: OFileUpload;
-    sale_status: SaleStatusEnum;
+    sale_status?: SaleStatusEnum;
     is_selling: boolean;
     views: number;
     rating: number;
     num_of_rates: number;
-    is_favorite: boolean;
+    is_favorite?: boolean;
     rating_detail?: Rating[];
     my_rating?: Rating,
 }
@@ -230,19 +230,19 @@ export interface Course {
     sold: number;
     lessons?: Lesson[],
     progress?: number;
-    status: ProgressStatusEnum;
-    thumbnail: OImageUpload;
-    sale_status: SaleStatusEnum;
+    status?: ProgressStatusEnum;
+    thumbnail?: OImageUpload;
+    sale_status?: SaleStatusEnum;
     views: number;
     rating: number;
     num_of_rates: number;
-    mark: number;
+    mark?: number;
     is_done_quiz?: boolean;
-    is_favorite: boolean;
+    is_favorite?: boolean;
     rating_detail?: Rating[],
     my_rating?: Rating,
-    quiz_detail: QuizResult,
-    rating_stats: RatingStats,
+    quiz_detail?: QuizResult,
+    rating_stats?: RatingStats,
     title: string;
 }
 
@@ -420,6 +420,7 @@ const apiURL = {
 	changePwd: () => 'api/users/password-change/',
     verifyToken: () => `api/users-auth/token/verify/`,
 
+    getHomeDocs: (limit, page, title) => `api/documents/home/?limit=${limit}&page=${page}&title=${title}`,
     getAllDocs: (limit, page, title) => `api/documents/?limit=${limit}&page=${page}&title=${title}`,
     getMostDownloadDocs: () => `api/documents/most-download/`,
 	getUDocs: (limit, page) => `api/documents/my-documents/?limit=${limit}&page=${page}`,
@@ -436,6 +437,7 @@ const apiURL = {
     cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
     calculatePrice: () => `api/payment/order/calculate/`,
 
+    getHomeCourses: (limit, page, title) => `api/courses/home/?limit=${limit}&page=${page}&title=${title}`,
     getAllCourses: (limit, page, title) => `api/courses/?limit=${limit}&page=${page}&title=${title}`,
     getMostDownloadCourses: () => `api/courses/most-download/`,
     getUCourses: (limit, page) => `api/courses/my-courses/?limit=${limit}&page=${page}`,
@@ -484,6 +486,10 @@ class CourseService {
 
 	static getAllDocs(params: PaginationParams, title?: string): Promise<Pagination<Document>> {
 		return apiClient.get(apiURL.getAllDocs(params.limit, params.page, title));
+	}
+
+    static getHomeDocs(params: PaginationParams, title?: string): Promise<Pagination<Document>> {
+		return apiClient.get(apiURL.getHomeDocs(params.limit, params.page, title));
 	}
 
     static getMostDownloadDocs(): Promise<Document[]> {
@@ -544,6 +550,10 @@ class CourseService {
 
     static getAllCourses(params: PaginationParams, title?: string): Promise<Pagination<Course>> {
 		return apiClient.get(apiURL.getAllCourses(params.limit, params.page, title));
+	}
+
+    static getHomeCourses(params: PaginationParams, title?: string): Promise<Pagination<Course>> {
+		return apiClient.get(apiURL.getHomeCourses(params.limit, params.page, title));
 	}
 
     static getMostDownloadCourses(): Promise<Course[]> {

@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-from apps.documents.services.services import DocumentManagementService
+from apps.documents.services.services import DocumentManagementService, DocumentService
 from apps.documents.enums import BOUGHT
 from apps.documents.models import DocumentManagement
 from apps.upload.services.upload import upload_files, upload_images
@@ -22,7 +22,6 @@ class MostDownloadedDocumentView(generics.ListAPIView):
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentManagementSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
@@ -31,6 +30,21 @@ class DocumentListView(generics.ListAPIView):
         if title:
             return service.get_doc_mngt_queryset_by_selling.filter(document__title__name__icontains=title)
         return service.get_doc_mngt_queryset_by_selling
+
+
+class HomepageDocumentListAPIView(generics.ListAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        title = self.request.query_params.get("title")
+        if title:
+            return DocumentService().get_all_documents_queryset.filter(
+                title__name__icontains=title,
+                is_selling=True,
+            )
+        return DocumentService().get_all_documents_queryset.filter(is_selling=True)
 
 
 class UserDocumentsListView(generics.ListAPIView):
@@ -77,15 +91,17 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
 
 
 
-# Not used
-class DocumentCreateView(generics.CreateAPIView):
-    serializer_class = DocumentSerializer
 
-    def perform_create(self, serializer):
-        data = self.request.data
-        upload_thumbnail = upload_images(self.request, data.getlist('image'), data.get('folder_name'))
-        upload_file = upload_files(self.request, data.getlist('file'), data.get('folder_name'))
-        serializer.save(thumbnail=upload_thumbnail[0], file=upload_file[0])
+
+# Not used
+# class DocumentCreateView(generics.CreateAPIView):
+#     serializer_class = DocumentSerializer
+#
+#     def perform_create(self, serializer):
+#         data = self.request.data
+#         upload_thumbnail = upload_images(self.request, data.getlist('image'), data.get('folder_name'))
+#         upload_file = upload_files(self.request, data.getlist('file'), data.get('folder_name'))
+#         serializer.save(thumbnail=upload_thumbnail[0], file=upload_file[0])
 
 
 
