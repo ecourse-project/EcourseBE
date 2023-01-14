@@ -26,6 +26,19 @@ class CourseService:
                      )
         ).select_related('topic', 'thumbnail', 'title')
 
+    def get_courses_by_title(self, title: str):
+        if title:
+            return self.get_all_courses_queryset.filter(
+                title__name__icontains=title,
+                is_selling=True,
+            )
+        return Course.objects.none()
+
+    def get_courses_by_list_id(self, list_id: list):
+        if list_id:
+            return self.get_all_courses_queryset.filter(id__in=list_id, is_selling=True)
+        return Course.objects.none()
+
 
 class CourseManagementService:
     def __init__(self, user):

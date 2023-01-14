@@ -32,21 +32,6 @@ class DocumentListView(generics.ListAPIView):
         return service.get_doc_mngt_queryset_by_selling
 
 
-class HomepageDocumentListAPIView(generics.ListAPIView):
-    serializer_class = DocumentSerializer
-    permission_classes = (AllowAny,)
-    pagination_class = StandardResultsSetPagination
-
-    def get_queryset(self):
-        title = self.request.query_params.get("title")
-        if title:
-            return DocumentService().get_all_documents_queryset.filter(
-                title__name__icontains=title,
-                is_selling=True,
-            )
-        return DocumentService().get_all_documents_queryset.filter(is_selling=True)
-
-
 class UserDocumentsListView(generics.ListAPIView):
     serializer_class = DocumentManagementSerializer
     pagination_class = StandardResultsSetPagination
@@ -74,34 +59,26 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
             service.custom_doc_detail_data(self.get_serializer(instance).data)
         )
 
-    # Not used
-    # def perform_update(self, serializer):
-    #     instance = serializer.instance
-    #     instance.thumbnail.delete_image()
-    #     instance.file.delete_file()
-    #     data = self.request.data
-    #     image_update = update_image(instance.thumbnail.id, data.getlist('image')[0], data.get('folder_name'))
-    #     file_update = update_file(instance.file.id, data.getlist('file')[0], data.get('folder_name'))
-    #     serializer.save(thumbnail=image_update, file=file_update)
-    #
-    # def perform_destroy(self, instance):
-    #     instance.thumbnail.delete()
-    #     instance.file.delete()
-    #     instance.delete()
+
+# ==========================> NEW REQUIREMENTS
+
+class HomepageDocumentListAPIView(generics.ListAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        title = self.request.query_params.get("title")
+        list_id = self.request.query_params.getlist('document_id')
+        if title:
+            return DocumentService().get_documents_by_title(title)
+        elif list_id:
+            return DocumentService().get_documents_by_list_id(list_id)
+        else:
+            return DocumentService().get_all_documents_queryset
 
 
 
-
-
-# Not used
-# class DocumentCreateView(generics.CreateAPIView):
-#     serializer_class = DocumentSerializer
-#
-#     def perform_create(self, serializer):
-#         data = self.request.data
-#         upload_thumbnail = upload_images(self.request, data.getlist('image'), data.get('folder_name'))
-#         upload_file = upload_files(self.request, data.getlist('file'), data.get('folder_name'))
-#         serializer.save(thumbnail=upload_thumbnail[0], file=upload_file[0])
 
 
 

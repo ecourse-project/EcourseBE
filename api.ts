@@ -409,9 +409,54 @@ export interface QuizResult {
     quiz_answers: UserAnswersArgs[];
 }
 
+// ===========================================Setting===========================================
+interface NavDetail{
+  type: string;
+  title: string[];
+}
+
+interface nav{
+  header: string;
+  detail: NavDetail;
+}
+
+interface homepageDetail{
+  document_id: string[];
+  course_id: string[];
+}
+
+interface homepage{
+  title: string;
+  detail: homepageDetail;
+}
+
+const parseParamsToUrL = (
+	url: string,
+	params: string[],
+	paramsName: string
+) => {
+	let newURL = url
+	const newParams = [...params]
+	newURL += `/?${paramsName}=${newParams.shift()}`
+	for (const i of newParams) {
+		newURL += `&${paramsName}=${i}`
+	}
+	return newURL
+}
 
 
 const apiURL = {
+    const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
+	    let newURL = url
+	    const newParams = [...params]
+	    if (!newURL.includes("?"))
+            newURL += `/?${paramsName}=${newParams.shift()}`
+	    for (const i of newParams) {
+		    newURL += `&${paramsName}=${i}`
+	    }
+	    return newURL
+    },
+
 	login: () => 'api/users-auth/token/',
 	me: () => 'api/users/me/',
 	register: () => 'api/users-auth/registration/',
@@ -420,8 +465,14 @@ const apiURL = {
 	changePwd: () => 'api/users/password-change/',
     verifyToken: () => `api/users-auth/token/verify/`,
 
-    getHomeDocs: (limit, page, title) => `api/documents/home/?limit=${limit}&page=${page}&title=${title}`,
-    getAllDocs: (limit, page, title) => `api/documents/?limit=${limit}&page=${page}&title=${title}`,
+    getHomeDocs: (limit, page, title?, document_id?: string[]) => {
+        let url = `api/documents/home/?limit=${limit}&page=${page}&title=${title}`
+        if (document_id) {
+            url = parseParamsToUrL(url, document_id, `document_id`)
+        }
+        return url
+    },
+    getAllDocs: (limit, page) => `api/documents/?limit=${limit}&page=${page}`,
     getMostDownloadDocs: () => `api/documents/most-download/`,
 	getUDocs: (limit, page) => `api/documents/my-documents/?limit=${limit}&page=${page}`,
 	getDocDetail: (id) => `api/documents/detail/?document_id=${id}`,
@@ -437,8 +488,14 @@ const apiURL = {
     cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
     calculatePrice: () => `api/payment/order/calculate/`,
 
-    getHomeCourses: (limit, page, title) => `api/courses/home/?limit=${limit}&page=${page}&title=${title}`,
-    getAllCourses: (limit, page, title) => `api/courses/?limit=${limit}&page=${page}&title=${title}`,
+    getHomeCourses: (limit, page, title?, course_id?: string[]) => {
+        let url = `api/courses/home/?limit=${limit}&page=${page}&title=${title}`
+        if (course_id) {
+            url = parseParamsToUrL(url, course_id, `course_id`)
+        }
+        return url
+    },
+    getAllCourses: (limit, page) => `api/courses/?limit=${limit}&page=${page}`,
     getMostDownloadCourses: () => `api/courses/most-download/`,
     getUCourses: (limit, page) => `api/courses/my-courses/?limit=${limit}&page=${page}`,
     getCourseDetail: (id) => `api/courses/detail/?course_id=${id}`,
@@ -456,6 +513,9 @@ const apiURL = {
 
     listQuiz: (id) => `api/quiz/?course_id=${id}`,
     getQuizResult: () => `api/quiz/result/`,
+
+    listHeaders: () => `api/settings/headers/`,
+    getHome: () => `api/settings/home/`,
 };
 
 
@@ -484,12 +544,12 @@ class CourseService {
         return apiClient.post(apiURL.verifyToken(), {token: token})
     }
 
-	static getAllDocs(params: PaginationParams, title?: string): Promise<Pagination<Document>> {
-		return apiClient.get(apiURL.getAllDocs(params.limit, params.page, title));
+	static getAllDocs(params: PaginationParams): Promise<Pagination<Document>> {
+		return apiClient.get(apiURL.getAllDocs(params.limit, params.page));
 	}
 
-    static getHomeDocs(params: PaginationParams, title?: string): Promise<Pagination<Document>> {
-		return apiClient.get(apiURL.getHomeDocs(params.limit, params.page, title));
+    static getHomeDocs(params: PaginationParams, title?: string, document_id?: string[]): Promise<Pagination<Document>> {
+		return apiClient.get(apiURL.getHomeDocs(params.limit, params.page, title, document_id));
 	}
 
     static getMostDownloadDocs(): Promise<Document[]> {
@@ -548,12 +608,12 @@ class CourseService {
         return apiClient.post(apiURL.calculatePrice(), params);
     }
 
-    static getAllCourses(params: PaginationParams, title?: string): Promise<Pagination<Course>> {
-		return apiClient.get(apiURL.getAllCourses(params.limit, params.page, title));
+    static getAllCourses(params: PaginationParams): Promise<Pagination<Course>> {
+		return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
 	}
 
-    static getHomeCourses(params: PaginationParams, title?: string): Promise<Pagination<Course>> {
-		return apiClient.get(apiURL.getHomeCourses(params.limit, params.page, title));
+    static getHomeCourses(params: PaginationParams, title?: string, course_id?: string[]): Promise<Pagination<Course>> {
+		return apiClient.get(apiURL.getHomeCourses(params.limit, params.page, title, course_id));
 	}
 
     static getMostDownloadCourses(): Promise<Course[]> {
@@ -610,6 +670,14 @@ class CourseService {
 
     static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
         return apiClient.post(apiURL.getQuizResult(), params);
+    }
+
+    static listHeaders(): Promise<nav> {
+        return apiClient.post(apiURL.listHeaders());
+    }
+
+    static getHome(): Promise<homepage> {
+        return apiClient.post(apiURL.getHome());
     }
 }
 export default CourseService;

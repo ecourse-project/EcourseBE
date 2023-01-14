@@ -13,6 +13,20 @@ class DocumentService(object):
     def get_all_documents_queryset(self):
         return Document.objects.select_related('thumbnail', 'file', 'title').all().order_by('name')
 
+    def get_documents_by_title(self, title: str):
+        if title:
+            return self.get_all_documents_queryset.filter(
+                title__name__icontains=title,
+                is_selling=True,
+            )
+        return Document.objects.none()
+
+    def get_documents_by_list_id(self, list_id: list):
+        if list_id:
+            return self.get_all_documents_queryset.filter(id__in=list_id, is_selling=True)
+        return Document.objects.none()
+
+
     # Not used
     def get_documents_sale_status(self, documents) -> list:
         return list(map(lambda item: dict(item[0], sale_status=item[1]),
@@ -20,6 +34,8 @@ class DocumentService(object):
                             DocumentManagement.objects.filter(user=self.user, document__in=documents)
                             .order_by("document__name")
                             .values_list('sale_status', flat=True))))
+
+
 
 
 class DocumentManagementService:
