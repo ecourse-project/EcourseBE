@@ -27,9 +27,13 @@ class DocumentListView(generics.ListAPIView):
         service = DocumentManagementService(self.request.user)
         service.init_documents_management()
         title = self.request.query_params.get("title")
+        list_id = self.request.query_params.getlist('document_id')
         if title:
             return service.get_doc_mngt_queryset_by_selling.filter(document__title__name__icontains=title)
-        return service.get_doc_mngt_queryset_by_selling
+        elif list_id:
+            return service.get_documents_mngt_by_list_id(list_id)
+        else:
+            return service.get_doc_management_queryset
 
 
 class UserDocumentsListView(generics.ListAPIView):

@@ -36,8 +36,6 @@ class DocumentService(object):
                             .values_list('sale_status', flat=True))))
 
 
-
-
 class DocumentManagementService:
     def __init__(self, user):
         self.user = user
@@ -62,6 +60,11 @@ class DocumentManagementService:
         query = Q(document__is_selling=True)
         query |= Q(document__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
         return self.get_doc_management_queryset.filter(query)
+
+    def get_documents_mngt_by_list_id(self, list_id: list):
+        if list_id:
+            return self.get_doc_management_queryset.filter(document_id__in=list_id, document__is_selling=True)
+        return DocumentManagement.objects.none()
 
     def custom_doc_detail_data(self, data):
         document_rating = DocumentRating.objects.filter(document_id=data['id']).first()

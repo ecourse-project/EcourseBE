@@ -28,9 +28,13 @@ class CourseListView(generics.ListAPIView):
         service = CourseManagementService(self.request.user)
         UserDataManagementService(self.request.user).init_user_data()
         title = self.request.query_params.get("title")
+        list_id = self.request.query_params.getlist('course_id')
         if title:
             return service.get_course_mngt_queryset_by_selling.filter(course__title__name__icontains=title)
-        return service.get_course_mngt_queryset_by_selling
+        elif list_id:
+            return service.get_courses_mngt_by_list_id(list_id)
+        else:
+            return service.get_course_management_queryset
 
 
 class UserCoursesListView(generics.ListAPIView):

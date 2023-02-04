@@ -59,6 +59,10 @@ class CourseManagementService:
         query |= Q(course__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
         return self.get_course_management_queryset.filter(query).order_by('course__name')
 
+    def get_courses_mngt_by_list_id(self, list_id: list):
+        if list_id:
+            return self.get_course_management_queryset.filter(course_id__in=list_id, course__is_selling=True)
+
     def calculate_course_progress(self, course_id):
         all_docs = CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
         all_videos = VideoManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
