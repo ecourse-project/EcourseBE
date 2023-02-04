@@ -734,7 +734,7 @@ class CourseService {
     return apiClient.get(apiURL.listHeaders());
   }
 
-  static getHome(): Promise<Homepage> {
+  static getHome(): Promise<Homepage[]> {
     return apiClient.get(apiURL.getHome());
   }
 }
