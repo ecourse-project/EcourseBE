@@ -163,5 +163,5 @@ class UserDataManagementService:
         if not CourseManagement.objects.filter(user=self.user).first():
             CourseManagement.objects.bulk_create([
                 CourseManagement(user=self.user, course=course, last_update=localtime())
-                for course in CourseService(self.user).get_all_courses_queryset
+                for course in CourseService().get_all_courses_queryset
             ])
