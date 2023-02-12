@@ -52,7 +52,7 @@ class DocumentManagementService:
             DocumentManagement.objects.bulk_create([
                 DocumentManagement(
                     user=self.user, last_update=localtime(), document=doc
-                ) for doc in DocumentService(self.user).get_all_documents_queryset
+                ) for doc in DocumentService().get_all_documents_queryset
             ])
 
     @property

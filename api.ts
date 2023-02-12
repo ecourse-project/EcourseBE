@@ -475,7 +475,7 @@ import {
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;
   const newParams = [...params];
-  newURL += `/?${paramsName}=${newParams.shift()}`;
+  newURL += `&${paramsName}=${newParams.shift()}`;
   for (const i of newParams) {
     newURL += `&${paramsName}=${i}`;
   }
