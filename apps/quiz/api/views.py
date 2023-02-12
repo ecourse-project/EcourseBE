@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -6,6 +7,13 @@ from apps.quiz.models import Quiz, Answer
 from apps.quiz.api.serializers import QuizSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.courses.models import CourseManagement
+
+import io
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.lib.units import mm, inch
+from reportlab.pdfbase.pdfmetrics import stringWidth
 
 
 class ListQuizView(generics.ListAPIView):
@@ -48,3 +56,21 @@ class QuizResultView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class GenerateCertificate(APIView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
+        response["Content-Disposition"] = "attachment;filename=hello.pdf"
+
+        # font name: Helvetica
+        # font size: 12
+
+        pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
+        text = "Lam deo biet chung nao xong!"
+        text_width = stringWidth(text, fontName="Helvetica", fontSize=12)
+        my_canvas = canvas.Canvas(response, pagesize=pagesize)
+        my_canvas.drawString(448, 300, text=text)
+        my_canvas.save()
+
+        return response

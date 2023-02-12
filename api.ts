@@ -551,6 +551,7 @@ export const apiURL = {
 
   listQuiz: (id) => `api/quiz/?course_id=${id}`,
   getQuizResult: () => `api/quiz/result/`,
+  downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
 
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
@@ -561,7 +562,7 @@ class CourseService {
     return apiClient.get(apiURL.me());
   }
 
-  static myInfo(phone?: string, full_name?: string): Promise<User> {
+  static updateInfo(phone?: string, full_name?: string): Promise<User> {
     return apiClient.patch(apiURL.me(), {
         phone: phone,
         full_name: full_name,
@@ -728,6 +729,10 @@ class CourseService {
 
   static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
     return apiClient.post(apiURL.getQuizResult(), params);
+  }
+
+  static downloadCerti(course_id: string): Promise<any> {
+    return apiClient.get(apiURL.downloadCerti(course_id));
   }
 
   static listHeaders(): Promise<Nav[]> {
