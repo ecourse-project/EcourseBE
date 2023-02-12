@@ -598,8 +598,8 @@ class CourseService {
     return apiClient.post(apiURL.verifyToken(), { token: token });
   }
 
-  static getAllDocs(params: PaginationParams): Promise<Pagination<Document>> {
-    return apiClient.get(apiURL.getAllDocs(params.limit, params.page));
+  static getAllDocs(params: PaginationParams, title?: string, document_id?: string[]): Promise<Pagination<Document>> {
+    return apiClient.get(apiURL.getAllDocs(params.limit, params.page, title, document_id));
   }
 
   static getHomeDocs(params: PaginationParams, title?: string, document_id?: string[]): Promise<Pagination<Document>> {
@@ -662,8 +662,8 @@ class CourseService {
     return apiClient.post(apiURL.calculatePrice(), params);
   }
 
-  static getAllCourses(params: PaginationParams): Promise<Pagination<Course>> {
-    return apiClient.get(apiURL.getAllCourses(params.limit, params.page));
+  static getAllCourses(params: PaginationParams, title?: string, course_id?: string[]): Promise<Pagination<Course>> {
+    return apiClient.get(apiURL.getAllCourses(params.limit, params.page, title, course_id));
   }
 
   static getHomeCourses(params: PaginationParams, title?: string, course_id?: string[]): Promise<Pagination<Course>> {
