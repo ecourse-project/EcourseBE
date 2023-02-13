@@ -9,6 +9,7 @@ from apps.settings.services import get_headers, get_home_page
 
 class HeaderAPIView(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
         return Response(get_headers())
@@ -16,6 +17,7 @@ class HeaderAPIView(APIView):
 
 class HomePageAPIView(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
         return Response(get_home_page())
