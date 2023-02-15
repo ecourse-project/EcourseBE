@@ -82,6 +82,7 @@ class HomepageCourseListAPIView(generics.ListAPIView):
     serializer_class = ListCourseSerializer
     permission_classes = (AllowAny,)
     pagination_class = StandardResultsSetPagination
+    authentication_classes = ()
 
     def get_queryset(self):
         title = self.request.query_params.get("title")

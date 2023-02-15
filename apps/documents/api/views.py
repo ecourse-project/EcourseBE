@@ -67,6 +67,7 @@ class HomepageDocumentListAPIView(generics.ListAPIView):
     serializer_class = DocumentSerializer
     permission_classes = (AllowAny,)
     pagination_class = StandardResultsSetPagination
+    authentication_classes = ()
 
     def get_queryset(self):
         title = self.request.query_params.get("title")
