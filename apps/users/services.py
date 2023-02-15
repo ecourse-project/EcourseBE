@@ -11,3 +11,4 @@ def exists_user(**kwargs):
 
 def get_active_users():
     return User.objects.filter(is_active=True, is_superuser=False, last_login__isnull=False)
+

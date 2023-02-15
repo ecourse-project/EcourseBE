@@ -555,6 +555,7 @@ export const apiURL = {
 
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
+  initData: () => `api/settings/init/`,
 };
 
 class CourseService {
@@ -741,6 +742,10 @@ class CourseService {
 
   static getHome(): Promise<Homepage[]> {
     return apiClient.get(apiURL.getHome());
+  }
+
+  static initData(): Promise<{"success": true}> {
+    return apiClient.get(apiURL.initData());
   }
 }
 export default CourseService;

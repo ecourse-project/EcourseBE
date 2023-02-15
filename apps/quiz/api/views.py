@@ -59,6 +59,8 @@ class QuizResultView(APIView):
 
 
 class GenerateCertificate(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
         response["Content-Disposition"] = "attachment;filename=hello.pdf"
@@ -67,10 +69,10 @@ class GenerateCertificate(APIView):
         # font size: 12
 
         pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
-        text = "Lam deo biet chung nao xong!"
-        text_width = stringWidth(text, fontName="Helvetica", fontSize=12)
+        text = "IN COMING"
+        # text_width = stringWidth(text, fontName="Helvetica", fontSize=12)
         my_canvas = canvas.Canvas(response, pagesize=pagesize)
-        my_canvas.drawString(448, 300, text=text)
+        my_canvas.drawString(350, 230, text=text)
         my_canvas.save()
 
         return response

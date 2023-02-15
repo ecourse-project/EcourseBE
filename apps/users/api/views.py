@@ -52,7 +52,6 @@ class PasswordResetView(APIView):
         new_password = id_generator()
         user.set_password(new_password)
         user.save(update_fields=["password"])
-            
         send_mail(
                     PASSWORD_RESET_EMAIL_TITLE,
                     PASSWORD_RESET_EMAIL_MESSAGE + new_password,

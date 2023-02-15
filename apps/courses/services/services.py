@@ -60,8 +60,9 @@ class CourseManagementService:
         return self.get_course_management_queryset.filter(query).order_by('course__name')
 
     def get_courses_mngt_by_list_id(self, list_id: list):
+        print(self.get_course_mngt_queryset_by_selling.count())
         if list_id:
-            return self.get_course_management_queryset.filter(course_id__in=list_id, course__is_selling=True)
+            return self.get_course_mngt_queryset_by_selling.filter(course_id__in=list_id)
 
     def calculate_course_progress(self, course_id):
         all_docs = CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
@@ -153,15 +154,3 @@ class CourseManagementService:
         VideoManagement.objects.filter(user=self.user, video_id__in=videos_id, is_available=True).update(is_completed=True)
 
         self.calculate_course_progress(course_id)
-
-
-class UserDataManagementService:
-    def __init__(self, user):
-        self.user = user
-
-    def init_user_data(self):
-        if not CourseManagement.objects.filter(user=self.user).first():
-            CourseManagement.objects.bulk_create([
-                CourseManagement(user=self.user, course=course, last_update=localtime())
-                for course in CourseService().get_all_courses_queryset
-            ])

@@ -1,5 +1,10 @@
 from typing import Any, Dict, List, Tuple
+from django.utils.timezone import localtime
+
 from apps.settings.models import HeaderDetail, Header, HomePageDetail
+from apps.courses.models import CourseManagement
+from apps.courses.services.services import CourseService
+from apps.documents.services.services import DocumentManagementService
 
 
 def parse_choices(choices: List[Tuple]) -> List[Dict[str, Any]]:
@@ -42,5 +47,14 @@ def get_headers() -> list:
     return list_header
 
 
-# theem type get all docs, courses
-# bỏ authen cho get all docs, courses
+class UserDataManagementService:
+    def __init__(self, user):
+        self.user = user
+
+    def init_user_data(self):
+        if not CourseManagement.objects.filter(user=self.user).first():
+            CourseManagement.objects.bulk_create([
+                CourseManagement(user=self.user, course=course, last_update=localtime())
+                for course in CourseService().get_all_courses_queryset
+            ])
+        DocumentManagementService(self.user).init_documents_management()

@@ -5,9 +5,12 @@ from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
 from apps.courses.models import CourseManagement
-from apps.courses.api.serializers import CourseManagementSerializer, ListCourseManagementSerializer, \
-    ListCourseSerializer
-from apps.courses.services.services import CourseManagementService, UserDataManagementService, CourseService
+from apps.courses.api.serializers import (
+    CourseManagementSerializer,
+    ListCourseManagementSerializer,
+    ListCourseSerializer,
+)
+from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
 
 
@@ -15,7 +18,6 @@ class MostDownloadedCourseView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
 
     def get_queryset(self):
-        UserDataManagementService(self.request.user).init_user_data()
         return CourseManagementService(self.request.user).get_course_mngt_queryset_by_selling.order_by('-course__sold')
 
 
@@ -26,7 +28,6 @@ class CourseListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
-        UserDataManagementService(self.request.user).init_user_data()
         title = self.request.query_params.get("title")
         list_id = self.request.query_params.getlist('course_id')
         if title:

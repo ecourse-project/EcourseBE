@@ -6,7 +6,6 @@ from apps.documents.api.serializers import DocumentSerializer, DocumentManagemen
 from apps.documents.services.services import DocumentManagementService, DocumentService
 from apps.documents.enums import BOUGHT
 from apps.documents.models import DocumentManagement
-from apps.upload.services.upload import upload_files, upload_images
 from apps.core.pagination import StandardResultsSetPagination
 
 
@@ -15,7 +14,6 @@ class MostDownloadedDocumentView(generics.ListAPIView):
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
-        service.init_documents_management()
         return service.get_doc_mngt_queryset_by_selling.order_by('-document__sold')
 
 
@@ -25,7 +23,6 @@ class DocumentListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
-        service.init_documents_management()
         title = self.request.query_params.get("title")
         list_id = self.request.query_params.getlist('document_id')
         if title:
