@@ -123,7 +123,7 @@ class CourseManagementService:
         quiz_detail = {}
         quiz_answers = []
         correct_answers = 0
-        total_answers = Answer.objects.filter(quiz__course_id=data['id'])
+        total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
         for answer in total_answers:
             quiz_answers.append({
                 "quiz_id": answer.quiz_id,

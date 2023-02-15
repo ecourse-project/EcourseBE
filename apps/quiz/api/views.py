@@ -30,8 +30,8 @@ class QuizResultView(APIView):
         course_id = data.get('course_id')
         user = self.request.user
         answers = data.get('answers')
-        # if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
-        #     raise CompletedQuizException
+        if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
+            raise CompletedQuizException
 
         user_answers_list = []
         correct_answers = 0
@@ -45,7 +45,7 @@ class QuizResultView(APIView):
 
         Answer.objects.bulk_create(user_answers_list)
         mark = round(10 * correct_answers / len(answers), 1)
-        # CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
+        CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
 
         return Response(
             data={
