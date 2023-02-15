@@ -31,7 +31,7 @@ def get_media_url(file_path) -> str:
 
 
 def id_generator(size=8, chars=ascii_letters + digits):
-    size = random.randint(8, 10)
+    size = random.randint(8, 12)
     return ''.join(random.choice(chars) for _ in range(size))
 
 

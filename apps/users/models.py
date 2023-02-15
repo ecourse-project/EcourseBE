@@ -27,3 +27,8 @@ class User(AbstractUser):
         if self.avatar:
             return get_media_url(self.avatar)
         return None
+
+
+class UserResetPassword(models.Model):
+    email = models.CharField(max_length=100)
+    password_reset = models.CharField(max_length=1000, null=True, blank=True)
