@@ -6,6 +6,7 @@ from apps.users.api.serializers import (
     UserSerializer,
     ChangePasswordSerializer,
 )
+from apps.users.exceptions import UserNotExistException
 from apps.users import services
 from apps.users.models import User
 from django.conf import settings
@@ -26,6 +27,7 @@ class UsersProfileView(generics.RetrieveUpdateAPIView):
 
 class UserExistView(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
         email = request.query_params.get("email")
@@ -43,11 +45,13 @@ class PasswordResetView(APIView):
         if not email:
             return Response({"detail": "Email is required!"}, status=status.HTTP_204_NO_CONTENT)
 
-        user = User.objects.get(email=email)
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise UserNotExistException
+
         new_password = id_generator()
         user.set_password(new_password)
         user.save(update_fields=["password"])
-            
         send_mail(
                     PASSWORD_RESET_EMAIL_TITLE,
                     PASSWORD_RESET_EMAIL_MESSAGE + new_password,

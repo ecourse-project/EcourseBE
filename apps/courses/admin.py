@@ -1,10 +1,30 @@
 from django.contrib import admin
 from django.db.models import Q
-from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
-from apps.courses.enums import AVAILABLE
-from apps.courses.signals import calculate_progress
+from apps.courses.models import (
+    Course,
+    Lesson,
+    Topic,
+    CourseTitle,
+    CourseDocument,
+    LessonManagement,
+    CourseManagement,
+)
+from apps.courses.services.admin import (
+    init_course_mngt,
+    insert_remove_docs_videos,
+)
+from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
+from apps.users.services import get_active_users
+from apps.rating.models import CourseRating
+
+
+@admin.register(CourseTitle)
+class CourseDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+    )
 
 
 @admin.register(CourseDocument)
@@ -13,6 +33,14 @@ class CourseDocumentAdmin(admin.ModelAdmin):
         "name",
         "title",
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CourseDocumentAdmin, self).get_form(request, obj, **kwargs)
+        q_list = Q()
+        for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
+            q_list |= q
+        form.base_fields['file'].queryset = UploadFile.objects.filter(~q_list)
+        return form
 
 
 @admin.register(Topic)
@@ -41,11 +69,22 @@ class LessonAdmin(admin.ModelAdmin):
         return ", ".join([doc.name for doc in obj.documents.all()])
 
     def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
         instance = form.instance
-        instance.total_documents = instance.documents.all().count()
-        instance.total_videos = instance.videos.all().count()
-        instance.save(update_fields=["total_documents", "total_videos"])
+
+        before_documents = set(instance.documents.all())
+        before_videos = set(instance.videos.all())
+        super().save_related(request, form, formsets, change)
+        after_documents = set(instance.documents.all())
+        after_videos = set(instance.videos.all())
+
+        insert_remove_docs_videos(
+            course_id=None,
+            lesson_id=instance.id,
+            docs_remove=before_documents.difference(after_documents),
+            videos_remove=before_videos.difference(after_videos),
+            docs_add=after_documents.difference(before_documents),
+            videos_add=after_videos.difference(before_videos),
+        )
 
     # Query objects for many to many
     def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -66,12 +105,15 @@ class LessonAdmin(admin.ModelAdmin):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     search_fields = (
+        "id",
         "name",
     )
     list_display = (
+        "id",
         "name",
         "topic",
         "total_lessons",
+        "price",
         "is_selling",
         "rating",
     )
@@ -80,47 +122,32 @@ class CourseAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("sold", "views", "rating", "num_of_rates", "total_lessons")
 
-    def save_model(self, request, obj, form, change):
-        # if create a course, it means obj is not exist in database
-        if not Course.objects.filter(id=obj.id).exists():
-            CourseManagement.objects.bulk_create([
-                CourseManagement(course=obj, sale_status=AVAILABLE, user_id=user)
-                for user in
-                CourseManagement.objects.order_by('user_id').values_list('user_id', flat=True).distinct('user_id')
-            ])
-        obj.save()
+    # def save_model(self, request, obj, form, change):
+    #     obj.save()
 
     def save_related(self, request, form, formsets, change):
-        before_lesson = set(form.instance.lessons.all())
-        super().save_related(request, form, formsets, change)
-        after_lesson = set(form.instance.lessons.all())
-
         instance = form.instance
-        instance.total_lessons = instance.lessons.all().count()
-        instance.save(update_fields=['total_lessons'])
 
-        # remove lesson from course
-        if len(after_lesson) < len(before_lesson):
-            diff_lesson = before_lesson ^ after_lesson
-            for lesson in diff_lesson:
-                for course_mngt in CourseManagement.objects.filter(course=instance):
-                    course_mngt.docs_completed.remove(*lesson.documents.all())
-                    course_mngt.videos_completed.remove(*lesson.videos.all())
+        before_lessons = set(instance.lessons.all())
+        super().save_related(request, form, formsets, change)
+        after_lessons = set(instance.lessons.all())
 
-        # add lesson to course
-        elif len(after_lesson) > len(before_lesson):
-            for course_mngt in CourseManagement.objects.filter(course=instance):
-                calculate_progress(course_mngt)
+        lessons_remove = before_lessons.difference(after_lessons)
+        lessons_add = after_lessons.difference(before_lessons)
 
+        if lessons_remove:
+            LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
+            for lesson in lessons_remove:
+                insert_remove_docs_videos(instance.id, lesson.id, lesson.documents.all(), lesson.videos.all(), None, None)
+        if lessons_add:
+            lesson_mngt_list = []
+            for lesson in lessons_add:
+                lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
+                insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
+            LessonManagement.objects.bulk_create(lesson_mngt_list)
 
-    # def formfield_for_manytomany(self, db_field, request, **kwargs):
-    #     if db_field.name == "lessons":
-    #         kwargs["queryset"] = Lesson.objects.exclude(
-    #             id__in=Course.lessons.through.objects.all().values_list('lesson_id', flat=True)
-    #         )
-    #     return super().formfield_for_manytomany(db_field, request, **kwargs)
-
-
-
+    def delete_model(self, request, obj):
+        CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
+        obj.delete()
 
 

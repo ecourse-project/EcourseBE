@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.upload.models import UploadFile, UploadImage
+from django.conf import settings
 
 
 class UploadFileSerializer(serializers.ModelSerializer):
@@ -18,7 +19,7 @@ class UploadFileSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_file_path(cls, obj):
-        return "http://127.0.0.1:4000" + obj.file_path.url
+        return settings.BASE_URL + obj.file_path.url
 
 
 class UploadImageSerializer(serializers.ModelSerializer):
@@ -35,4 +36,4 @@ class UploadImageSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_image_path(cls, obj):
-        return "http://127.0.0.1:4000" + obj.image_path.url
+        return settings.BASE_URL + obj.image_path.url

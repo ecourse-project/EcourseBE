@@ -1,5 +1,6 @@
 from apps.core.exceptions import GenericException
 
+
 class MissedUsernameOrEmailException(GenericException):
     code = 2000
     verbose = True
@@ -27,4 +28,14 @@ class PasswordNotMatchException(GenericException):
     def __init__(self, message=None):
         if not message:
             message = "Password fields didn't match."
+        super().__init__(message=message)
+
+
+class UserNotExistException(GenericException):
+    code = 2003
+    verbose = True
+
+    def __init__(self, message=None):
+        if not message:
+            message = "User does not exist."
         super().__init__(message=message)

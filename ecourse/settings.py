@@ -12,16 +12,20 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from ecourse import env
 import os
+import environ
 from django.core.management.commands.runserver import Command as runserver
 
-runserver.default_port = "4000"
+
+env = environ.Env()
+env.read_env()
+
+runserver.default_port = env("PORT", default="8000")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = "http://localhost"
+BASE_URL = env("BASE_URL", default="https://be.creativeteaching.net")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -30,7 +34,7 @@ BASE_URL = "http://localhost"
 SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG", default=False)
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -49,6 +53,7 @@ LOCAL_APPS = [
     'apps.comments.apps.CommentsConfig',
     'apps.quiz.apps.QuizConfig',
     'apps.rating.apps.RatingConfig',
+    'apps.settings.apps.SettingsConfig',
 ]
 
 DJANGO_APPS = [
@@ -65,10 +70,10 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'debug_toolbar',
+    'django_better_admin_arrayfield',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -76,7 +81,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
-
 
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -113,18 +117,12 @@ WSGI_APPLICATION = 'ecourse.wsgi.application'
 
 AUTH_USER_MODEL = "users.User"
 
+
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ecourses',
-        'USER': 'postgres',
-        'PASSWORD': 'haibinh232',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourses"),
 }
 
 
@@ -147,7 +145,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -166,11 +163,30 @@ TIME_ZONE = "Asia/Ho_Chi_Minh"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+
+STATIC_ROOT = "static"
+STATIC_URL = "/static/"
 
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+TEMPLATES_ROOT = os.path.join(BASE_DIR, 'templates')
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [TEMPLATES_ROOT],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        }
+    },
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -196,11 +212,11 @@ CORS_ALLOW_HEADERS = (
     "app-version",
 )
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOSTS", default="*")]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env("ACCESS_TOKEN_LIFETIME_MINUTES", default=360)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env("REFRESH_TOKEN_LIFETIME_MINUTES", default=360)),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -226,9 +242,8 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-
-EMAIL_USE_TLS = env.EMAIL_USE_TLS
-EMAIL_HOST = env.EMAIL_HOST
-EMAIL_HOST_USER = env.EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
-EMAIL_PORT = env.EMAIL_PORT
+EMAIL_USE_TLS = env("EMAIL_USE_TLS", default="EMAIL_USE_TLS")
+EMAIL_HOST = env("EMAIL_HOST", default="EMAIL_HOST")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env("EMAIL_PORT", default="EMAIL_PORT")

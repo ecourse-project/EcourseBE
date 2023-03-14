@@ -6,16 +6,15 @@ from apps.payment.models import Order
 from apps.payment.enums import SUCCESS, FAILED
 from apps.documents.models import DocumentManagement
 from apps.documents import enums as doc_enums
+from apps.documents.services.admin import DocumentAdminService
 from apps.courses.models import CourseManagement
 from apps.courses import enums as course_enums
+from apps.courses.services.admin import CourseAdminService
 
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # search_fields = (
-    #     "user__first_name",
-    # )
     list_display = (
         "code",
         "user",
@@ -29,22 +28,27 @@ class OrderAdmin(admin.ModelAdmin):
         Given a model instance save it to the database.
         """
         if change:
+            doc_service = DocumentAdminService(obj.user)
+            course_service = CourseAdminService(obj.user)
             if obj.status == SUCCESS:
-                obj.documents.all().update(sold=F('sold') + 1)
-                DocumentManagement.objects.filter(
-                    user=obj.user, document__in=obj.documents.all()
-                ).update(sale_status=doc_enums.BOUGHT, last_update=localtime())
+                """ Document """
+                all_docs = obj.documents.all()
+                all_docs.update(sold=F('sold') + 1)
+                doc_service.update_document_sale_status(all_docs, doc_enums.BOUGHT)
 
-                obj.courses.all().update(sold=F('sold') + 1)
-                CourseManagement.objects.filter(
-                    user=obj.user, course__in=obj.courses.all()
-                ).update(sale_status=course_enums.BOUGHT, last_update=localtime())
+                """ Course """
+                all_courses = obj.courses.all()
+                all_courses.update(sold=F('sold') + 1)
+                course_service.update_course_sale_status(all_courses, course_enums.BOUGHT)
+                course_service.init_courses_data(all_courses)
 
             if obj.status == FAILED:
-                DocumentManagement.objects.filter(
-                    user=obj.user, document__in=obj.documents.all()
-                ).update(sale_status=doc_enums.AVAILABLE, last_update=localtime())
-                CourseManagement.objects.filter(
-                    user=obj.user, course__in=obj.courses.all()
-                ).update(sale_status=course_enums.AVAILABLE, last_update=localtime())
+                """ Document """
+                doc_service.update_document_sale_status(obj.documents.all(), doc_enums.AVAILABLE)
+
+                """ Course """
+                all_courses = obj.courses.all()
+                course_service.update_course_sale_status(all_courses, course_enums.AVAILABLE)
+                course_service.disable_courses_data(all_courses)
+
         obj.save()

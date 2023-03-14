@@ -1,11 +1,11 @@
 from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-from apps.documents.services import DocumentManagementService
+from apps.documents.services.services import DocumentManagementService, DocumentService
 from apps.documents.enums import BOUGHT
 from apps.documents.models import DocumentManagement
-from apps.upload.services.upload import upload_files, upload_images
 from apps.core.pagination import StandardResultsSetPagination
 
 
@@ -14,7 +14,6 @@ class MostDownloadedDocumentView(generics.ListAPIView):
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
-        service.init_documents_management()
         return service.get_doc_mngt_queryset_by_selling.order_by('-document__sold')
 
 
@@ -24,8 +23,14 @@ class DocumentListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
-        service.init_documents_management()
-        return service.get_doc_mngt_queryset_by_selling
+        title = self.request.query_params.get("title")
+        list_id = self.request.query_params.getlist('document_id')
+        if title:
+            return service.get_doc_mngt_queryset_by_selling.filter(document__title__name__icontains=title)
+        elif list_id:
+            return service.get_documents_mngt_by_list_id(list_id)
+        else:
+            return service.get_doc_management_queryset
 
 
 class UserDocumentsListView(generics.ListAPIView):
@@ -50,32 +55,32 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
             doc = instance.document
             doc.views += 1
             doc.save(update_fields=['views'])
-        return Response(self.get_serializer(instance).data)
+        service = DocumentManagementService(request.user)
+        return Response(
+            service.custom_doc_detail_data(self.get_serializer(instance).data)
+        )
 
-    # Not used
-    # def perform_update(self, serializer):
-    #     instance = serializer.instance
-    #     instance.thumbnail.delete_image()
-    #     instance.file.delete_file()
-    #     data = self.request.data
-    #     image_update = update_image(instance.thumbnail.id, data.getlist('image')[0], data.get('folder_name'))
-    #     file_update = update_file(instance.file.id, data.getlist('file')[0], data.get('folder_name'))
-    #     serializer.save(thumbnail=image_update, file=file_update)
-    #
-    # def perform_destroy(self, instance):
-    #     instance.thumbnail.delete()
-    #     instance.file.delete()
-    #     instance.delete()
 
-# Not used
-class DocumentCreateView(generics.CreateAPIView):
+# ==========================> NEW REQUIREMENTS
+
+class HomepageDocumentListAPIView(generics.ListAPIView):
     serializer_class = DocumentSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = StandardResultsSetPagination
+    authentication_classes = ()
 
-    def perform_create(self, serializer):
-        data = self.request.data
-        upload_thumbnail = upload_images(self.request, data.getlist('image'), data.get('folder_name'))
-        upload_file = upload_files(self.request, data.getlist('file'), data.get('folder_name'))
-        serializer.save(thumbnail=upload_thumbnail[0], file=upload_file[0])
+    def get_queryset(self):
+        title = self.request.query_params.get("title")
+        list_id = self.request.query_params.getlist('document_id')
+        if title:
+            return DocumentService().get_documents_by_title(title)
+        elif list_id:
+            return DocumentService().get_documents_by_list_id(list_id)
+        else:
+            return DocumentService().get_all_documents_queryset
+
+
+
 
 
 

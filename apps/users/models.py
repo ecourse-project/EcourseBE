@@ -21,9 +21,15 @@ class User(AbstractUser):
     phone = models.CharField(default="", blank=True, max_length=30)
 
     def __str__(self):
-        return self.full_name
+        return self.email
 
     def get_avatar(self):
         if self.avatar:
             return get_media_url(self.avatar)
         return None
+
+
+class UserResetPassword(models.Model):
+    email = models.CharField(max_length=100)
+    password_reset = models.CharField(max_length=1000, null=True, blank=True)
+    is_changed = models.BooleanField(default=True)

@@ -8,4 +8,5 @@ from apps.users.api.serializers import (
 
 class RegisterUserAPIView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
+    authentication_classes = ()
     serializer_class = UserRegisterSerializer

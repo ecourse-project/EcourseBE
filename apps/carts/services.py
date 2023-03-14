@@ -13,11 +13,11 @@ from apps.carts.exceptions import (
 
 from apps.carts.models import Cart
 from apps.documents.api.serializers import DocumentManagementSerializer
-from apps.documents.services import DocumentManagementService
+from apps.documents.services.services import DocumentManagementService
 from apps.documents.models import DocumentManagement
 from apps.documents import enums as doc_enums
 from apps.courses.api.serializers import CourseManagementSerializer
-from apps.courses.services import CourseManagementService
+from apps.courses.services.services import CourseManagementService
 from apps.courses.models import CourseManagement
 from apps.courses import enums as course_enums
 
@@ -50,6 +50,7 @@ class CartService:
             docs_price = 0
         if not courses_price:
             courses_price = 0
+
         self.cart.total_price = docs_price + courses_price
         self.cart.save(update_fields=['total_price'])
 
@@ -116,7 +117,8 @@ class MoveItems:
         favorite_list = self.user.favorite_list
         doc_mngt = DocumentManagement.objects.get(user=self.user, document=doc)
         if doc_mngt.sale_status == doc_enums.PENDING or doc_mngt.sale_status == doc_enums.BOUGHT:
-            raise CheckSaleStatusException
+            if start.lower() != 'favorite' and end.lower() != 'favorite':
+                raise CheckSaleStatusException
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_doc(cart=cart, favorite_list=favorite_list, document=doc)
@@ -180,7 +182,8 @@ class MoveItems:
         favorite_list = self.user.favorite_list
         course_mngt = CourseManagement.objects.get(user=self.user, course=course)
         if course_mngt.sale_status == course_enums.PENDING or course_mngt.sale_status == course_enums.BOUGHT:
-            raise CheckSaleStatusException("Course has been checkout or bought.")
+            if start.lower() != 'favorite' and end.lower() != 'favorite':
+                raise CheckSaleStatusException("Course has been checkout or bought.")
 
         if start.lower() == 'favorite' and end.lower() == 'cart':
             self.validate_add_course(cart=cart, favorite_list=favorite_list, course=course)
@@ -206,10 +209,3 @@ class MoveItems:
         course_mngt.last_update = localtime()
         course_mngt.save(update_fields=['sale_status', 'is_favorite', 'last_update'])
         return course_mngt
-
-
-
-
-
-
-

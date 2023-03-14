@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
+from apps.rating.api.serializers import RatingSerializer
+from apps.rating.models import CourseRating
 
 
 class CourseDocumentSerializer(serializers.ModelSerializer):
@@ -63,6 +65,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
+            "title",
         )
 
 
@@ -79,8 +82,6 @@ class CourseManagementSerializer(serializers.ModelSerializer):
             "mark",
             "is_done_quiz",
             "is_favorite",
-            "docs_completed",
-            "videos_completed",
         )
 
     def to_representation(self, obj):
@@ -90,18 +91,7 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 
         for key in course_representation:
             representation[key] = course_representation[key]
-            if key == 'lessons':
-                for count, lesson in enumerate(representation[key], start=0):
-                    lesson_obj = Lesson.objects.filter(id=representation[key][count]['id']).first()
-                    lesson_video_complete = lesson_obj.videos.all().filter(id__in=representation["videos_completed"]).count()
-                    lesson_doc_complete = lesson_obj.documents.all().filter(id__in=representation["docs_completed"]).count()
-                    if (lesson_obj.total_documents + lesson_obj.total_videos) != 0:
-                        representation[key][count]['progress'] = round(
-                            (lesson_video_complete + lesson_doc_complete) * 100 /
-                            (lesson_obj.total_documents + lesson_obj.total_videos)
-                        )
-                    else:
-                        representation[key][count]['progress'] = 0
+
         return representation
 
     # def to_internal_value(self, data):
@@ -131,6 +121,7 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 class ListCourseSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     topic = TopicSerializer()
+    title = serializers.CharField(max_length=50, trim_whitespace=True)
 
     class Meta:
         model = Course
@@ -146,19 +137,23 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
+            "title",
         )
 
 
 class ListCourseManagementSerializer(serializers.ModelSerializer):
     course = ListCourseSerializer()
+    my_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseManagement
         fields = (
+            "my_rating",
             "course",
             "is_favorite",
             "status",
-            "sale_status"
+            "sale_status",
+            "progress",
         )
 
     def to_representation(self, obj):
@@ -169,3 +164,7 @@ class ListCourseManagementSerializer(serializers.ModelSerializer):
             representation[key] = course_representation[key]
         return representation
 
+    def get_my_rating(self, obj):
+        course_rating = obj.course.rating_obj
+        my_rating = course_rating.ratings.filter(user=self.context['request'].user).first()
+        return RatingSerializer(my_rating).data if my_rating else {}

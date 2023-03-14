@@ -33,6 +33,14 @@ class Topic(TimeStampedModel):
         return self.name
 
 
+class CourseTitle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True)
@@ -58,6 +66,7 @@ class Course(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(Topic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.ForeignKey(CourseTitle, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
@@ -80,7 +89,7 @@ class Course(TimeStampedModel):
 
 class CourseManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mgmt", null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     last_update = models.DateTimeField(null=True, blank=True)
     progress = models.SmallIntegerField(default=0, null=True, blank=True)
@@ -89,8 +98,6 @@ class CourseManagement(TimeStampedModel):
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
-    docs_completed = models.ManyToManyField(CourseDocument, blank=True)
-    videos_completed = models.ManyToManyField(UploadFile, blank=True)
 
     class Meta:
         ordering = ["course__name"]
@@ -98,11 +105,48 @@ class CourseManagement(TimeStampedModel):
     def __str__(self):
         return f"{self.course.name} - {self.user.__str__()}"
 
-    @property
-    def total_completed(self):
-        return self.docs_completed.all().count() + self.videos_completed.all().count()
+
+class LessonManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_mngt", null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return str(id)
+
+    class Meta:
+        unique_together = ('lesson', 'course')
 
 
+class CourseDocumentManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    document = models.ForeignKey(
+        CourseDocument, on_delete=models.CASCADE, related_name="course_doc_mngt", null=True, blank=True
+    )
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course_doc_mngt", null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(id)
+
+    class Meta:
+        unique_together = ('document', 'lesson', 'course', 'user')
 
 
+class VideoManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    video = models.ForeignKey(UploadFile, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
+    is_available = models.BooleanField(default=True)
 
+    def __str__(self):
+        return str(id)
+
+    class Meta:
+        unique_together = ('video', 'lesson', 'course', 'user')

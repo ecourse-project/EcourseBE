@@ -40,4 +40,4 @@ class ListAllCommentsView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        return get_comments_queryset().filter(course_id=self.request.query_params.get("course_id"))
+        return get_comments_queryset().filter(course_id=self.request.query_params.get("course_id")).order_by('-created')

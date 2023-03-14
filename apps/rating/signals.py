@@ -18,7 +18,7 @@ def update_course_rating(course, rating):
         course.save(update_fields=["num_of_rates", "rating"])
 
 
-@receiver(m2m_changed, sender=DocumentRating.rating.through)
+@receiver(m2m_changed, sender=DocumentRating.ratings.through)
 def update_document_rating_signal(sender, instance: DocumentRating, action, model, pk_set, **kwargs):
     if action == "post_add":
         rating_pk = list(pk_set)[0]
@@ -26,7 +26,7 @@ def update_document_rating_signal(sender, instance: DocumentRating, action, mode
         update_document_rating(instance.document, rating_obj.rating)
 
 
-@receiver(m2m_changed, sender=CourseRating.rating.through)
+@receiver(m2m_changed, sender=CourseRating.ratings.through)
 def update_course_rating_signal(sender, instance: CourseRating, action, model, pk_set, **kwargs):
     if action == "post_add":
         rating_pk = list(pk_set)[0]

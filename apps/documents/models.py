@@ -8,11 +8,19 @@ from apps.users.models import User
 from apps.documents.enums import STATUSES, AVAILABLE
 
 
+class DocumentTitle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Document(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    title = models.CharField(max_length=50, null=True, blank=True)
+    title = models.ForeignKey(DocumentTitle, null=True, blank=True, related_name="docs", on_delete=models.CASCADE)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
     thumbnail = models.ForeignKey(
@@ -35,7 +43,7 @@ class Document(TimeStampedModel):
 
 class DocumentManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="doc_mgmt", null=True, blank=True)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="doc_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     last_update = models.DateTimeField(null=True, blank=True)
     sale_status = models.CharField(max_length=15, choices=STATUSES, default=AVAILABLE)
@@ -46,6 +54,9 @@ class DocumentManagement(TimeStampedModel):
 
     def __str__(self):
         return f"{self.document.name} - {self.user.__str__()}"
+
+
+# def HomePageDocument
 
 
 
