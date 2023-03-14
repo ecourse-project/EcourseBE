@@ -2,8 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-
-from apps.users.models import User
+from apps.users.models import User, UserResetPassword
 from apps.users.exceptions import (
     OldPasswordNotCorrectException,
     PasswordNotMatchException,
@@ -60,6 +59,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.set_password(validated_data['password1'])
+        UserResetPassword.objects.filter(email=instance.email).update(is_changed=True)
         instance.save()
         return instance
 

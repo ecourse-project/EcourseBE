@@ -32,3 +32,4 @@ class User(AbstractUser):
 class UserResetPassword(models.Model):
     email = models.CharField(max_length=100)
     password_reset = models.CharField(max_length=1000, null=True, blank=True)
+    is_changed = models.BooleanField(default=True)

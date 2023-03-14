@@ -63,16 +63,20 @@ class GenerateCertificate(APIView):
 
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
-        response["Content-Disposition"] = "attachment;filename=hello.pdf"
+        response["Content-Disposition"] = "attachment;filename=certificate.pdf"
 
+        pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
+        my_canvas = canvas.Canvas(response, pagesize=pagesize)
+
+        my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=730, height=425)
         # font name: Helvetica
         # font size: 12
 
-        pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
-        text = "IN COMING"
+
+        # text = "IN COMING"
         # text_width = stringWidth(text, fontName="Helvetica", fontSize=12)
-        my_canvas = canvas.Canvas(response, pagesize=pagesize)
-        my_canvas.drawString(350, 230, text=text)
+        # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
+        # my_canvas.drawString(350, 230, text=text)
         my_canvas.save()
 
         return response

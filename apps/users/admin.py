@@ -7,12 +7,13 @@ admin.site.register(User)
 
 
 @admin.register(UserResetPassword)
-class QuizAdmin(admin.ModelAdmin):
+class UserResetPasswordAdmin(admin.ModelAdmin):
     list_display = (
         'email',
         'password_reset',
+        'is_changed',
     )
-    readonly_fields = ('password_reset',)
+    readonly_fields = ('password_reset', 'is_changed')
 
     def save_model(self, request, obj, form, change):
         email = obj.email.strip()
@@ -23,6 +24,7 @@ class QuizAdmin(admin.ModelAdmin):
             user.save(update_fields=["password"])
             obj.password_reset = new_password
         obj.save()
+        UserResetPassword.objects.filter(email=email).update(is_changed=False)
 
     def has_change_permission(self, request, obj=None):
         return False

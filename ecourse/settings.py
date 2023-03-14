@@ -20,12 +20,12 @@ from django.core.management.commands.runserver import Command as runserver
 env = environ.Env()
 env.read_env()
 
-runserver.default_port = env("PORT", default="4000")
+runserver.default_port = env("PORT", default="8000")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = env("BASE_URL", default="http://localhost")
+BASE_URL = env("BASE_URL", default="https://be.creativeteaching.net")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -34,7 +34,7 @@ BASE_URL = env("BASE_URL", default="http://localhost")
 SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DEBUG", default=True)
+DEBUG = env("DEBUG", default=False)
 
 INTERNAL_IPS = [
     '127.0.0.1'
@@ -122,7 +122,7 @@ AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourse"),
+    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourses"),
 }
 
 
@@ -215,8 +215,8 @@ CORS_ALLOW_HEADERS = (
 ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOSTS", default="*")]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env("ACCESS_TOKEN_LIFETIME_MINUTES", default=60)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env("REFRESH_TOKEN_LIFETIME_MINUTES", default=60)),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env("ACCESS_TOKEN_LIFETIME_MINUTES", default=360)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env("REFRESH_TOKEN_LIFETIME_MINUTES", default=360)),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
