@@ -12,9 +12,9 @@ def parse_choices(choices: List[Tuple]) -> List[Dict[str, Any]]:
 
 
 def get_header_query_type(header_detail: HeaderDetail):
-    if header_detail.document_title:
+    if header_detail.document_topic:
         return "document"
-    elif header_detail.course_title:
+    elif header_detail.course_topic:
         return "course"
     else:
         return ""
@@ -24,7 +24,7 @@ def get_home_page() -> list:
     homepage = []
     for obj in HomePageDetail.objects.all():
         homepage.append({
-            "title": obj.display_name,
+            "topic": obj.display_name,
             "detail": {
                 'document_id': obj.documents,
                 'course_id': obj.courses,
@@ -41,7 +41,7 @@ def get_headers() -> list:
             "header": header.display_name,
             "detail": {
                 "type": get_header_query_type(header_detail.first()),
-                "title": [detail.display_name for detail in header_detail]
+                "topic": [detail.display_name for detail in header_detail]
             } if header_detail.exists() else {}
         })
     return list_header

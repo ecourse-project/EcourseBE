@@ -8,7 +8,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     file = UploadFileSerializer()
     name = serializers.CharField(max_length=100, trim_whitespace=True)
-    title = serializers.CharField(max_length=50, trim_whitespace=True)
+    topic = serializers.CharField(max_length=50, trim_whitespace=True)
     description = serializers.CharField(trim_whitespace=True)
 
     class Meta:
@@ -19,7 +19,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "modified",
             'name',
             'description',
-            'title',
+            'topic',
             'price',
             'sold',
             'thumbnail',

@@ -23,10 +23,10 @@ class DocumentListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = DocumentManagementService(self.request.user)
-        title = self.request.query_params.get("title")
+        topic = self.request.query_params.get("topic")
         list_id = self.request.query_params.getlist('document_id')
-        if title:
-            return service.get_doc_mngt_queryset_by_selling.filter(document__title__name__icontains=title)
+        if topic:
+            return service.get_doc_mngt_queryset_by_selling.filter(document__topic__name__icontains=topic)
         elif list_id:
             return service.get_documents_mngt_by_list_id(list_id)
         else:
@@ -70,10 +70,10 @@ class HomepageDocumentListAPIView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        title = self.request.query_params.get("title")
+        topic = self.request.query_params.get("topic")
         list_id = self.request.query_params.getlist('document_id')
-        if title:
-            return DocumentService().get_documents_by_title(title)
+        if topic:
+            return DocumentService().get_documents_by_topic(topic)
         elif list_id:
             return DocumentService().get_documents_by_list_id(list_id)
         else:

@@ -28,7 +28,7 @@ def calculate_lesson_progress(lesson_mngt):
 @receiver(post_save, sender=Course)
 def create_rating(created, instance, **kwargs):
     if created:
-        CourseRating.objects.create(document=instance)
+        CourseRating.objects.create(course=instance)
         users = get_active_users()
         if users.count() > 0:
             init_course_mngt(instance, users)

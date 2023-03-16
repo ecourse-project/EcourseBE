@@ -71,6 +71,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'debug_toolbar',
     'django_better_admin_arrayfield',
+    'admin_extra_buttons',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -12,8 +12,8 @@ class CourseDocument(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    title = models.CharField(max_length=50, null=True, blank=True)
-    file = models.ForeignKey(UploadFile, on_delete=models.CASCADE, null=True, blank=True)
+    topic = models.CharField(max_length=50, null=True, blank=True)
+    file = models.ForeignKey(UploadFile, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -22,20 +22,12 @@ class CourseDocument(TimeStampedModel):
         return self.name
 
 
-class Topic(TimeStampedModel):
+class CourseTopic(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
-
-    def __str__(self):
-        return self.name
-
-
-class CourseTitle(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -65,14 +57,13 @@ class Lesson(TimeStampedModel):
 class Course(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    topic = models.ForeignKey(Topic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
-    title = models.ForeignKey(CourseTitle, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
+    topic = models.ForeignKey(CourseTopic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
     lessons = models.ManyToManyField(Lesson, blank=True, related_name="courses")
     thumbnail = models.ForeignKey(
-        UploadImage, related_name="courses", on_delete=models.CASCADE, null=True, blank=True,
+        UploadImage, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True,
     )
     is_selling = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)

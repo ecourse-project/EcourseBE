@@ -17,8 +17,8 @@ class HeaderDetailAdmin(admin.ModelAdmin):
     list_display = (
         "display_name",
         "header",
-        "document_title",
-        "course_title",
+        "document_topic",
+        "course_topic",
     )
 
 

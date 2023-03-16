@@ -68,15 +68,17 @@ class GenerateCertificate(APIView):
         pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
         my_canvas = canvas.Canvas(response, pagesize=pagesize)
 
-        my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=730, height=425)
+        my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
         # font name: Helvetica
         # font size: 12
 
 
-        # text = "IN COMING"
-        # text_width = stringWidth(text, fontName="Helvetica", fontSize=12)
+        text = "DIEP HAI BINH"
+        text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
         # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
-        # my_canvas.drawString(350, 230, text=text)
+        # my_canvas.setFillColor()
+        my_canvas.setFont("Helvetica-Bold", 40, leading=None)
+        my_canvas.drawCentredString(458, 210, text=text)
         my_canvas.save()
 
         return response

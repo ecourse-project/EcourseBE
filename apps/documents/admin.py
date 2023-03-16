@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Q
 
-from apps.documents.models import Document, DocumentManagement, DocumentTitle
+from apps.documents.models import Document, DocumentManagement, DocumentTopic
 from apps.documents.enums import AVAILABLE, IN_CART
 
 from apps.rating.models import DocumentRating
@@ -48,8 +48,8 @@ class DocumentAdmin(admin.ModelAdmin):
         return form
 
 
-@admin.register(DocumentTitle)
-class DocumentTitleAdmin(admin.ModelAdmin):
+@admin.register(DocumentTopic)
+class DocumentTopicAdmin(admin.ModelAdmin):
     list_display = (
         "name",
     )
