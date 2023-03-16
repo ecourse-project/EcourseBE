@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from apps.quiz.models import Quiz, Answer
 from apps.quiz.api.serializers import QuizSerializer
 from apps.quiz.exceptions import CompletedQuizException
-from apps.courses.models import CourseManagement
+from apps.courses.models import CourseManagement, Course
 
 import io
 from django.http import FileResponse
@@ -59,26 +59,25 @@ class QuizResultView(APIView):
 
 
 class GenerateCertificate(APIView):
-    permission_classes = (AllowAny,)
-
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
         response["Content-Disposition"] = "attachment;filename=certificate.pdf"
 
         pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
         my_canvas = canvas.Canvas(response, pagesize=pagesize)
-
         my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
-        # font name: Helvetica
-        # font size: 12
 
+        course_id = self.request.query_params.get("course_id")
+        course_name = Course.objects.filter(id=course_id).first().name or "NONE"
+        user_name = self.request.user.full_name or "NONE"
 
-        text = "DIEP HAI BINH"
-        text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
+        # text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
         # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
         # my_canvas.setFillColor()
-        my_canvas.setFont("Helvetica-Bold", 40, leading=None)
-        my_canvas.drawCentredString(458, 210, text=text)
+        my_canvas.setFont("Helvetica", 35, leading=None)
+        my_canvas.drawCentredString(458, 220, text=user_name)
+        my_canvas.setFont("Helvetica", 12, leading=None)
+        my_canvas.drawCentredString(458, 150, text=course_name)
         my_canvas.save()
 
         return response
