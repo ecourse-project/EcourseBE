@@ -10,4 +10,4 @@ def get_file_path(file_name, new_file_name="default", folder_name=None):
         folder = "/".join([folder_name, str(date_now.year), f"{date_now:%m}", f"{date_now:%d}"])
     file_name_split = os.path.splitext(file_name)
     file_ext = file_name_split[1] or ""
-    return f"{folder}/{new_file_name}{file_ext}", file_ext.replace(".", "")
+    return f"{folder}/{new_file_name}{file_ext}", file_ext.replace(".", "").lower()

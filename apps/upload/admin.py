@@ -19,6 +19,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "file_path",
         "file_size",
         "file_type",
+        "duration",
         "created",
     )
     readonly_fields = ("file_size", "file_type", "duration")
@@ -52,7 +53,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 @admin.register(UploadImage)
 class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     list_display = (
-        "id",
+        "image_name",
         "image_path",
         "image_size",
         "image_type",

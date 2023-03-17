@@ -14,7 +14,8 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
 
 
 @receiver(models.signals.post_delete, sender=UploadImage)
-def auto_delete_file_on_delete(sender, instance, **kwargs):
+def auto_delete_image_on_delete(sender, instance, **kwargs):
     if instance.image_path:
         if os.path.isfile(instance.image_path.path):
             os.remove(instance.image_path.path)
+
