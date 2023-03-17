@@ -24,12 +24,12 @@ class CourseService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
                      )
-        ).select_related('topic', 'thumbnail', 'title')
+        ).select_related('topic', 'thumbnail')
 
-    def get_courses_by_title(self, title: str):
-        if title:
+    def get_courses_by_topic(self, topic: str):
+        if topic:
             return self.get_all_courses_queryset.filter(
-                title__name__icontains=title,
+                topic__name__icontains=topic,
                 is_selling=True,
             )
         return Course.objects.none()

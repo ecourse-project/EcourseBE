@@ -11,12 +11,12 @@ from apps.rating.models import DocumentRating
 class DocumentService(object):
     @property
     def get_all_documents_queryset(self):
-        return Document.objects.select_related('thumbnail', 'file', 'title').all().order_by('name')
+        return Document.objects.select_related('thumbnail', 'file', 'topic').all().order_by('name')
 
-    def get_documents_by_title(self, title: str):
-        if title:
+    def get_documents_by_topic(self, topic: str):
+        if topic:
             return self.get_all_documents_queryset.filter(
-                title__name__icontains=title,
+                topic__name__icontains=topic,
                 is_selling=True,
             )
         return Document.objects.none()
@@ -44,7 +44,7 @@ class DocumentManagementService:
     def get_doc_management_queryset(self):
         return DocumentManagement.objects.prefetch_related(
             Prefetch('document', queryset=Document.objects.select_related(
-                'thumbnail', 'file', 'title'))
+                'thumbnail', 'file', 'topic'))
         ).filter(user=self.user)
 
     def init_documents_management(self):

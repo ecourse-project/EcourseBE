@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.courses.models import Course, Lesson, Topic, CourseDocument, CourseManagement
+from apps.courses.models import Course, Lesson, CourseTopic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
 from apps.rating.api.serializers import RatingSerializer
 from apps.rating.models import CourseRating
@@ -15,14 +15,14 @@ class CourseDocumentSerializer(serializers.ModelSerializer):
             "modified",
             "name",
             "description",
-            "title",
+            "topic",
             "file",
         )
 
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Topic
+        model = CourseTopic
         fields = (
             "id",
             "name",
@@ -65,7 +65,6 @@ class CourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
-            "title",
         )
 
 
@@ -121,7 +120,6 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 class ListCourseSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     topic = TopicSerializer()
-    title = serializers.CharField(max_length=50, trim_whitespace=True)
 
     class Meta:
         model = Course
@@ -137,7 +135,6 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "views",
             "rating",
             "num_of_rates",
-            "title",
         )
 
 

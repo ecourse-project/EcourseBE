@@ -3,8 +3,7 @@ from django.db.models import Q
 from apps.courses.models import (
     Course,
     Lesson,
-    Topic,
-    CourseTitle,
+    CourseTopic,
     CourseDocument,
     LessonManagement,
     CourseManagement,
@@ -20,18 +19,11 @@ from apps.users.services import get_active_users
 from apps.rating.models import CourseRating
 
 
-@admin.register(CourseTitle)
-class CourseDocumentAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-    )
-
-
 @admin.register(CourseDocument)
 class CourseDocumentAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "title",
+        "topic",
     )
 
     def get_form(self, request, obj=None, **kwargs):
@@ -43,7 +35,7 @@ class CourseDocumentAdmin(admin.ModelAdmin):
         return form
 
 
-@admin.register(Topic)
+@admin.register(CourseTopic)
 class TopicAdmin(admin.ModelAdmin):
     list_display = (
         "name",

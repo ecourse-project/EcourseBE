@@ -10,9 +10,9 @@ class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file_name = models.CharField(max_length=255, null=True, blank=True)
     file_path = models.FileField(max_length=128, null=True, blank=True)
-    file_size = models.PositiveBigIntegerField(null=True)
+    file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
-    duration = models.PositiveIntegerField(default=0)
+    duration = models.PositiveIntegerField(default=0, help_text=("Seconds"))
 
     def __str__(self):
         return str(self.file_name)
@@ -28,7 +28,7 @@ class UploadFile(TimeStampedModel):
 class UploadImage(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image_path = models.ImageField(max_length=128, null=True, blank=True)
-    image_size = models.PositiveBigIntegerField(null=True)
+    image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):

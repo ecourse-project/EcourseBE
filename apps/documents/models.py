@@ -8,7 +8,7 @@ from apps.users.models import User
 from apps.documents.enums import STATUSES, AVAILABLE
 
 
-class DocumentTitle(models.Model):
+class DocumentTopic(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
 
@@ -20,14 +20,14 @@ class Document(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    title = models.ForeignKey(DocumentTitle, null=True, blank=True, related_name="docs", on_delete=models.CASCADE)
+    topic = models.ForeignKey(DocumentTopic, null=True, blank=True, related_name="docs", on_delete=models.SET_NULL)
     price = models.IntegerField(default=0)
     sold = models.IntegerField(default=0)
     thumbnail = models.ForeignKey(
-        UploadImage, related_name="documents", on_delete=models.CASCADE, null=True, blank=True,
+        UploadImage, related_name="documents", on_delete=models.SET_NULL, null=True, blank=True,
     )
     file = models.ForeignKey(
-        UploadFile, related_name="documents", on_delete=models.CASCADE, null=True, blank=True,
+        UploadFile, related_name="documents", on_delete=models.SET_NULL, null=True, blank=True,
     )
     is_selling = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)
