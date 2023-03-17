@@ -12,7 +12,7 @@ class UploadFile(TimeStampedModel):
     file_path = models.FileField(max_length=128, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
-    duration = models.PositiveIntegerField(default=0, help_text=("Seconds"))
+    duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
 
     def __str__(self):
         return str(self.file_name)
@@ -27,12 +27,13 @@ class UploadFile(TimeStampedModel):
 
 class UploadImage(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    image_name = models.CharField(max_length=255, null=True, blank=True)
     image_path = models.ImageField(max_length=128, null=True, blank=True)
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
-        return str(self.image_path)
+        return str(self.image_name)
 
     def delete_image(self):
         self.image_path.delete()

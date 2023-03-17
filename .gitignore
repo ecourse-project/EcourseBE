@@ -315,6 +315,5 @@ dist
 
 flow
 test
-media
 static
-ecourse/.env
+staticfiles
