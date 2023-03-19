@@ -54,6 +54,7 @@ LOCAL_APPS = [
     'apps.quiz.apps.QuizConfig',
     'apps.rating.apps.RatingConfig',
     'apps.settings.apps.SettingsConfig',
+    'apps.class.apps.ClassConfig',
 ]
 
 DJANGO_APPS = [

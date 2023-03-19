@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from apps.quiz.models import Quiz, Answer
+from apps.quiz.models import Quiz, Answer, AnswerChoices
+
+
+@admin.register(AnswerChoices)
+class AnswerChoicesAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'choice',
+    )
 
 
 @admin.register(Quiz)
