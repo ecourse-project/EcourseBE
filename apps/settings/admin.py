@@ -26,4 +26,5 @@ class HeaderDetailAdmin(admin.ModelAdmin):
 class HomePageDetailAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "display_name",
+        "created",
     )

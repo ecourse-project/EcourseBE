@@ -22,7 +22,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "duration",
         "created",
     )
-    readonly_fields = ("file_size", "file_type", "duration")
+    readonly_fields = ("file_path", "file_size", "file_type", "duration", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Files(self, request):
@@ -43,8 +43,8 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
         obj.save()
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
     # def has_delete_permission(self, request, obj=None):
     #     return False
@@ -59,7 +59,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "image_type",
         "created",
     )
-    readonly_fields = ("image_size", "image_type")
+    readonly_fields = ("image_path", "image_size", "image_type", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Images(self, request):
@@ -77,8 +77,8 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             obj.image_type = file_ext or None
         obj.save()
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
     # def has_delete_permission(self, request, obj=None):
     #     return False

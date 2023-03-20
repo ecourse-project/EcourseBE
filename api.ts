@@ -222,16 +222,16 @@ export interface Course {
   name: string;
   topic: Topic;
   description: string;
-  price: number;
-  sold: number;
+  price?: number;
+  sold?: number;
   lessons?: Lesson[];
   progress?: number;
   status?: ProgressStatusEnum;
   thumbnail?: OImageUpload;
   sale_status?: SaleStatusEnum;
-  views: number;
-  rating: number;
-  num_of_rates: number;
+  // views: number;
+  // rating: number;
+  // num_of_rates: number;
   mark?: number;
   is_done_quiz?: boolean;
   is_favorite?: boolean;
@@ -239,6 +239,14 @@ export interface Course {
   my_rating?: Rating;
   quiz_detail?: QuizResult;
   rating_stats?: RatingStats;
+}
+
+// ===========================================Classes===========================================
+export interface Class {
+  id: string;
+  name: string;
+  user_accepted: boolean;
+  course: Course;
 }
 
 // ===========================================Comments===========================================
@@ -483,6 +491,7 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
 
 export const apiURL = {
   login: () => 'api/users-auth/token/',
+  refresh: () => 'api/users-auth/token/refresh/',
   me: () => 'api/users/me/',
   register: () => 'api/users-auth/registration/',
   existEmail: (email) => `api/users/exists/?email=${email}`,
@@ -555,6 +564,10 @@ export const apiURL = {
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
   initData: () => `api/settings/init/`,
+
+  listClasses: (limit, page) => `api/classes/?limit=${limit}&page=${page}`,
+  getClassDetail: (class_id) => `api/classes/detail/&class_id=${class_id}`,
+  requestJoinClass: () => `api/classes/join-request/`,
 };
 
 class CourseService {
@@ -745,6 +758,18 @@ class CourseService {
 
   static initData(): Promise<{"success": true}> {
     return apiClient.get(apiURL.initData());
+  }
+
+  static listClasses(limit: number, page: number): Promise<Pagination<Class>> {
+    return apiClient.get(apiURL.listClasses(limit, page));
+  }
+
+  static getClassDetail(class_id: string): Promise<Class> {
+    return apiClient.get(apiURL.getClassDetail(class_id));
+  }
+
+  static requestJoinClass(class_id: string): Promise<Rating> {
+    return apiClient.post(apiURL.requestJoinClass(), {class_id: class_id});
   }
 }
 export default CourseService;

@@ -14,6 +14,9 @@ class UploadFile(TimeStampedModel):
     file_type = models.CharField(max_length=10, null=True, blank=True)
     duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
 
+    class Meta:
+        ordering = ["file_name"]
+
     def __str__(self):
         return str(self.file_name)
 
@@ -31,6 +34,9 @@ class UploadImage(TimeStampedModel):
     image_path = models.ImageField(max_length=128, null=True, blank=True)
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
+
+    class Meta:
+        ordering = ["image_name"]
 
     def __str__(self):
         return str(self.image_name)
