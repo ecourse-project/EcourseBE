@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.courses.models import CourseManagement
 from apps.courses.api.serializers import (
     CourseManagementSerializer,
     ListCourseManagementSerializer,
@@ -12,6 +11,7 @@ from apps.courses.api.serializers import (
 )
 from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
+from apps.users.models import User
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
@@ -51,8 +51,11 @@ class CourseRetrieveView(generics.RetrieveAPIView):
     serializer_class = CourseManagementSerializer
 
     def get_object(self):
-        course_id = self.request.query_params.get('course_id')
-        return CourseManagement.objects.get(user=self.request.user, course_id=course_id)
+        return CourseManagementService(
+            user=self.request.user
+        ).get_course_management_queryset.filter(
+            course_id=self.request.query_params.get('course_id')
+        ).first()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

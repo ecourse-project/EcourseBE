@@ -7,7 +7,6 @@ from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 @admin.register(Header)
 class HeaderAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
         "display_name",
     )
 
@@ -17,8 +16,11 @@ class HeaderDetailAdmin(admin.ModelAdmin):
     list_display = (
         "display_name",
         "header",
+        "order",
         "document_topic",
         "course_topic",
+        "class_topic",
+        "post_topic",
     )
 
 

@@ -13,6 +13,10 @@ class AnswerChoicesAdmin(admin.ModelAdmin):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
+    search_fields = (
+        "question",
+        "course__name",
+    )
     list_display = (
         'custom_question',
         'course',
@@ -24,6 +28,9 @@ class QuizAdmin(admin.ModelAdmin):
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+    )
     list_display = (
         'user',
         'quiz',

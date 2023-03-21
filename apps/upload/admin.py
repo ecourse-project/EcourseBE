@@ -14,6 +14,10 @@ from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 
 @admin.register(UploadFile)
 class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    search_fields = (
+        "file_name",
+        "file_type",
+    )
     list_display = (
         "file_name",
         "file_path",
@@ -22,7 +26,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "duration",
         "created",
     )
-    readonly_fields = ("file_path", "file_size", "file_type", "duration", "created")
+    readonly_fields = ("file_size", "file_type", "duration", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Files(self, request):
@@ -52,6 +56,10 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
 @admin.register(UploadImage)
 class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    search_fields = (
+        "image_name",
+        "image_type",
+    )
     list_display = (
         "image_name",
         "image_path",
@@ -59,7 +67,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "image_type",
         "created",
     )
-    readonly_fields = ("image_path", "image_size", "image_type", "created")
+    readonly_fields = ("image_size", "image_type", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Images(self, request):

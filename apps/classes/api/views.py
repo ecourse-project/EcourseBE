@@ -14,6 +14,16 @@ class JoinRequestView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class ClassListView(generics.ListAPIView):
+    serializer_class = ListClassSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        if self.request.query_params.get("topic"):
+            return ClassesService().get_classes_by_topic(self.request.query_params.get("topic"))
+        return ClassesService().get_all_classes_queryset
+
+
 class ClassDetailView(generics.RetrieveAPIView):
     serializer_class = ClassSerializer
 
@@ -21,9 +31,4 @@ class ClassDetailView(generics.RetrieveAPIView):
         return ClassesService().get_all_classes_queryset.filter(id=self.request.query_params.get("class_id")).first()
 
 
-class ClassListView(generics.ListAPIView):
-    serializer_class = ListClassSerializer
-    pagination_class = StandardResultsSetPagination
 
-    def get_queryset(self):
-        return ClassesService().get_all_classes_queryset

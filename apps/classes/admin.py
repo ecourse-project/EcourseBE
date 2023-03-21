@@ -26,6 +26,10 @@ class ClassTopicAdmin(admin.ModelAdmin):
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+        "course__name",
+    )
     list_display = (
         "name",
         "topic",
@@ -35,6 +39,10 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(ClassRequest)
 class ClassRequestAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+        "class_request__name",
+    )
     list_display = (
         "user",
         "class_request",

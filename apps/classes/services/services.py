@@ -16,4 +16,9 @@ class ClassesService:
                         "documents",
                         queryset=CourseDocument.objects.select_related("file")
                     )))
-        ).select_related("course")
+        ).select_related("course", "topic")
+
+    def get_classes_by_topic(self, topic):
+        if topic.strip():
+            return self.get_all_classes_queryset.filter(topic__name__icontains=topic.strip())
+        return Class.objects.none()

@@ -27,9 +27,9 @@ class CourseService:
         ).select_related('topic', 'thumbnail')
 
     def get_courses_by_topic(self, topic: str):
-        if topic:
+        if topic.strip():
             return self.get_all_courses_queryset.filter(
-                topic__name__icontains=topic,
+                topic__name__icontains=topic.strip(),
                 is_selling=True,
             )
         return Course.objects.none()

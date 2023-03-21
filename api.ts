@@ -138,6 +138,7 @@ export interface Document {
   is_favorite?: boolean;
   rating_detail?: Rating[];
   my_rating?: Rating;
+  download: boolean;
 }
 
 export interface IDocumentUpload {
@@ -432,7 +433,18 @@ export interface Homepage {
   topic: string;
   detail: HomepageDetail;
 }
-//========================================================
+
+// ===========================================Post===========================================
+export interface Post {
+  id: string;
+  created: string;
+  modified: string;
+  name: string;
+  topic: string;
+  content: string;
+  thumbnail: OImageUpload;
+  images: OImageUpload[];
+}
 
 
 
@@ -565,9 +577,12 @@ export const apiURL = {
   getHome: () => `api/settings/home/`,
   initData: () => `api/settings/init/`,
 
-  listClasses: (limit, page) => `api/classes/?limit=${limit}&page=${page}`,
+  listClasses: (limit, page, topic?) => `api/classes/?limit=${limit}&page=${page}&topic=${topic}`,
   getClassDetail: (class_id) => `api/classes/detail/&class_id=${class_id}`,
   requestJoinClass: () => `api/classes/join-request/`,
+
+  listPosts: (limit, page, topic?) => `api/posts/?limit=${limit}&page=${page}&topic=${topic}`,
+  getPostDetail: (post_id) => `api/posts/detail/&post_id=${post_id}`,
 };
 
 class CourseService {
@@ -760,8 +775,8 @@ class CourseService {
     return apiClient.get(apiURL.initData());
   }
 
-  static listClasses(limit: number, page: number): Promise<Pagination<Class>> {
-    return apiClient.get(apiURL.listClasses(limit, page));
+  static listClasses(limit: number, page: number, topic?: string): Promise<Pagination<Class>> {
+    return apiClient.get(apiURL.listClasses(limit, page, topic));
   }
 
   static getClassDetail(class_id: string): Promise<Class> {
@@ -770,6 +785,14 @@ class CourseService {
 
   static requestJoinClass(class_id: string): Promise<Rating> {
     return apiClient.post(apiURL.requestJoinClass(), {class_id: class_id});
+  }
+
+  static listPosts(limit: number, page: number, topic?: string): Promise<Pagination<Post>> {
+    return apiClient.get(apiURL.listPosts(limit, page, topic));
+  }
+
+  static getPostDetail(post_id: string): Promise<Post> {
+    return apiClient.get(apiURL.getPostDetail(post_id));
   }
 }
 export default CourseService;

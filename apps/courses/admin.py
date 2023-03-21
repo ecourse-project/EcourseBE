@@ -15,12 +15,14 @@ from apps.courses.services.admin import (
 from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
-from apps.users.services import get_active_users
-from apps.rating.models import CourseRating
 
 
 @admin.register(CourseDocument)
 class CourseDocumentAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+        "topic__name",
+    )
     list_display = (
         "name",
         "topic",
@@ -36,7 +38,7 @@ class CourseDocumentAdmin(admin.ModelAdmin):
 
 
 @admin.register(CourseTopic)
-class TopicAdmin(admin.ModelAdmin):
+class CourseTopicAdmin(admin.ModelAdmin):
     list_display = (
         "name",
     )
@@ -141,5 +143,24 @@ class CourseAdmin(admin.ModelAdmin):
     def delete_model(self, request, obj):
         CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
         obj.delete()
+
+
+@admin.register(CourseManagement)
+class CourseManagementAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+        "course__name",
+        "sale_status",
+    )
+    list_display = (
+        "user",
+        "course",
+        "progress",
+        "mark",
+        "is_done_quiz",
+        "sale_status",
+    )
+
+
 
 

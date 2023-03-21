@@ -14,9 +14,9 @@ class DocumentService(object):
         return Document.objects.select_related('thumbnail', 'file', 'topic').all().order_by('name')
 
     def get_documents_by_topic(self, topic: str):
-        if topic:
+        if topic.strip():
             return self.get_all_documents_queryset.filter(
-                topic__name__icontains=topic,
+                topic__name__icontains=topic.strip(),
                 is_selling=True,
             )
         return Document.objects.none()
@@ -57,9 +57,9 @@ class DocumentManagementService:
 
     @property
     def get_doc_mngt_queryset_by_selling(self):
-        query = Q(document__is_selling=True)
-        query |= Q(document__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
-        return self.get_doc_management_queryset.filter(query)
+        return self.get_doc_management_queryset.filter(
+            Q(document__is_selling=True) | Q(Q(document__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING]))
+        )
 
     def get_documents_mngt_by_list_id(self, list_id: list):
         if list_id:

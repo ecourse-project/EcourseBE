@@ -13,7 +13,6 @@ from apps.upload.models import UploadFile
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     search_fields = (
-        "id",
         "name",
     )
     list_display = (
@@ -50,6 +49,23 @@ class DocumentAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentTopic)
 class DocumentTopicAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+    )
     list_display = (
         "name",
+    )
+
+
+@admin.register(DocumentManagement)
+class DocumentManagementAdmin(admin.ModelAdmin):
+    search_fields = (
+        "document__name",
+        "user__email",
+        "sale_status",
+    )
+    list_display = (
+        "user",
+        "document",
+        "sale_status",
     )

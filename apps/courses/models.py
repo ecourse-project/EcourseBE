@@ -85,7 +85,7 @@ class CourseManagement(TimeStampedModel):
     last_update = models.DateTimeField(null=True, blank=True)
     progress = models.SmallIntegerField(default=0, null=True, blank=True)
     status = models.CharField(max_length=20, choices=PROGRESS_STATUS, default=IN_PROGRESS)
-    mark = models.DecimalField(max_digits=3, decimal_places=1, default=0)
+    mark = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)

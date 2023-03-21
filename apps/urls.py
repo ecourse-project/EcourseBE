@@ -13,4 +13,5 @@ urlpatterns = [
     path("quiz/", include("apps.quiz.api.urls")),
     path("rating/", include("apps.rating.api.urls")),
     path("settings/", include("apps.settings.api.urls")),
+    path("posts/", include("apps.posts.api.urls")),
 ]

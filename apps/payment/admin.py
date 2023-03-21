@@ -12,9 +12,11 @@ from apps.courses import enums as course_enums
 from apps.courses.services.admin import CourseAdminService
 
 
-
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+    )
     list_display = (
         "code",
         "user",
