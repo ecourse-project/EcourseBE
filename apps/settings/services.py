@@ -16,6 +16,10 @@ def get_header_query_type(header_detail: HeaderDetail):
         return "document"
     elif header_detail.course_topic:
         return "course"
+    elif header_detail.class_topic:
+        return "class"
+    elif header_detail.post_topic:
+        return "post"
     else:
         return ""
 
@@ -28,6 +32,8 @@ def get_home_page() -> list:
             "detail": {
                 'document_id': obj.documents,
                 'course_id': obj.courses,
+                'class_id': obj.classes,
+                'post_id': obj.posts,
             }
         })
     return homepage

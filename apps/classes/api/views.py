@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -19,9 +20,15 @@ class ClassListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        if self.request.query_params.get("topic"):
-            return ClassesService().get_classes_by_topic(self.request.query_params.get("topic"))
-        return ClassesService().get_all_classes_queryset
+        service = ClassesService()
+        topic = self.request.query_params.get("topic")
+        list_id = self.request.query_params.getlist('class_id')
+        if topic:
+            return service.get_classes_by_topic(topic)
+        elif list_id:
+            return service.get_classes_by_list_id(list_id)
+        else:
+            return service.get_all_cleasses_queryset
 
 
 class ClassDetailView(generics.RetrieveAPIView):
@@ -29,6 +36,23 @@ class ClassDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         return ClassesService().get_all_classes_queryset.filter(id=self.request.query_params.get("class_id")).first()
+
+
+class HomepageClassListAPIView(generics.ListAPIView):
+    serializer_class = ListClassSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = StandardResultsSetPagination
+    authentication_classes = ()
+
+    def get_queryset(self):
+        topic = self.request.query_params.get("topic")
+        list_id = self.request.query_params.getlist('course_id')
+        if topic:
+            return ClassesService().get_classes_by_topic(topic)
+        elif list_id:
+            return ClassesService().get_classes_by_list_id(list_id)
+        else:
+            return ClassesService().get_all_classes_queryset
 
 
 

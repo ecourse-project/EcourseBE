@@ -413,6 +413,8 @@ export interface QuizResult {
 export enum NavTypeEnum {
   DOCUMENT = 'DOCUMENT',
   COURSE = 'COURSE',
+  CLASS = 'CLASS',
+  POST = 'POST',
 }
 export interface NavDetail {
   type: NavTypeEnum;
@@ -427,6 +429,9 @@ export interface Nav {
 export interface HomepageDetail {
   document_id: string[];
   course_id: string[];
+  class_id: string[];
+  post_id: string[];
+
 }
 
 export interface Homepage {
@@ -577,7 +582,20 @@ export const apiURL = {
   getHome: () => `api/settings/home/`,
   initData: () => `api/settings/init/`,
 
-  listClasses: (limit, page, topic?) => `api/classes/?limit=${limit}&page=${page}&topic=${topic}`,
+  getHomeClasses: (limit, page, topic?, class_id?: string[]) => {
+    let url = `api/classes/home/?limit=${limit}&page=${page}&topic=${topic}`;
+    if (class_id) {
+      url = parseParamsToUrL(url, class_id, `class_id`);
+    }
+    return url;
+  },
+  listClasses: (limit, page, topic?, class_id?: string[]) => {
+    let url = `api/classes/?limit=${limit}&page=${page}&topic=${topic}`;
+    if (class_id) {
+      url = parseParamsToUrL(url, class_id, `class_id`);
+    }
+    return url;
+  },
   getClassDetail: (class_id) => `api/classes/detail/&class_id=${class_id}`,
   requestJoinClass: () => `api/classes/join-request/`,
 
@@ -775,8 +793,12 @@ class CourseService {
     return apiClient.get(apiURL.initData());
   }
 
-  static listClasses(limit: number, page: number, topic?: string): Promise<Pagination<Class>> {
-    return apiClient.get(apiURL.listClasses(limit, page, topic));
+  static getHomeClasses(limit: number, page: number, topic?: string, class_id?: string[]): Promise<Pagination<Class>> {
+    return apiClient.get(apiURL.getHomeClasses(limit, page, topic, class_id));
+  }
+
+  static listClasses(limit: number, page: number, topic?: string, class_id?: string[]): Promise<Pagination<Class>> {
+    return apiClient.get(apiURL.listClasses(limit, page, topic, class_id));
   }
 
   static getClassDetail(class_id: string): Promise<Class> {
@@ -794,5 +816,8 @@ class CourseService {
   static getPostDetail(post_id: string): Promise<Post> {
     return apiClient.get(apiURL.getPostDetail(post_id));
   }
+
+
+
 }
 export default CourseService;

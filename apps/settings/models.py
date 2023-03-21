@@ -37,6 +37,8 @@ class HomePageDetail(models.Model):
     display_name = models.CharField(max_length=100, null=True, blank=True)
     documents = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     courses = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+    classes = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+    posts = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -6,4 +6,5 @@ urlpatterns = [
     path("join-request/", views.JoinRequestView.as_view()),
     path("detail/", views.ClassDetailView.as_view()),
     path("", views.ClassListView.as_view()),
+    path("home/", views.HomepageClassListAPIView.as_view()),
 ]
