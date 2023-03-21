@@ -20,6 +20,7 @@ class PostAdmin(admin.ModelAdmin):
         "topic__name",
     )
     list_display = (
+        "id",
         "name",
         "topic",
         "created",

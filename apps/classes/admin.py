@@ -31,6 +31,7 @@ class ClassAdmin(admin.ModelAdmin):
         "course__name",
     )
     list_display = (
+        "id",
         "name",
         "topic",
         "course",
