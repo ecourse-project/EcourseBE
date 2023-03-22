@@ -13,9 +13,14 @@ class PostListView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        if self.request.query_params.get("topic"):
-            return PostsService().get_posts_by_topic(self.request.query_params.get("topic"))
-        return PostsService().get_all_posts_queryset
+        topic = self.request.query_params.get("topic")
+        list_id = self.request.query_params.getlist('course_id')
+        if topic:
+            return PostsService().get_posts_by_topic(topic)
+        elif list_id:
+            return PostsService().get_posts_by_list_id(list_id)
+        else:
+            return PostsService().get_all_posts_queryset
 
 
 class PostRetrieveView(generics.RetrieveAPIView):
@@ -25,4 +30,3 @@ class PostRetrieveView(generics.RetrieveAPIView):
 
     def get_object(self):
         return PostsService().get_all_posts_queryset.filter(id=self.request.query_params.get("post_id")).first()
-

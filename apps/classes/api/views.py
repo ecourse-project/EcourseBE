@@ -28,7 +28,7 @@ class ClassListView(generics.ListAPIView):
         elif list_id:
             return service.get_classes_by_list_id(list_id)
         else:
-            return service.get_all_cleasses_queryset
+            return service.get_all_classes_queryset
 
 
 class ClassDetailView(generics.RetrieveAPIView):
