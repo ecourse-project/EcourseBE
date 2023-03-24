@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
 from apps.courses.api.serializers import CourseSerializer
-from apps.classes.models import Class
+from apps.classes.models import Class, ClassRequest
+from apps.classes.services.services import ClassRequestService
 
 
 class ClassSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
-    user_accepted = serializers.SerializerMethodField()
+    request_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Class
@@ -14,16 +15,16 @@ class ClassSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "course",
-            "user_accepted",
+            "request_status",
         )
 
     def get_user_accepted(self, obj):
-        if obj.users.filter(id=self.context.get("request").user.id).exists():
-            return True
-        return False
+        return ClassRequestService().get_user_request_status(
+            user=self.context.get("request").user, class_obj=obj,
+        )
+
 
     def to_representation(self, obj):
-        """Move fields from profile to user representation."""
         representation = super().to_representation(obj)
         course_representation = representation.pop('course')
         course_representation.pop("price")
@@ -44,7 +45,6 @@ class ListClassSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, obj):
-        """Move fields from profile to user representation."""
         representation = super().to_representation(obj)
         course_representation = representation.pop('course')
         course_representation.pop("price")

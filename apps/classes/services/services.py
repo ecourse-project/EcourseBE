@@ -1,7 +1,9 @@
 from django.db.models import Prefetch
 
-from apps.classes.models import Class
+from apps.classes.models import Class, ClassRequest
+from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 from apps.courses.models import Lesson, CourseDocument
+from apps.users.models import User
 
 
 class ClassesService:
@@ -27,3 +29,13 @@ class ClassesService:
         if list_id:
             return self.get_all_classes_queryset.filter(id__in=list_id)
         return Class.objects.none()
+
+
+class ClassRequestService:
+    def get_user_request_status(self, user: User, class_obj: Class) -> str:
+        if class_obj.users.filter(id=user.id).exists():
+            return ACCEPTED
+        elif ClassRequest.objects.filter(user=user, class_request=class_obj, accepted=False).exists():
+            return REQUESTED
+        else:
+            return AVAILABLE
