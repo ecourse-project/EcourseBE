@@ -11,10 +11,13 @@ from apps.classes.services.services import ClassesService, ClassRequestService
 
 class JoinRequestView(APIView):
     def post(self, request, *args, **kwargs):
-        class_id = self.request.data.get("class_id")
-        ClassRequest.objects.get_or_create(class_request_id=class_id, user=self.request.user)
-        class_obj = ClassesService().get_all_classes_queryset.filter(id=class_id).first()
         user = self.request.user
+        class_id = self.request.data.get("class_id")
+        class_obj = ClassesService().get_all_classes_queryset.filter(id=class_id).first()
+        if ClassRequest.objects.filter(class_request=class_obj, user=self.request.user, accepted=False).exists():
+            ClassRequest.objects.filter(class_request=class_obj, user=self.request.user, accepted=False).delete()
+        else:
+            ClassRequest.objects.get_or_create(class_request=class_obj, user=self.request.user)
         return Response(
             data={"request_status": ClassRequestService().get_user_request_status(user, class_obj)},
             status=status.HTTP_200_OK
