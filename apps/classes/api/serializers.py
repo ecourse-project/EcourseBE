@@ -18,11 +18,10 @@ class ClassSerializer(serializers.ModelSerializer):
             "request_status",
         )
 
-    def get_user_accepted(self, obj):
+    def get_request_status(self, obj):
         return ClassRequestService().get_user_request_status(
             user=self.context.get("request").user, class_obj=obj,
         )
-
 
     def to_representation(self, obj):
         representation = super().to_representation(obj)
@@ -35,6 +34,7 @@ class ClassSerializer(serializers.ModelSerializer):
 
 class ListClassSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
+    request_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Class
@@ -42,6 +42,7 @@ class ListClassSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "course",
+            "request_status",
         )
 
     def to_representation(self, obj):
@@ -52,5 +53,10 @@ class ListClassSerializer(serializers.ModelSerializer):
         course_representation.pop("lessons")
         representation["course"] = course_representation
         return representation
+
+    def get_request_status(self, obj):
+        return ClassRequestService().get_user_request_status(
+            user=self.context.get("request").user, class_obj=obj,
+        )
 
 

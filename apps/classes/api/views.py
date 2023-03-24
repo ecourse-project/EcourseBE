@@ -7,18 +7,18 @@ from apps.core.pagination import StandardResultsSetPagination
 from apps.classes.api.serializers import ListClassSerializer, ClassSerializer
 from apps.classes.models import ClassRequest
 from apps.classes.services.services import ClassesService, ClassRequestService
-from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 
 
 class JoinRequestView(APIView):
     def post(self, request, *args, **kwargs):
         class_id = self.request.data.get("class_id")
+        ClassRequest.objects.get_or_create(class_request_id=class_id, user=self.request.user)
         class_obj = ClassesService().get_all_classes_queryset.filter(id=class_id).first()
         user = self.request.user
-        ClassRequest.objects.get_or_create(class_request_id=class_id, user=self.request.user)
-        data = ListClassSerializer(instance=class_obj).data
-        data["request_status"] = ClassRequestService().get_user_request_status(user, class_obj)
-        return Response(data=data, status=status.HTTP_200_OK)
+        return Response(
+            data={"request_status": ClassRequestService().get_user_request_status(user, class_obj)},
+            status=status.HTTP_200_OK
+        )
 
 
 class ClassListView(generics.ListAPIView):

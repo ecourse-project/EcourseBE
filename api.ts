@@ -817,7 +817,7 @@ class CourseService {
     return apiClient.get(apiURL.getClassDetail(class_id));
   }
 
-  static requestJoinClass(class_id: string): Promise<Rating> {
+  static requestJoinClass(class_id: string): Promise<RequestStatus> {
     return apiClient.post(apiURL.requestJoinClass(), {class_id: class_id});
   }
 
