@@ -9,7 +9,6 @@ from apps.courses.models import (
     CourseManagement,
 )
 from apps.courses.services.admin import (
-    init_course_mngt,
     insert_remove_docs_videos,
 )
 from apps.courses.enums import AVAILABLE, IN_CART
@@ -116,8 +115,10 @@ class CourseAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("sold", "views", "rating", "num_of_rates", "total_lessons")
 
-    # def save_model(self, request, obj, form, change):
-    #     obj.save()
+    def save_model(self, request, obj, form, change):
+        if obj.course_of_class:
+            obj.is_selling = False
+        obj.save()
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
@@ -140,9 +141,9 @@ class CourseAdmin(admin.ModelAdmin):
                 insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
             LessonManagement.objects.bulk_create(lesson_mngt_list)
 
-    def delete_model(self, request, obj):
-        CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
-        obj.delete()
+    # def delete_model(self, request, obj):
+    #     CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
+    #     obj.delete()
 
 
 @admin.register(CourseManagement)

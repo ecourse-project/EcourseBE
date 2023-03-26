@@ -50,7 +50,7 @@ class CourseManagementService:
             Prefetch("course__lessons", queryset=Lesson.objects.prefetch_related(
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
-                     ),
+            ),
         ).select_related('course__topic', 'course__thumbnail').filter(user=self.user)
 
     @property
@@ -60,7 +60,6 @@ class CourseManagementService:
         return self.get_course_management_queryset.filter(query).order_by('course__name')
 
     def get_courses_mngt_by_list_id(self, list_id: list):
-        print(self.get_course_mngt_queryset_by_selling.count())
         if list_id:
             return self.get_course_mngt_queryset_by_selling.filter(course_id__in=list_id)
 

@@ -604,6 +604,7 @@ export const apiURL = {
   },
   getClassDetail: (class_id) => `api/classes/detail/&class_id=${class_id}`,
   requestJoinClass: () => `api/classes/join-request/`,
+  updateClassProgress: () => `api/classes/update-lesson-progress/`,
 
   getPostDetail: (post_id) => `api/posts/detail/&post_id=${post_id}`,
   listPosts: (limit, page, topic?, post_id?: string[]) => {
@@ -829,7 +830,8 @@ class CourseService {
     return apiClient.get(apiURL.getPostDetail(post_id));
   }
 
-
-
+  static updateClassProgress(params: UpdateProgressArgs): Promise<any> {
+    return apiClient.post(apiURL.updateClassProgress(), params);
+  }
 }
 export default CourseService;

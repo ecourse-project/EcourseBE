@@ -66,11 +66,11 @@ class OrderService:
 
 
 # timestamp now - last 12 characters user id
-def generate_code(user) -> str:
+def generate_code(user=None) -> str:
     timestamp = str(round(datetime.timestamp(datetime.now())))
-    user_id = str(user.id)
-    user_uuid_node = user_id[len(user_id) - 12:].upper()
-    return f"{timestamp}-{user_uuid_node}"
+    # user_id = str(user.id)
+    # user_uuid_node = user_id[len(user_id) - 12:].upper()
+    return f"{timestamp}"
 
 
 def calculate_price(docs, courses) -> int:

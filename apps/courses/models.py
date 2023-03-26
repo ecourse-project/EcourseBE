@@ -65,9 +65,10 @@ class Course(TimeStampedModel):
     thumbnail = models.ForeignKey(
         UploadImage, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True,
     )
-    is_selling = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    is_selling = models.BooleanField(default=True)
+    course_of_class = models.BooleanField(default=False)
     num_of_rates = models.PositiveIntegerField(default=0)
     total_lessons = models.PositiveSmallIntegerField(default=0)
 
@@ -83,7 +84,7 @@ class CourseManagement(TimeStampedModel):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     last_update = models.DateTimeField(null=True, blank=True)
-    progress = models.SmallIntegerField(default=0, null=True, blank=True)
+    progress = models.SmallIntegerField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=PROGRESS_STATUS, default=IN_PROGRESS)
     mark = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     is_done_quiz = models.BooleanField(default=False)

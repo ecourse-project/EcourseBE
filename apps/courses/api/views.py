@@ -11,7 +11,6 @@ from apps.courses.api.serializers import (
 )
 from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
-from apps.users.models import User
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
@@ -24,7 +23,6 @@ class MostDownloadedCourseView(generics.ListAPIView):
 class CourseListView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)

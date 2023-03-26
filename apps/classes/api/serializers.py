@@ -1,8 +1,9 @@
 from rest_framework import serializers
 
-from apps.courses.api.serializers import CourseSerializer
+from apps.courses.api.serializers import CourseSerializer, CourseManagementSerializer
 from apps.classes.models import Class, ClassRequest
 from apps.classes.services.services import ClassRequestService
+from apps.courses.models import CourseManagement
 
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -26,9 +27,12 @@ class ClassSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         representation = super().to_representation(obj)
         course_representation = representation.pop('course')
-        course_representation.pop("price")
-        course_representation.pop("sold")
-        representation["course"] = course_representation
+        course_id = course_representation["id"]
+        user = self.context.get("request").user
+        course_mngt = CourseManagementSerializer(CourseManagement.objects.get(course_id=course_id, user=user)).data
+        course_mngt.pop("price")
+        course_mngt.pop("sold")
+        representation["course"] = course_mngt
         return representation
 
 
