@@ -602,11 +602,11 @@ export const apiURL = {
     }
     return url;
   },
-  getClassDetail: (class_id) => `api/classes/detail/&class_id=${class_id}`,
+  getClassDetail: (class_id) => `api/classes/detail/?class_id=${class_id}`,
   requestJoinClass: () => `api/classes/join-request/`,
   updateClassProgress: () => `api/classes/update-lesson-progress/`,
 
-  getPostDetail: (post_id) => `api/posts/detail/&post_id=${post_id}`,
+  getPostDetail: (post_id) => `api/posts/detail/?post_id=${post_id}`,
   listPosts: (limit, page, topic?, post_id?: string[]) => {
     let url = `api/posts/?limit=${limit}&page=${page}&topic=${topic}`;
     if (post_id) {
@@ -818,8 +818,8 @@ class CourseService {
     return apiClient.get(apiURL.getClassDetail(class_id));
   }
 
-  static requestJoinClass(class_id: string): Promise<RequestStatus> {
-    return apiClient.post(apiURL.requestJoinClass(), {class_id: class_id});
+  static requestJoinClass(class_id: string): Promise<{ request_status: RequestStatus }> {
+    return apiClient.post(apiURL.requestJoinClass(), { class_id: class_id });
   }
 
   static listPosts(limit: number, page: number, topic?: string, post_id?: string[]): Promise<Pagination<Post>> {
