@@ -29,7 +29,7 @@ class ClassSerializer(serializers.ModelSerializer):
         course_representation = representation.pop('course')
         course_id = course_representation["id"]
         user = self.context.get("request").user
-        course_mngt = CourseManagementSerializer(CourseManagement.objects.get(course_id=course_id, user=user)).data
+        course_mngt = CourseManagementSerializer(CourseManagement.objects.filter(course_id=course_id, user=user).first()).data
         course_mngt.pop("price")
         course_mngt.pop("sold")
         representation["course"] = course_mngt

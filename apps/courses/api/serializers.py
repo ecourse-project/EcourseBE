@@ -58,6 +58,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "name",
             "topic",
             "description",
+            "course_of_class",
             "price",
             "sold",
             "lessons",
