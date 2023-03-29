@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from apps.classes.models import Class, ClassRequest, ClassTopic
 from apps.courses.services.admin import CourseAdminService
-from apps.courses.models import CourseManagement
+from apps.courses.models import CourseManagement, Course
 
 
 @admin.action(description='Accept selected users')
@@ -45,6 +45,15 @@ class ClassAdmin(admin.ModelAdmin):
         "topic",
         "course",
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['course'].queryset = Course.objects.filter(course_of_class=True)
+        return form
+
+    # def save_model(self, request, obj, form, change):
+    #     print(obj.course)
+    #     obj.save()
 
 
 @admin.register(ClassRequest)
