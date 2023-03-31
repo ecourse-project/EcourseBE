@@ -32,7 +32,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             'file',
             'is_selling',
             'views',
-            'rating',
+            # 'rating',
             'num_of_rates',
         )
 

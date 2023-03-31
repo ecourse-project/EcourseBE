@@ -2,7 +2,7 @@ from django.db.models import Prefetch
 
 from apps.classes.models import Class, ClassRequest
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
-from apps.courses.models import Lesson, CourseDocument
+from apps.courses.models import Lesson, CourseDocument, Course
 from apps.users.models import User
 
 
@@ -19,6 +19,15 @@ class ClassesService:
                         queryset=CourseDocument.objects.select_related("file")
                     )))
         ).select_related("course", "topic")
+
+    @property
+    def get_course_of_class(self):
+        return Course.objects.prefetch_related(
+            Prefetch("lessons", queryset=Lesson.objects.prefetch_related(
+                Prefetch("videos"),
+                Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
+            )
+        ).select_related('topic', 'thumbnail').filter(course_of_class=True)
 
     def get_classes_by_topic(self, topic):
         if topic.strip():

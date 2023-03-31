@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from apps.courses.models import Course, Lesson, CourseTopic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
-from apps.rating.api.serializers import RatingSerializer
-from apps.rating.models import CourseRating
 
 
 class CourseDocumentSerializer(serializers.ModelSerializer):
@@ -141,12 +139,12 @@ class ListCourseSerializer(serializers.ModelSerializer):
 
 class ListCourseManagementSerializer(serializers.ModelSerializer):
     course = ListCourseSerializer()
-    my_rating = serializers.SerializerMethodField()
+    # my_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseManagement
         fields = (
-            "my_rating",
+            # "my_rating",
             "course",
             "is_favorite",
             "status",
@@ -162,7 +160,7 @@ class ListCourseManagementSerializer(serializers.ModelSerializer):
             representation[key] = course_representation[key]
         return representation
 
-    def get_my_rating(self, obj):
-        course_rating = obj.course.rating_obj
-        my_rating = course_rating.ratings.filter(user=self.context['request'].user).first()
-        return RatingSerializer(my_rating).data if my_rating else {}
+    # def get_my_rating(self, obj):
+    #     course_rating = obj.course.rating_obj
+    #     my_rating = course_rating.ratings.filter(user=self.context['request'].user).first()
+    #     return RatingSerializer(my_rating).data if my_rating else {}

@@ -7,15 +7,22 @@ from model_utils.models import TimeStampedModel
 from apps.documents.models import DocumentTopic
 from apps.courses.models import CourseTopic
 from apps.classes.models import ClassTopic
+from apps.settings.enums import DATA_TYPE_CHOICES
 from apps.posts.models import PostTopic
 
 
 class Header(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     display_name = models.CharField(max_length=20, null=True, blank=True)
+    data_type = models.CharField(max_length=20, choices=DATA_TYPE_CHOICES, null=True, blank=True)
+    order = models.SmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
 
     def __str__(self):
         return self.display_name
+
 
 
 class HeaderDetail(models.Model):

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from apps.classes.models import Class, ClassRequest, ClassTopic
-from apps.courses.services.admin import CourseAdminService
+from apps.courses.services.admin import CourseAdminService, init_course_mngt
 from apps.courses.models import CourseManagement, Course
 
 
@@ -52,8 +52,14 @@ class ClassAdmin(admin.ModelAdmin):
         return form
 
     # def save_model(self, request, obj, form, change):
-    #     print(obj.course)
     #     obj.save()
+    #     init_course_id = form.initial.get('course')
+    #     if change and obj.course:
+    #         if init_course_id is None or init_course_id != obj.course.id:
+    #             init_course_mngt(course=obj.course, users=obj.users.all())
+    #             for user in obj.users.all():
+    #                 course_service = CourseAdminService(user)
+    #                 course_service.init_courses_data([obj.course])
 
 
 @admin.register(ClassRequest)

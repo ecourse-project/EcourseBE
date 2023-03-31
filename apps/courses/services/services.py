@@ -11,8 +11,6 @@ from apps.courses.models import (
     VideoManagement,
 )
 from apps.courses.enums import BOUGHT, PENDING
-from apps.rating.api.serializers import RatingSerializer
-from apps.rating.models import CourseRating
 from apps.quiz.models import Answer
 
 
@@ -24,7 +22,7 @@ class CourseService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
                      )
-        ).select_related('topic', 'thumbnail')
+        ).select_related('topic', 'thumbnail').filter(course_of_class=False)
 
     def get_courses_by_topic(self, topic: str):
         if topic.strip():
@@ -64,15 +62,16 @@ class CourseManagementService:
             return self.get_course_mngt_queryset_by_selling.filter(course_id__in=list_id)
 
     def calculate_course_progress(self, course_id):
+        progress = 0
         all_docs = CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
         all_videos = VideoManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
-        docs_completed = all_docs.filter(is_completed=True)
-        videos_completed = all_videos.filter(is_completed=True)
-        CourseManagement.objects.filter(user=self.user, course_id=course_id).update(
-            progress=round(
+        if all_videos.exists() and all_videos.exists():
+            docs_completed = all_docs.filter(is_completed=True)
+            videos_completed = all_videos.filter(is_completed=True)
+            progress = round(
                 100 * (docs_completed.count() + videos_completed.count()) / (all_docs.count() + all_videos.count())
             )
-        )
+        CourseManagement.objects.filter(user=self.user, course_id=course_id).update(progress=progress)
 
     def init_courses_management(self):
         if not CourseManagement.objects.filter(user=self.user).first():
@@ -107,16 +106,16 @@ class CourseManagementService:
                 data['lessons'][count]['videos_completed'] = []
 
         """ Rating """
-        course_rating = CourseRating.objects.filter(course_id=data['id']).first()
-        all_ratings = course_rating.ratings.all()
-        my_rating = course_rating.ratings.filter(user=self.user).first()
-        data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
-        data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
+        # course_rating = CourseRating.objects.filter(course_id=data['id']).first()
+        # all_ratings = course_rating.ratings.all()
+        # my_rating = course_rating.ratings.filter(user=self.user).first()
+        # data['rating_detail'] = RatingSerializer(all_ratings, many=True).data if all_ratings else []
+        # data['my_rating'] = RatingSerializer(my_rating).data if my_rating else {}
         # Rating stats
-        response = {}
-        for score in range(1, 6):
-            response["score_" + str(score)] = all_ratings.filter(rating=score).count()
-        data['rating_stats'] = response
+        # response = {}
+        # for score in range(1, 6):
+        #     response["score_" + str(score)] = all_ratings.filter(rating=score).count()
+        # data['rating_stats'] = response
 
         """ Quiz detail """
         quiz_detail = {}

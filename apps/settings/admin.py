@@ -8,6 +8,8 @@ from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 class HeaderAdmin(admin.ModelAdmin):
     list_display = (
         "display_name",
+        "data_type",
+        "order",
     )
 
 

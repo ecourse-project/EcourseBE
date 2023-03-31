@@ -3,7 +3,6 @@ from django.dispatch import receiver
 
 from apps.courses.models import CourseManagement, LessonManagement, Course
 from apps.courses.enums import IN_PROGRESS, COMPLETED
-from apps.rating.models import CourseRating
 from apps.users.services import get_active_users
 from apps.courses.services.admin import init_course_mngt
 
@@ -26,11 +25,11 @@ def calculate_lesson_progress(lesson_mngt):
 
 
 @receiver(post_save, sender=Course)
-def create_rating(created, instance, **kwargs):
+def create_user_data(created, instance, **kwargs):
     if created:
-        CourseRating.objects.create(course=instance)
+        # CourseRating.objects.create(course=instance)
         users = get_active_users()
-        if users.count() > 0:
+        if not instance.course_of_class and users.exists() > 0:
             init_course_mngt(instance, users)
 
 # @receiver(m2m_changed, sender=LessonManagement.docs_completed.through)

@@ -108,12 +108,12 @@ class CourseAdmin(admin.ModelAdmin):
         "total_lessons",
         "price",
         "is_selling",
-        "rating",
+        # "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "rating", "num_of_rates", "total_lessons")
+    readonly_fields = ("sold", "views", "num_of_rates", "total_lessons")
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -161,6 +161,7 @@ class CourseManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "sale_status",
     )
+
 
 
 
