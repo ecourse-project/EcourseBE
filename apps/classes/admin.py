@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from apps.classes.models import Class, ClassRequest, ClassTopic
-from apps.courses.services.admin import CourseAdminService, init_course_mngt
+from apps.classes.models import Class, ClassRequest, ClassTopic, ClassManagement
+from apps.courses.services.admin import CourseAdminService
 from apps.courses.models import CourseManagement, Course
 
 
@@ -37,19 +37,19 @@ class ClassTopicAdmin(admin.ModelAdmin):
 class ClassAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
-        "course__name",
+        # "course__name",
     )
     list_display = (
         "id",
         "name",
         "topic",
-        "course",
+        # "course",
     )
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['course'].queryset = Course.objects.filter(course_of_class=True)
-        return form
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
+    #     form.base_fields['course'].queryset = Course.objects.filter(course_of_class=True)
+    #     return form
 
     # def save_model(self, request, obj, form, change):
     #     obj.save()
@@ -64,6 +64,10 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(ClassRequest)
 class ClassRequestAdmin(admin.ModelAdmin):
+    list_filter = (
+        "class_request__name",
+        "user",
+    )
     search_fields = (
         "user__email",
         "class_request__name",
@@ -75,3 +79,25 @@ class ClassRequestAdmin(admin.ModelAdmin):
         "accepted",
     )
     actions = (accept, deny)
+
+
+@admin.register(ClassManagement)
+class ClassManagementAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+        "course__name",
+        "sale_status",
+    )
+    list_display = (
+        "user",
+        "course",
+        "progress",
+        "mark",
+        "is_done_quiz",
+        "sale_status",
+    )
+    readonly_fields = ("progress",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course__course_of_class=True)

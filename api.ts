@@ -453,52 +453,6 @@ export interface Post {
   thumbnail: OImageUpload;
   images: OImageUpload[];
 }
-
-
-
-
-
-
-
-// import { apiIns } from 'src/config/apiClient';
-// import apiURL from 'src/apis';
-import { apiClient } from 'src/lib/config/apiClient';
-import {
-  CalculatePriceArgs,
-  Course,
-  CourseComment,
-  CreateOrderArg,
-  Document,
-  FavoriteList,
-  Homepage,
-  MoveEnum,
-  Nav,
-  OCart,
-  OIsExist,
-  OPasswordChange,
-  OPasswordRest,
-  ORegistration,
-  OutputAdd,
-  OutputCancel,
-  OutputOrder,
-  OutputRemove,
-  OVerifyToken,
-  Pagination,
-  PaginationParams,
-  Quiz,
-  QuizResult,
-  QuizResultArgs,
-  RateCourseArgs,
-  RateDocArgs,
-  Rating,
-  RatingEnum,
-  RatingStats,
-  TotalPrice,
-  UpdateLessonArgs,
-  UpdateProgressArgs,
-  User,
-} from 'src/lib/types/backend_modal';
-
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;
   const newParams = [...params];

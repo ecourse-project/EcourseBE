@@ -97,6 +97,7 @@ class LessonAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
+    list_filter = ("course_of_class",)
     search_fields = (
         "id",
         "name",
@@ -105,15 +106,15 @@ class CourseAdmin(admin.ModelAdmin):
         "id",
         "name",
         "topic",
-        "total_lessons",
         "price",
         "is_selling",
+        "course_of_class",
         # "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "num_of_rates", "total_lessons")
+    readonly_fields = ("sold", "views", "num_of_rates")
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -148,6 +149,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseManagement)
 class CourseManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course__course_of_class",)
     search_fields = (
         "user__email",
         "course__name",
@@ -161,6 +163,11 @@ class CourseManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "sale_status",
     )
+    readonly_fields = ("progress",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course__course_of_class=False)
 
 
 

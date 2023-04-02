@@ -1,9 +1,7 @@
 from typing import Any, Dict, List, Tuple
-from django.utils.timezone import localtime
 
 from apps.settings.models import HeaderDetail, Header, HomePageDetail
-from apps.courses.models import CourseManagement
-from apps.courses.services.services import CourseService, CourseManagementService
+from apps.courses.services.services import CourseManagementService
 from apps.documents.services.services import DocumentManagementService
 
 
@@ -45,7 +43,7 @@ def get_headers() -> list:
         header_detail = header.header_detail.all().order_by("display_name")
         list_header.append({
             "header": header.display_name,
-            "type": header.data_type.lower(),
+            "type": header.data_type.lower() if header.data_type else "",
             "topic": [detail.display_name for detail in header_detail] if header_detail.exists() else []
             # "type": get_header_query_type(header_detail.first()),
         })

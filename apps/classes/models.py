@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-from apps.courses.models import Course
+from apps.courses.models import Course, CourseManagement
 from apps.users.models import User
 
 
@@ -18,19 +18,27 @@ class ClassTopic(models.Model):
         return self.name
 
 
-class Class(TimeStampedModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+# class Class(TimeStampedModel):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     name = models.CharField(max_length=100)
+#     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+#     topic = models.ForeignKey(ClassTopic, on_delete=models.SET_NULL, null=True, blank=True)
+#     users = models.ManyToManyField(User, blank=True, related_name="user_classes")
+#
+#     class Meta:
+#         verbose_name = "class"
+#         verbose_name_plural = "classes"
+#
+#     def __str__(self):
+#         return self.name
+
+
+class Class(Course):
     topic = models.ForeignKey(ClassTopic, on_delete=models.SET_NULL, null=True, blank=True)
-    users = models.ManyToManyField(User, blank=True, related_name="user_classes")
 
     class Meta:
-        verbose_name = "class"
-        verbose_name_plural = "classes"
+        proxy = True
 
-    def __str__(self):
-        return self.name
 
 
 class ClassRequest(models.Model):
@@ -42,3 +50,8 @@ class ClassRequest(models.Model):
 
     class Meta:
         ordering = ["class_request__name"]
+
+
+class ClassManagement(CourseManagement):
+    class Meta:
+        proxy = True
