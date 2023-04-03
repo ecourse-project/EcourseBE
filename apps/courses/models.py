@@ -89,6 +89,7 @@ class CourseManagement(TimeStampedModel):
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
+    user_in_class = models.BooleanField(null=True)
 
     class Meta:
         ordering = ["course__name"]

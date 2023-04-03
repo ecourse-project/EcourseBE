@@ -6,7 +6,6 @@ from model_utils.models import TimeStampedModel
 
 from apps.documents.models import DocumentTopic
 from apps.courses.models import CourseTopic
-from apps.classes.models import ClassTopic
 from apps.settings.enums import DATA_TYPE_CHOICES
 from apps.posts.models import PostTopic
 
@@ -31,7 +30,7 @@ class HeaderDetail(models.Model):
     header = models.ForeignKey(Header, null=True, blank=True, related_name="header_detail", on_delete=models.SET_NULL)
     document_topic = models.ForeignKey(DocumentTopic, null=True, blank=True, on_delete=models.SET_NULL)
     course_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL)
-    class_topic = models.ForeignKey(ClassTopic, null=True, blank=True, on_delete=models.SET_NULL)
+    class_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL, related_name="class_header_detail")
     post_topic = models.ForeignKey(PostTopic, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveSmallIntegerField(default=1)
 

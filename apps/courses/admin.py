@@ -114,7 +114,7 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "num_of_rates")
+    readonly_fields = ("course_of_class", "sold", "views", "num_of_rates", "rating")
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -142,9 +142,9 @@ class CourseAdmin(admin.ModelAdmin):
                 insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
             LessonManagement.objects.bulk_create(lesson_mngt_list)
 
-    # def delete_model(self, request, obj):
-    #     CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
-    #     obj.delete()
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course_of_class=False)
 
 
 @admin.register(CourseManagement)
@@ -163,7 +163,7 @@ class CourseManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "sale_status",
     )
-    readonly_fields = ("progress",)
+    readonly_fields = ("progress", "user_in_class")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

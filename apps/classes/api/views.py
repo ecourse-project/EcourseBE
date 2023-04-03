@@ -17,7 +17,7 @@ class JoinRequestView(APIView):
         if ClassRequest.objects.filter(class_request=class_obj, user=self.request.user, accepted=False).exists():
             ClassRequest.objects.filter(class_request=class_obj, user=self.request.user, accepted=False).delete()
         else:
-            ClassRequest.objects.get_or_create(class_request=class_obj, user=self.request.user)
+            ClassRequest.objects.create(class_request=class_obj, user=self.request.user)
         return Response(
             data={"request_status": ClassRequestService().get_user_request_status(user, class_obj)},
             status=status.HTTP_200_OK

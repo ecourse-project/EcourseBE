@@ -1,50 +1,48 @@
 from django.contrib import admin
 
-from apps.classes.models import Class, ClassRequest, ClassTopic, ClassManagement
+from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.courses.services.admin import CourseAdminService
-from apps.courses.models import CourseManagement, Course
 
 
 @admin.action(description='Accept selected users')
 def accept(modeladmin, request, queryset):
     queryset.update(accepted=True)
-    list_course_mngt = []
     for obj in queryset:
-        obj.class_request.users.add(obj.user)
-        course = obj.class_request.course
-        if course:
-            list_course_mngt.append(CourseManagement(user=obj.user, course=course))
+        _, created = ClassManagement.objects.get_or_create(user=obj.user, course=obj.class_request, user_in_class=True)
+        if created:
             course_service = CourseAdminService(obj.user)
-            course_service.init_courses_data([course])
-    CourseManagement.objects.bulk_create(list_course_mngt)
+            course_service.init_courses_data([obj.class_request])
 
 
 @admin.action(description='Deny selected users')
 def deny(modeladmin, request, queryset):
     queryset.update(accepted=False)
     for obj in queryset:
-        obj.class_request.users.remove(obj.user)
-
-
-@admin.register(ClassTopic)
-class ClassTopicAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-    )
+        class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request, user_in_class=True).first()
+        if class_mngt:
+            class_mngt.user_in_class = False
+            class_mngt.save(update_fields=["user_in_class"])
 
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
-        # "course__name",
     )
     list_display = (
         "id",
         "name",
         "topic",
-        # "course",
     )
+    readonly_fields = ("course_of_class", "is_selling", "sold", "views", "num_of_rates", "rating")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course_of_class=True)
+
+    def save_model(self, request, obj, form, change):
+        obj.course_of_class = True
+        obj.save()
 
     # def get_form(self, request, obj=None, **kwargs):
     #     form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
@@ -80,6 +78,10 @@ class ClassRequestAdmin(admin.ModelAdmin):
     )
     actions = (accept, deny)
 
+    def save_model(self, request, obj, form, change):
+        if not ClassRequest.objects.filter(user=obj.user, class_request=obj.class_request).exists():
+            obj.save()
+
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
@@ -94,9 +96,9 @@ class ClassManagementAdmin(admin.ModelAdmin):
         "progress",
         "mark",
         "is_done_quiz",
-        "sale_status",
+        "user_in_class",
     )
-    readonly_fields = ("progress",)
+    readonly_fields = ("progress", "user_in_class")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
