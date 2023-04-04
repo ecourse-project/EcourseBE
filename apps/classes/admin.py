@@ -79,8 +79,9 @@ class ClassRequestAdmin(admin.ModelAdmin):
     actions = (accept, deny)
 
     def save_model(self, request, obj, form, change):
-        if not ClassRequest.objects.filter(user=obj.user, class_request=obj.class_request).exists():
-            obj.save()
+        # if not ClassRequest.objects.filter(user=obj.user, class_request=obj.class_request).exists():
+        #     print(111111111111111111111111111111111)
+        obj.save()
 
 
 @admin.register(ClassManagement)
