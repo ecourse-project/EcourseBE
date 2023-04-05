@@ -1,2 +1,0 @@
-Cột 1,Cột 2,Cột 3
-Diệp,Hải,Bình
