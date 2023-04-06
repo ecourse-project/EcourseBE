@@ -9,22 +9,11 @@
             "name": "Bai 1",
             "lesson_number": 1,
             "content": "Bai 1",
-            "videos": [
-                {
-                    "file_name": "Video bai 1",
-                    "file_path": "D:\\Work\\ecourse_doc\\data\\video\\demo_video.mp4",
-                    // default_storage.save(save_path, open("D:\\Work\\ecourse_doc\\data\\video\\demo_video.mp4", "rb"))
-                }
-            ],
             "documents": [
                 {
                     "name": "Doc bai 1",
                     "description": "Doc bai 1",
-                    "topic": "test 1",
-                    "file": {
-                        "file_name": "file doc bai 1",
-                        "file_path": "D:\\Work\\ecourse_doc\\data\\txt\\Django.txt"
-                    }
+                    "topic": "test 1"
                 }
             ]
         },
@@ -32,27 +21,14 @@
             "name": "Bai 2",
             "lesson_number": 2,
             "content": "Bai 2",
-            "videos": [
-                {
-                    "file_name": "Video bai 2",
-                    "file_path": "D:\\Work\\ecourse_doc\\data\\video\\demo_video.mp4"
-                }
-            ],
             "documents": [
                 {
                     "name": "Doc bai 2",
                     "description": "Doc bai 2",
-                    "topic": "test 2",
-                    "file": {
-                        "file_name": "file doc bai 2",
-                        "file_path": "D:\\Work\\ecourse_doc\\data\\txt\\Cplusplus.txt"
-                    }
+                    "topic": "test 2"
                 }
             ]
         }
-    ],
-    "thumbnail": {
-        "image_path": "D:\\Work\\ecourse_doc\\data\\img\\access.png"
-    }
+    ]
   }
 ]
