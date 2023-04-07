@@ -1,41 +1,4 @@
-course = [
-  {
-    "name": "Test script",
-    "topic": "test script",
-    "description": "test script",
-    "price": 19000000,
-    "lessons": [
-        {
-            "name": "Bai 1",
-            "lesson_number": 1,
-            "content": "Bai 1",
-            "documents": [
-                {
-                    "name": "Doc bai 1",
-                    "description": "Doc bai 1",
-                    "topic": "test 1",
-                }
-            ]
-        },
-        {
-            "name": "Bai 2",
-            "lesson_number": 2,
-            "content": "Bai 2",
-            "documents": [
-                {
-                    "name": "Doc bai 2",
-                    "description": "Doc bai 2",
-                    "topic": "test 2"
-                }
-            ]
-        }
-    ]
-  }
-]
-
-
 from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic
-
 
 
 class UploadCourseServices:
@@ -98,8 +61,3 @@ class UploadCourseServices:
     #         image_type=file_ext or None,
     #     )
         # image_obj.image_size = ceil(image_obj.image_path.size / 1024)
-
-
-
-
-

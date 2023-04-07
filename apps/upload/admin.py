@@ -3,8 +3,9 @@ from math import ceil
 from django.contrib import admin
 from django.core.files.storage import default_storage
 
-from apps.upload.models import UploadImage, UploadFile
+from apps.upload.models import UploadImage, UploadFile, UploadCourse
 from apps.upload.services.storage.base import get_file_path
+from apps.upload.services.services import UploadCourseServices
 from apps.upload.enums import video_ext_list
 
 from moviepy.editor import VideoFileClip
@@ -90,4 +91,17 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     # def has_delete_permission(self, request, obj=None):
     #     return False
+
+
+@admin.register(UploadCourse)
+class UploadCourseAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.data:
+            UploadCourseServices().create_course_data(obj.data)
+
+        obj.save()
 

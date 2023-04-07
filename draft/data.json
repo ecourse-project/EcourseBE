@@ -1,6 +1,6 @@
 [
   {
-    "name": "Test script",
+    "name": "Test script 1",
     "topic": "test script",
     "description": "test script",
     "price": 19000000,
@@ -24,6 +24,38 @@
             "documents": [
                 {
                     "name": "Doc bai 2",
+                    "description": "Doc bai 2",
+                    "topic": "test 2"
+                }
+            ]
+        }
+    ]
+  },
+  {
+    "name": "Test script 2",
+    "topic": "test script",
+    "description": "test script",
+    "price": 19000000,
+    "lessons": [
+        {
+            "name": "Bai 11",
+            "lesson_number": 1,
+            "content": "Bai 1",
+            "documents": [
+                {
+                    "name": "Doc bai 11",
+                    "description": "Doc bai 1",
+                    "topic": "test 1"
+                }
+            ]
+        },
+        {
+            "name": "Bai 22",
+            "lesson_number": 2,
+            "content": "Bai 2",
+            "documents": [
+                {
+                    "name": "Doc bai 22",
                     "description": "Doc bai 2",
                     "topic": "test 2"
                 }

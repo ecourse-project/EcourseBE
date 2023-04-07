@@ -47,3 +47,9 @@ class UploadImage(TimeStampedModel):
     def delete(self, *args, **kwargs):
         self.delete_image()
         super().delete(*args, **kwargs)
+
+
+class UploadCourse(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    data = models.JSONField(null=True, blank=True)
+
