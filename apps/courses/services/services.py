@@ -93,6 +93,7 @@ class CourseManagementService:
                         course_id=data['id'],
                         document__in=lesson_obj.documents.all(),
                         is_completed=True,
+                        is_available=True,
                     ).values_list('document', flat=True)
                 data['lessons'][count]['videos_completed'] = \
                     VideoManagement.objects.filter(
@@ -100,6 +101,7 @@ class CourseManagementService:
                         course_id=data['id'],
                         video__in=lesson_obj.videos.all(),
                         is_completed=True,
+                        is_available=True,
                     ).values_list('video', flat=True)
             if not lesson_mngt:
                 data['lessons'][count]['docs_completed'] = []

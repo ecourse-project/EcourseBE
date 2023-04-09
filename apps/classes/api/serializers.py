@@ -15,9 +15,10 @@ class ClassSerializer(CourseSerializer):
         fields = CourseSerializer.Meta.fields + ("request_status",)
 
     def get_request_status(self, obj):
-        return ClassRequestService().get_user_request_status(
-            user=self.context.get("request").user, class_obj=obj,
-        )
+        user = self.context.get("request").user
+        if user.is_authenticated:
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+        return None
 
 
 class ListClassSerializer(serializers.ModelSerializer):
@@ -34,8 +35,10 @@ class ListClassSerializer(serializers.ModelSerializer):
         )
 
     def get_request_status(self, obj):
-        return ClassRequestService().get_user_request_status(
-            user=self.context.get("request").user, class_obj=obj,
-        )
+        user = self.context.get("request").user
+        if user.is_authenticated:
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+        return None
+
 
 

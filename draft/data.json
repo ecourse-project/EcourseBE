@@ -1,65 +1,82 @@
 [
   {
-    "name": "Test script 1",
-    "topic": "test script",
-    "description": "test script",
-    "price": 19000000,
-    "lessons": [
+     "name": "Toán",
+     "topic": "KHTN",
+     "description": "Đại số, hình học, tích phân",
+     "price": 0,
+     "course_of_class": true,
+     "lessons": [
         {
-            "name": "Bai 1",
+            "name": "Toán bài 1",
             "lesson_number": 1,
             "content": "Bai 1",
             "documents": [
                 {
-                    "name": "Doc bai 1",
-                    "description": "Doc bai 1",
-                    "topic": "test 1"
+                    "name": "Tài liệu bài 1",
+                    "description": null,
+                    "topic": null
                 }
             ]
         },
         {
-            "name": "Bai 2",
+            "name": "Toán bài 1",
             "lesson_number": 2,
             "content": "Bai 2",
             "documents": [
                 {
-                    "name": "Doc bai 2",
-                    "description": "Doc bai 2",
-                    "topic": "test 2"
+                    "name": "Tài liệu bài 1",
+                    "description": null,
+                    "topic": null
                 }
             ]
         }
     ]
   },
   {
-    "name": "Test script 2",
-    "topic": "test script",
-    "description": "test script",
-    "price": 19000000,
-    "lessons": [
+     "name": "Lịch sử",
+     "topic": "KHXH",
+     "description": "Lịch sử VN, lịch sử thế giới",
+     "price": 0,
+     "course_of_class": true,
+     "lessons": [
         {
-            "name": "Bai 11",
-            "lesson_number": 1,
-            "content": "Bai 1",
-            "documents": [
-                {
-                    "name": "Doc bai 11",
-                    "description": "Doc bai 1",
-                    "topic": "test 1"
-                }
-            ]
+           "name": "Lịch sử Việt Nam",
+           "lesson_number": 1,
+           "content": "Lịch sử Việt Nam (Hán-Nôm: 歷史越南) nếu tính từ lúc có mặt con người sinh sống thì đã có hàng vạn năm trước Công Nguyên, còn tính từ khi cơ cấu nhà nước được hình thành thì mới khoảng từ năm 700 năm trước công nguyên.",
+           "documents": [
+              {
+                 "name": "Thời tiền sử",
+                 "description": "Văn hóa Tràng An là một trong những nền văn hóa cổ nhất ở Việt Nam, hình thành từ thời kỳ đồ đá cũ khoảng 25 Ka BP (Kilo annum before present, ngàn năm trước).",
+                 "topic": null
+              },
+              {
+                 "name": "Hồng Bàng",
+                 "description": "Hồng Bàng thị (chữ Hán: 鴻龐氏) hay Thời đại Hồng Bàng là một giai đoạn lịch sử thuộc thời đại thượng cổ của lịch sử Việt Nam.",
+                 "topic": null
+              },
+              {
+                 "name": "An Dương Vương",
+                 "description": "An Dương Vương (chữ Hán: 安陽王), tên thật là Thục Phán (蜀泮),[2] là người lập nên nước Âu Lạc, nhà nước thứ hai trong lịch sử Việt Nam sau nhà nước Văn Lang.",
+                 "topic": null
+              }
+           ]
         },
         {
-            "name": "Bai 22",
-            "lesson_number": 2,
-            "content": "Bai 2",
-            "documents": [
-                {
-                    "name": "Doc bai 22",
-                    "description": "Doc bai 2",
-                    "topic": "test 2"
-                }
-            ]
+           "name": "Lịch sử thế giới",
+           "lesson_number": 2,
+           "content": "Lịch sử thế giới hay còn gọi là lịch sử loài người, bắt đầu từ thời đại đồ đá cũ đến nay trong quá trình tiến hóa loài người.",
+           "documents": [
+              {
+                "name": "Vùng Lưỡng Hà",
+                "description": "Lưỡng Hà là vùng đất thuộc vùng đồng bằng trăng lưỡi liềm, nơi khai sinh ra các nhà nước thành bang cổ đại. Vùng giao nhau của sông Tigris và sông Euphrates đã tạo nên một vùng đất màu mỡ và nguồn cung cấp nước cho tưới tiêu.",
+                "topic": null
+              },
+              {
+                "name": "Lưu vực sông Nin",
+                "description": "Lưu vực sông Nin ở Bắc Phi là nơi ra đời nền văn minh Ai Cập cổ đại. Khoảng 6000 năm TCN, xuất hiện các vương quốc của xã hội tiền Ai Cập cổ đại (trước khi xuất hiện chế độ quân chủ ở Ai Cập) có kĩ năng trồng trọt và chăn thả gia súc.",
+                "topic": null
+              }
+           ]
         }
     ]
   }

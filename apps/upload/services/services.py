@@ -13,9 +13,18 @@ class UploadCourseServices:
         return course_objects
 
     def prepare_course_data(self, course: dict):
+        keys = course.keys()
+
+        if "price" in keys:
+            if not course.get("price"):
+                course["price"] = 0
+
         course_topic = None
-        if course.get("topic"):
-            course_topic, created = CourseTopic.objects.get_or_create(name=course.pop("topic"))
+        if "topic" in keys:
+            course_topic = course.pop("topic") or None
+        if course_topic:
+            course_topic, created = CourseTopic.objects.get_or_create(name=course_topic)
+
         if course.get("lessons"):
             lessons = course.pop("lessons")
             return Course(**course, topic=course_topic), self.create_lesson_data(lessons)
@@ -44,8 +53,10 @@ class UploadCourseServices:
 
     def prepare_document_data(self, document: dict):
         document_topic = None
-        if document.get("topic"):
-            document_topic, created = CourseTopic.objects.get_or_create(name=document.pop("topic"))
+        if "topic" in document.keys():
+            document_topic = document.pop("topic") or None
+        if document_topic:
+            document_topic, created = CourseTopic.objects.get_or_create(name=document_topic)
         return CourseDocument(**document, topic=document_topic)
 
     # def create_upload_image_data(self, image: dict):
