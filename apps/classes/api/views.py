@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.classes.api.serializers import ListClassSerializer, ClassSerializer
+from apps.classes.api.serializers import ListClassSerializer, ClassSerializer, ClassManagementSerializer
 from apps.classes.models import ClassRequest
-from apps.classes.services.services import ClassesService, ClassRequestService
+from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
+from apps.courses.api.serializers import CourseManagementSerializer
 
 
 class JoinRequestView(APIView):
@@ -41,10 +42,14 @@ class ClassListView(generics.ListAPIView):
 
 
 class ClassDetailView(generics.RetrieveAPIView):
-    serializer_class = ClassSerializer
+    serializer_class = ClassManagementSerializer
 
     def get_object(self):
-        return ClassesService().get_all_classes_queryset.filter(id=self.request.query_params.get("class_id")).first()
+        return ClassManagementService(
+            user=self.request.user
+        ).get_class_management_queryset.filter(
+            course_id=self.request.query_params.get("class_id")
+        ).first()
 
 
 class HomepageClassListAPIView(generics.ListAPIView):

@@ -1,6 +1,6 @@
 from django.db.models import Prefetch
 
-from apps.classes.models import Class, ClassRequest
+from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 from apps.courses.models import Lesson, CourseDocument, Course
 from apps.users.models import User
@@ -35,3 +35,17 @@ class ClassRequestService:
             return REQUESTED
         else:
             return AVAILABLE
+
+
+class ClassManagementService:
+    def __init__(self, user):
+        self.user = user
+
+    @property
+    def get_class_management_queryset(self):
+        return ClassManagement.objects.prefetch_related(
+            Prefetch("course__lessons", queryset=Lesson.objects.prefetch_related(
+                Prefetch("videos"),
+                Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
+            ),
+        ).select_related('course__topic', 'course__thumbnail').filter(user=self.user, course__course_of_class=True)

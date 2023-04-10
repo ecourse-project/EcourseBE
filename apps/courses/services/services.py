@@ -49,7 +49,7 @@ class CourseManagementService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
             ),
-        ).select_related('course__topic', 'course__thumbnail').filter(user=self.user)
+        ).select_related('course__topic', 'course__thumbnail').filter(user=self.user, course__course_of_class=False)
 
     @property
     def get_course_mngt_queryset_by_selling(self):
@@ -65,7 +65,7 @@ class CourseManagementService:
         progress = 0
         all_docs = CourseDocumentManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
         all_videos = VideoManagement.objects.filter(user=self.user, course_id=course_id, is_available=True)
-        if all_videos.exists() and all_videos.exists():
+        if all_videos.exists() or all_docs.exists():
             docs_completed = all_docs.filter(is_completed=True)
             videos_completed = all_videos.filter(is_completed=True)
             progress = round(
@@ -103,7 +103,7 @@ class CourseManagementService:
                         is_completed=True,
                         is_available=True,
                     ).values_list('video', flat=True)
-            if not lesson_mngt:
+            else:
                 data['lessons'][count]['docs_completed'] = []
                 data['lessons'][count]['videos_completed'] = []
 

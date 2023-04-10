@@ -19,7 +19,7 @@
             ]
         },
         {
-            "name": "Toán bài 1",
+            "name": "Toán bài 2",
             "lesson_number": 2,
             "content": "Bai 2",
             "documents": [
@@ -74,6 +74,54 @@
               {
                 "name": "Lưu vực sông Nin",
                 "description": "Lưu vực sông Nin ở Bắc Phi là nơi ra đời nền văn minh Ai Cập cổ đại. Khoảng 6000 năm TCN, xuất hiện các vương quốc của xã hội tiền Ai Cập cổ đại (trước khi xuất hiện chế độ quân chủ ở Ai Cập) có kĩ năng trồng trọt và chăn thả gia súc.",
+                "topic": null
+              }
+           ]
+        }
+    ]
+  },
+  {
+     "name": "Hóa học",
+     "topic": "KHTN",
+     "description": "Hóa vô cơ, hóa hữu cơ",
+     "price": 900000,
+     "course_of_class": false,
+     "lessons": [
+        {
+           "name": "Hóa vô cơ",
+           "lesson_number": 1,
+           "content": "Hóa vô cơ liên quan đến tổng hợp và hành vi của các hợp chất vô cơ và cơ kim. Lĩnh vực này bao gồm tất cả các hợp chất hóa học ngoại trừ vô số các hợp chất hữu cơ, là các đối tượng của hóa học hữu cơ. Sự khác biệt giữa hai ngành không phải là tuyệt đối, vì có nhiều sự chồng chéo trong phân ngành hóa học cơ kim",
+           "documents": [
+              {
+                 "name": "Tổng quan",
+                 "description": "Văn hóa Tràng An là một trong những nền văn hóa cổ nhất ở Việt Nam, hình thành từ thời kỳ đồ đá cũ khoảng 25 Ka BP (Kilo annum before present, ngàn năm trước).",
+                 "topic": null
+              },
+              {
+                 "name": "Hóa vô cơ căn bản",
+                 "description": null,
+                 "topic": null
+              },
+              {
+                 "name": "Hợp kim, kim loại kiềm",
+                 "description": null,
+                 "topic": null
+              }
+           ]
+        },
+        {
+           "name": "Hóa hữu cơ",
+           "lesson_number": 2,
+           "content": "Hóa hữu cơ hay hóa học hữu cơ là một phân ngành hóa học nghiên cứu về cấu trúc, tính chất, thành phần và phản ứng hóa học của những hợp chất hữu cơ và vật liệu hữu cơ. Nghiên cứu cấu trúc xác định thành phần hóa học và công thức của hợp chất",
+           "documents": [
+              {
+                "name": "Axit amin",
+                "description": null,
+                "topic": null
+              },
+              {
+                "name": "Đường",
+                "description": null,
                 "topic": null
               }
            ]
