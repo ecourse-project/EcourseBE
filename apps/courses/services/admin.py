@@ -1,6 +1,6 @@
 from django.utils.timezone import localtime
 
-from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement, CourseManagement
+from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement, CourseManagement, Course
 from apps.courses.enums import BOUGHT
 from apps.users.models import User
 from apps.courses.services.services import CourseManagementService
@@ -41,6 +41,12 @@ def get_users_by_course_sale_status(course_id, sale_status):
     return CourseManagement.objects.filter(course_id=course_id, sale_status=sale_status).values_list("user_id", flat=True)
 
 
+def get_users_by_joined_class(course_id):
+    return CourseManagement.objects.filter(
+        course_id=course_id, course__course_of_class=True, user_in_class=True
+    ).values_list("user_id", flat=True)
+
+
 def init_course_mngt(course, users):
     CourseManagement.objects.bulk_create([CourseManagement(course=course, user=user) for user in users])
 
@@ -55,7 +61,10 @@ def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, 
         )
 
     for course_id in courses_include_lesson:
-        user_ids = get_users_by_course_sale_status(course_id=course_id, sale_status=BOUGHT)
+        if Course.objects.get(id=course_id).course_of_class:
+            user_ids = get_users_by_joined_class(course_id)
+        else:
+            user_ids = get_users_by_course_sale_status(course_id=course_id, sale_status=BOUGHT)
         if user_ids:
             is_update_mark = False
             if docs_remove:

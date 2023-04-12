@@ -1,30 +1,30 @@
 [
   {
-     "name": "Toán",
+     "name": "Vật lý",
      "topic": "KHTN",
-     "description": "Đại số, hình học, tích phân",
-     "price": 0,
-     "course_of_class": true,
+     "description": "Động lực học, ánh sáng",
+     "price": 780000,
+     "course_of_class": false,
      "lessons": [
         {
-            "name": "Toán bài 1",
+            "name": "Động lực học",
             "lesson_number": 1,
-            "content": "Bai 1",
+            "content": "Động lực học là một ngành trong cơ học chuyên nghiên cứu chuyển động của các vật thể và mối liên hệ giữa chúng với tương tác giữa các vật",
             "documents": [
                 {
-                    "name": "Tài liệu bài 1",
+                    "name": "Tài liệu Động lực học",
                     "description": null,
                     "topic": null
                 }
             ]
         },
         {
-            "name": "Toán bài 2",
+            "name": "Ánh sáng",
             "lesson_number": 2,
             "content": "Bai 2",
             "documents": [
                 {
-                    "name": "Tài liệu bài 1",
+                    "name": "Tài liệu Ánh sáng",
                     "description": null,
                     "topic": null
                 }

@@ -93,6 +93,7 @@ class CourseManagement(TimeStampedModel):
 
     class Meta:
         ordering = ["course__name"]
+        verbose_name_plural = "Management - Courses"
 
     def __str__(self):
         return f"{self.course.name} - {self.user.__str__()}"
@@ -108,6 +109,7 @@ class LessonManagement(TimeStampedModel):
 
     class Meta:
         unique_together = ('lesson', 'course')
+        verbose_name_plural = "Management - Lessons"
 
 
 class CourseDocumentManagement(TimeStampedModel):
@@ -126,6 +128,7 @@ class CourseDocumentManagement(TimeStampedModel):
 
     class Meta:
         unique_together = ('document', 'lesson', 'course', 'user')
+        verbose_name_plural = "Management - Course's Documents"
 
 
 class VideoManagement(TimeStampedModel):
@@ -138,7 +141,8 @@ class VideoManagement(TimeStampedModel):
     is_available = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(id)
+        return str(self.id)
 
     class Meta:
         unique_together = ('video', 'lesson', 'course', 'user')
+        verbose_name_plural = "Management - Videos"

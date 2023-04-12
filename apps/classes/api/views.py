@@ -4,10 +4,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.classes.api.serializers import ListClassSerializer, ClassSerializer, ClassManagementSerializer
+from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer
 from apps.classes.models import ClassRequest
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
-from apps.courses.api.serializers import CourseManagementSerializer
 
 
 class JoinRequestView(APIView):

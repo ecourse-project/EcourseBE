@@ -54,3 +54,4 @@ class ClassRequest(models.Model):
 class ClassManagement(CourseManagement):
     class Meta:
         proxy = True
+        verbose_name_plural = "Management - Classes"

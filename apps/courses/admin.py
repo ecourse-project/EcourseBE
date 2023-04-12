@@ -7,6 +7,8 @@ from apps.courses.models import (
     CourseDocument,
     LessonManagement,
     CourseManagement,
+    CourseDocumentManagement,
+    VideoManagement,
 )
 from apps.courses.services.admin import (
     insert_remove_docs_videos,
@@ -97,7 +99,7 @@ class LessonAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_filter = ("course_of_class",)
+    list_filter = ("name", "topic", "is_selling")
     search_fields = (
         "id",
         "name",
@@ -168,6 +170,53 @@ class CourseManagementAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.filter(course__course_of_class=False)
+
+
+@admin.register(LessonManagement)
+class LessonManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "course__name",
+    )
+    list_display = (
+        "course",
+        "lesson",
+    )
+
+
+@admin.register(CourseDocumentManagement)
+class CourseDocumentManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "user__email",
+        "course__name",
+    )
+    list_display = (
+        "user",
+        "course",
+        "lesson",
+        "document",
+        "is_completed",
+        "is_available",
+    )
+
+
+@admin.register(VideoManagement)
+class VideoManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "user__email",
+        "course__name",
+    )
+    list_display = (
+        "user",
+        "course",
+        "lesson",
+        "is_completed",
+        "is_available",
+    )
+
+
 
 
 

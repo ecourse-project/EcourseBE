@@ -1,14 +1,25 @@
-from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic
+from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic, LessonManagement
+from apps.courses.services.admin import init_course_mngt
+from apps.users.services import get_active_users
 
 
 class UploadCourseServices:
     def create_course_data(self, courses: list):
         courses_lessons = [self.prepare_course_data(course) for course in courses]
-        course_objects = Course.objects.bulk_create([course[0] for course in courses_lessons])
+        course_objects = Course.objects.bulk_create([tpl[0] for tpl in courses_lessons])
+        users = get_active_users()
 
+        lesson_mngt_list = []
         for index, obj in enumerate(course_objects):
             if courses_lessons[index][1]:
                 obj.lessons.add(*courses_lessons[index][1])
+                for lesson in courses_lessons[index][1]:
+                    lesson_mngt_list.append(LessonManagement(course=obj, lesson=lesson))
+            if not obj.course_of_class:
+                init_course_mngt(course=obj, users=users)
+
+        if lesson_mngt_list:
+            LessonManagement.objects.bulk_create(lesson_mngt_list)
 
         return course_objects
 

@@ -1,7 +1,9 @@
 from django.contrib import admin
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
-from apps.courses.services.admin import CourseAdminService
+from apps.courses.services.admin import CourseAdminService, insert_remove_docs_videos
+from apps.courses.models import LessonManagement
+
 
 
 @admin.action(description='Accept selected users')
@@ -44,6 +46,27 @@ class ClassAdmin(admin.ModelAdmin):
         obj.course_of_class = True
         obj.save()
 
+    def save_related(self, request, form, formsets, change):
+        instance = form.instance
+
+        before_lessons = set(instance.lessons.all())
+        super().save_related(request, form, formsets, change)
+        after_lessons = set(instance.lessons.all())
+
+        lessons_remove = before_lessons.difference(after_lessons)
+        lessons_add = after_lessons.difference(before_lessons)
+
+        if lessons_remove:
+            LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
+            for lesson in lessons_remove:
+                insert_remove_docs_videos(instance.id, lesson.id, lesson.documents.all(), lesson.videos.all(), None, None)
+        if lessons_add:
+            lesson_mngt_list = []
+            for lesson in lessons_add:
+                lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
+                insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
+            LessonManagement.objects.bulk_create(lesson_mngt_list)
+
     # def get_form(self, request, obj=None, **kwargs):
     #     form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
     #     form.base_fields['course'].queryset = Course.objects.filter(course_of_class=True)
@@ -78,10 +101,10 @@ class ClassRequestAdmin(admin.ModelAdmin):
     )
     actions = (accept, deny)
 
-    def save_model(self, request, obj, form, change):
-        # if not ClassRequest.objects.filter(user=obj.user, class_request=obj.class_request).exists():
-        #     print(111111111111111111111111111111111)
-        obj.save()
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ClassRequestAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['class_request'].queryset = Class.objects.filter(course_of_class=True)
+        return form
 
 
 @admin.register(ClassManagement)
