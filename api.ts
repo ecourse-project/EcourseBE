@@ -690,7 +690,7 @@ class CourseService {
     return apiClient.get(apiURL.getCourseDetail(id));
   }
 
-  static updateLessonProgress(params: UpdateProgressArgs): Promise<any> {
+  static updateLessonProgress(params: UpdateProgressArgs): Promise<{"progress": number}> {
     return apiClient.post(apiURL.updateLessonProgress(), params);
   }
 
@@ -779,7 +779,7 @@ class CourseService {
     return apiClient.get(apiURL.getPostDetail(post_id));
   }
 
-  static updateClassProgress(params: UpdateProgressArgs): Promise<any> {
+  static updateClassProgress(params: UpdateProgressArgs): Promise<{"progress": number}> {
     return apiClient.post(apiURL.updateClassProgress(), params);
   }
 }

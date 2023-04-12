@@ -70,11 +70,11 @@ class CourseRetrieveView(generics.RetrieveAPIView):
 class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
         data = self.request.data
-        CourseManagementService(request.user).update_lesson_progress(
+        progress = CourseManagementService(request.user).update_lesson_progress(
             course_id=data.get('course_id'),
             lessons=data.get('lessons'),
         )
-        return Response(status=status.HTTP_200_OK)
+        return Response(data={"progress": progress}, status=status.HTTP_200_OK)
 
 
 # ==========================> NEW REQUIREMENTS

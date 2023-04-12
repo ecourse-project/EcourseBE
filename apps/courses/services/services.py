@@ -72,6 +72,7 @@ class CourseManagementService:
                 100 * (docs_completed.count() + videos_completed.count()) / (all_docs.count() + all_videos.count())
             )
         CourseManagement.objects.filter(user=self.user, course_id=course_id).update(progress=progress)
+        return progress
 
     def init_courses_management(self):
         if not CourseManagement.objects.filter(user=self.user).first():
@@ -153,4 +154,4 @@ class CourseManagementService:
         VideoManagement.objects.filter(user=self.user, course_id=course_id, is_available=True).update(is_completed=False)
         VideoManagement.objects.filter(user=self.user, video_id__in=videos_id, is_available=True).update(is_completed=True)
 
-        self.calculate_course_progress(course_id)
+        return self.calculate_course_progress(course_id)
