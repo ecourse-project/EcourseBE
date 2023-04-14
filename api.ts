@@ -461,6 +461,15 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
   return newURL;
 };
 
+
+// ===========================================Configuration===========================================
+export interface PersonalInfo {
+  name: string;
+  payment_info: string[];
+}
+
+
+
 export const apiURL = {
   login: () => 'api/users-auth/token/',
   refresh: () => 'api/users-auth/token/refresh/',
@@ -563,6 +572,8 @@ export const apiURL = {
     }
     return url;
   },
+
+  getPersonalInfo: () => `api/configuration/personal-info/`,
 };
 
 class CourseService {
@@ -782,5 +793,10 @@ class CourseService {
   static updateClassProgress(params: UpdateProgressArgs): Promise<{"progress": number}> {
     return apiClient.post(apiURL.updateClassProgress(), params);
   }
+
+  static getPersonalInfo(): Promise<PersonalInfo> {
+    return apiClient.get(apiURL.getPersonalInfo());
+  }
+
 }
 export default CourseService;

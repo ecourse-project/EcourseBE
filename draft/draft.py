@@ -8,7 +8,5 @@ import json
 #         print(row)
 
 
-file = open("data.json", encoding="utf=8")
-course = json.load(file)
-lessons = course.get("lessons")
-videos = lessons
+file = open("data.txt", encoding="utf=8")
+print(json.loads(file.read()))

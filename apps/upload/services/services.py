@@ -27,7 +27,7 @@ class UploadCourseServices:
         keys = course.keys()
 
         if "price" in keys:
-            if not course.get("price"):
+            if not course.get("price") or course.get("course_of_class"):
                 course["price"] = 0
 
         course_topic = None
@@ -36,7 +36,7 @@ class UploadCourseServices:
         if course_topic:
             course_topic, created = CourseTopic.objects.get_or_create(name=course_topic)
 
-        if course.get("lessons"):
+        if isinstance(course.get("lessons"), list):
             lessons = course.pop("lessons")
             return Course(**course, topic=course_topic), self.create_lesson_data(lessons)
         return Course(**course, topic=course_topic), None
@@ -52,7 +52,7 @@ class UploadCourseServices:
         return lesson_objects
 
     def prepare_lesson_data(self, lesson: dict):
-        if lesson.get("documents"):
+        if isinstance(lesson.get("documents"), list):
             documents = lesson.pop("documents")
             return Lesson(**lesson), self.create_document_data(documents)
         return Lesson(**lesson), None

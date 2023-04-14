@@ -110,7 +110,6 @@ class CourseAdmin(admin.ModelAdmin):
         "topic",
         "price",
         "is_selling",
-        "course_of_class",
         # "rating",
     )
     ordering = (
@@ -212,6 +211,7 @@ class VideoManagementAdmin(admin.ModelAdmin):
         "user",
         "course",
         "lesson",
+        "video",
         "is_completed",
         "is_available",
     )
