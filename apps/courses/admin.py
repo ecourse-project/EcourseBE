@@ -105,11 +105,11 @@ class CourseAdmin(admin.ModelAdmin):
         "name",
     )
     list_display = (
-        "id",
         "name",
         "topic",
         "price",
         "is_selling",
+        "id",
         # "rating",
     )
     ordering = (

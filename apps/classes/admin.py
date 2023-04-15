@@ -5,13 +5,16 @@ from apps.courses.services.admin import CourseAdminService, insert_remove_docs_v
 from apps.courses.models import LessonManagement
 
 
-
 @admin.action(description='Accept selected users')
 def accept(modeladmin, request, queryset):
     queryset.update(accepted=True)
     for obj in queryset:
-        _, created = ClassManagement.objects.get_or_create(user=obj.user, course=obj.class_request, user_in_class=True)
-        if created:
+        class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request).first()
+        if class_mngt:
+            class_mngt.user_in_class = True
+            class_mngt.save(update_fields=["user_in_class"])
+        else:
+            ClassManagement.objects.created(user=obj.user, course=obj.class_request, user_in_class=True)
             course_service = CourseAdminService(obj.user)
             course_service.init_courses_data([obj.class_request])
 
@@ -32,9 +35,9 @@ class ClassAdmin(admin.ModelAdmin):
         "name",
     )
     list_display = (
-        "id",
         "name",
         "topic",
+        "id",
     )
     readonly_fields = ("course_of_class", "is_selling", "sold", "views", "num_of_rates", "rating")
 
@@ -122,7 +125,7 @@ class ClassManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "user_in_class",
     )
-    readonly_fields = ("progress", "user_in_class")
+    readonly_fields = ("progress", "user_in_class", "status", "sale_status")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

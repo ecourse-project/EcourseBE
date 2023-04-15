@@ -14,7 +14,6 @@ class DocumentAdmin(admin.ModelAdmin):
         "name",
     )
     list_display = (
-        "id",
         "name",
         "topic",
         # "description",
@@ -22,6 +21,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "file",
         "price",
         "is_selling",
+        "id",
         # "rating",
     )
     ordering = (

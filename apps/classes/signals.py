@@ -9,8 +9,12 @@ from apps.courses.services.admin import CourseAdminService
 @receiver(models.signals.post_save, sender=ClassRequest)
 def add_and_remove_user_in_class(sender, instance, **kwargs):
     if instance.accepted:
-        _, created = ClassManagement.objects.get_or_create(user=instance.user, course=instance.class_request, user_in_class=True)
-        if created:
+        class_mngt = ClassManagement.objects.filter(user=instance.user, course=instance.class_request).first()
+        if class_mngt:
+            class_mngt.user_in_class = True
+            class_mngt.save(update_fields=["user_in_class"])
+        else:
+            ClassManagement.objects.created(user=instance.user, course=instance.class_request, user_in_class=True)
             course_service = CourseAdminService(instance.user)
             course_service.init_courses_data([instance.class_request])
 
