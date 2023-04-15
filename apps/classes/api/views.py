@@ -7,6 +7,7 @@ from apps.core.pagination import StandardResultsSetPagination
 from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer
 from apps.classes.models import ClassRequest
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
+from apps.courses.services.services import CourseManagementService
 
 
 class JoinRequestView(APIView):
@@ -49,6 +50,13 @@ class ClassDetailView(generics.RetrieveAPIView):
         ).get_class_management_queryset.filter(
             course_id=self.request.query_params.get("class_id")
         ).first()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        service = CourseManagementService(request.user)
+        return Response(
+            service.custom_course_detail_data(self.get_serializer(instance).data)
+        )
 
 
 class HomepageClassListAPIView(generics.ListAPIView):

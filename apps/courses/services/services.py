@@ -139,6 +139,9 @@ class CourseManagementService:
         quiz_detail['quiz_answers'] = quiz_answers
         data['quiz_detail'] = quiz_detail
 
+        if "request_status" in data.keys():
+            data.pop("request_status")
+
         return data
 
     def update_lesson_progress(self, course_id: str, lessons: list):

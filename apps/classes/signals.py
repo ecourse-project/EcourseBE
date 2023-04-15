@@ -2,7 +2,6 @@ from django.db import models
 from django.dispatch import receiver
 
 from apps.classes.models import ClassRequest, ClassManagement
-from apps.courses.models import CourseManagement
 from apps.courses.services.admin import CourseAdminService
 
 

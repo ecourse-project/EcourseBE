@@ -11,6 +11,9 @@ from apps.courses.api.serializers import (
 )
 from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
+from apps.courses.models import Course
+from apps.classes.services.services import ClassManagementService
+from apps.classes.api.serializers import ClassManagementSerializer
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
@@ -70,11 +73,23 @@ class CourseRetrieveView(generics.RetrieveAPIView):
 class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
         data = self.request.data
-        progress = CourseManagementService(request.user).update_lesson_progress(
-            course_id=data.get('course_id'),
-            lessons=data.get('lessons'),
+        course = Course.objects.get(id=data.get('course_id'))
+        course_service = CourseManagementService(request.user)
+        course_service.update_lesson_progress(course_id=data.get('course_id'), lessons=data.get('lessons'))
+
+        if course.course_of_class:
+            class_service = ClassManagementService(user=self.request.user)
+            class_mngt = class_service.get_class_management_queryset.filter(course_id=data.get('course_id')).first()
+            return Response(
+                data=course_service.custom_course_detail_data(ClassManagementSerializer(class_mngt).data),
+                status=status.HTTP_200_OK,
+            )
+
+        course_mngt = course_service.get_course_management_queryset.filter(course_id=data.get('course_id')).first()
+        return Response(
+            data=course_service.custom_course_detail_data(CourseManagementSerializer(course_mngt).data),
+            status=status.HTTP_200_OK,
         )
-        return Response(data={"progress": progress}, status=status.HTTP_200_OK)
 
 
 # ==========================> NEW REQUIREMENTS

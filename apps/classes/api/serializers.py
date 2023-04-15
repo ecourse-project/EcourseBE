@@ -17,9 +17,9 @@ class ClassSerializer(CourseSerializer):
         fields = CourseManagementSerializer.Meta.fields + ("request_status",)
 
     def get_request_status(self, obj):
-        user = self.context.get("request").user
-        if user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+        user = self.context.get("request").user if self.context.get("request") else None
+        if user and user.is_authenticated:
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
         return None
 
 
@@ -39,8 +39,8 @@ class ClassManagementSerializer(serializers.ModelSerializer):
         )
 
     def get_request_status(self, obj):
-        user = self.context.get("request").user
-        if user.is_authenticated:
+        user = self.context.get("request").user if self.context.get("request") else None
+        if user and user.is_authenticated:
             return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
         return None
 
@@ -48,41 +48,6 @@ class ClassManagementSerializer(serializers.ModelSerializer):
         """Move fields from profile to user representation."""
         representation = super().to_representation(obj)
         course_representation = representation.pop("course")
-        user = self.context.get("request").user
-
-        for index, lesson in enumerate(course_representation["lessons"]):
-            course_representation["lessons"][index]["docs_completed"] = CourseDocumentManagement.objects.filter(
-                user=user,
-                course_id=course_representation['id'],
-                document_id__in=[doc_id["id"] for doc_id in lesson["documents"]],
-                is_completed=True,
-                is_available=True,
-            ).values_list('document', flat=True)
-            course_representation['lessons'][index]['videos_completed'] = VideoManagement.objects.filter(
-                user=user,
-                course_id=course_representation['id'],
-                video_id__in=[video_id["id"] for video_id in lesson["videos"]],
-                is_completed=True,
-                is_available=True,
-            ).values_list('video', flat=True)
-
-        quiz_detail = {}
-        quiz_answers = []
-        correct_answers = 0
-        total_answers = Answer.objects.filter(quiz__course_id=course_representation['id'], user=user)
-        for answer in total_answers:
-            quiz_answers.append({
-                "quiz_id": answer.quiz_id,
-                "answer_choice": answer.choice,
-                "correct_answer": answer.quiz.correct_answer.choice
-            })
-            if answer.choice == answer.quiz.correct_answer.choice:
-                correct_answers += 1
-
-        quiz_detail['correct_answers'] = correct_answers
-        quiz_detail['total_quiz'] = len(total_answers)
-        quiz_detail['quiz_answers'] = quiz_answers
-        course_representation['quiz_detail'] = quiz_detail
 
         for key in course_representation:
             representation[key] = course_representation[key]
@@ -107,9 +72,9 @@ class ListClassSerializer(serializers.ModelSerializer):
         )
 
     def get_request_status(self, obj):
-        user = self.context.get("request").user
-        if user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+        user = self.context.get("request").user if self.context.get("request") else None
+        if user and user.is_authenticated:
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
         return None
 
 
