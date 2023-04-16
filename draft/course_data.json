@@ -52,7 +52,7 @@
         },
         {
             "name": "Nhận dạng tiếng nói",
-            "lesson_number": 2,
+            "lesson_number": 3,
             "content": "Nhận dạng tiếng nói là một quá trình nhận dạng mẫu, còn được gọi là nhận dạng giọng nói tự động (ASR), nhận dạng giọng nói máy tính hoặc chuyển đổi giọng nói thành văn bản (STT).",
             "documents": []
         }

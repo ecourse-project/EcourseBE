@@ -53,3 +53,14 @@ class UploadCourse(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     data = models.JSONField(null=True, blank=True)
 
+
+class UploadDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    data = models.JSONField(null=True, blank=True)
+
+
+# class GenerateTestData(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     data_type = models.CharField(max_length=10, choices)
+
+

@@ -150,7 +150,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseManagement)
 class CourseManagementAdmin(admin.ModelAdmin):
-    list_filter = ("course__course_of_class",)
+    list_filter = ("course__course_of_class", "course", "user", "sale_status")
     search_fields = (
         "user__email",
         "course__name",

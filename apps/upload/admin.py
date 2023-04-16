@@ -3,9 +3,9 @@ from math import ceil
 from django.contrib import admin
 from django.core.files.storage import default_storage
 
-from apps.upload.models import UploadImage, UploadFile, UploadCourse
+from apps.upload.models import UploadImage, UploadFile, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path
-from apps.upload.services.services import UploadCourseServices
+from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
 from apps.upload.enums import video_ext_list
 
 from moviepy.editor import VideoFileClip
@@ -102,6 +102,19 @@ class UploadCourseAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.data:
             UploadCourseServices().create_course_data(obj.data)
+
+        obj.save()
+
+
+@admin.register(UploadDocument)
+class UploadDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+    )
+
+    def save_model(self, request, obj, form, change):
+        if obj.data:
+            UploadDocumentServices().create_document_data(obj.data)
 
         obj.save()
 

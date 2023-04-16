@@ -47,8 +47,12 @@ def get_users_by_joined_class(course_id):
     ).values_list("user_id", flat=True)
 
 
+def prepare_course_to_create(course: Course, users):
+    return [CourseManagement(course=course, user=user) for user in users]
+
+
 def init_course_mngt(course, users):
-    CourseManagement.objects.bulk_create([CourseManagement(course=course, user=user) for user in users])
+    return CourseManagement.objects.bulk_create(prepare_course_to_create(course, users))
 
 
 def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, docs_add, videos_add):
