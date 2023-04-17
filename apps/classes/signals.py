@@ -13,7 +13,7 @@ def add_and_remove_user_in_class(sender, instance, **kwargs):
             class_mngt.user_in_class = True
             class_mngt.save(update_fields=["user_in_class"])
         else:
-            ClassManagement.objects.created(user=instance.user, course=instance.class_request, user_in_class=True)
+            ClassManagement.objects.create(user=instance.user, course=instance.class_request, user_in_class=True)
             course_service = CourseAdminService(instance.user)
             course_service.init_courses_data([instance.class_request])
 

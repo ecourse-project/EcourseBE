@@ -9,4 +9,7 @@ import json
 
 
 file = open("data.txt", encoding="utf=8")
-print(json.loads(file.read()))
+a = json.loads(file.read())
+
+# print(a[0]["name"])
+print(len(str(a)))

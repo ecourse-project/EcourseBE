@@ -9,13 +9,10 @@ from apps.users.services import get_active_users
 
 
 class UploadCourseServices:
-    # def generate_course(self):
+    # def generate_course(self, ):
     #     root = "templates/data/lionel_messi/"
-    #     list_files = os.listdir(root)
     #     info = json.load(open(root + "info.json", encoding="utf-8"))
     #     description = json.load(open(root + "description.json", encoding="utf-8"))
-    #     list_files.remove("info.json")
-    #     list_files.remove("description.json")
     #     lessons = [json.load(open(root + file, encoding="utf-8")) for file in list_files]
     #     for number, lesson in enumerate(lessons, start=1):
     #         lesson["lesson_number"] = number
@@ -60,7 +57,7 @@ class UploadCourseServices:
                 course_topic = course_topic.strip().title() or None
         if course_topic:
             course_topic = (
-                CourseTopic.objects.filter(name__iexact=course_topic) or
+                CourseTopic.objects.filter(name__iexact=course_topic).first() or
                 CourseTopic.objects.create(name=course_topic)
             )
 

@@ -1,10 +1,8 @@
 from rest_framework import serializers
 
-from apps.courses.models import CourseDocumentManagement, VideoManagement
 from apps.courses.api.serializers import LessonSerializer, TopicSerializer, CourseSerializer, CourseManagementSerializer
 from apps.classes.models import Class, ClassManagement
 from apps.classes.services.services import ClassRequestService
-from apps.quiz.models import Answer
 
 
 class ClassSerializer(CourseSerializer):
@@ -19,7 +17,7 @@ class ClassSerializer(CourseSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
         return None
 
 
@@ -74,7 +72,7 @@ class ListClassSerializer(serializers.ModelSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
+            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
         return None
 
 

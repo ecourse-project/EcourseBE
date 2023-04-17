@@ -115,7 +115,7 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = (
         "name",
     )
-    readonly_fields = ("course_of_class", "sold", "views", "num_of_rates", "rating")
+    readonly_fields = ("sold", "views", "num_of_rates", "rating")
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:

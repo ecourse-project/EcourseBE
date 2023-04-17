@@ -39,15 +39,11 @@ class ClassAdmin(admin.ModelAdmin):
         "topic",
         "id",
     )
-    readonly_fields = ("course_of_class", "is_selling", "sold", "views", "num_of_rates", "rating")
+    readonly_fields = ("is_selling", "sold", "views", "num_of_rates", "rating", "price")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.filter(course_of_class=True)
-
-    def save_model(self, request, obj, form, change):
-        obj.course_of_class = True
-        obj.save()
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
