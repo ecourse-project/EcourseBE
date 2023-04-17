@@ -14,7 +14,7 @@ def accept(modeladmin, request, queryset):
             class_mngt.user_in_class = True
             class_mngt.save(update_fields=["user_in_class"])
         else:
-            ClassManagement.objects.created(user=obj.user, course=obj.class_request, user_in_class=True)
+            ClassManagement.objects.create(user=obj.user, course=obj.class_request, user_in_class=True)
             course_service = CourseAdminService(obj.user)
             course_service.init_courses_data([obj.class_request])
 

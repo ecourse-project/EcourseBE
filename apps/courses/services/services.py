@@ -12,6 +12,7 @@ from apps.courses.models import (
 )
 from apps.courses.enums import BOUGHT, PENDING
 from apps.quiz.models import Answer
+from apps.classes.services.services import ClassRequestService
 
 
 class CourseService:
@@ -82,7 +83,7 @@ class CourseManagementService:
                 ) for course in CourseService().get_all_courses_queryset
             ])
 
-    def custom_course_detail_data(self, data):
+    def custom_course_detail_data(self, data, instance=None):
         """ Docs & videos completed """
         for count, lesson in enumerate(data['lessons'], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
@@ -139,8 +140,12 @@ class CourseManagementService:
         quiz_detail['quiz_answers'] = quiz_answers
         data['quiz_detail'] = quiz_detail
 
-        if "request_status" in data.keys():
-            data.pop("request_status")
+        data["request_status"] = None
+        if data.get("course_of_class") and instance:
+            data["request_status"] = ClassRequestService().get_user_request_status(
+                user=self.user,
+                class_obj=instance.course,
+            )
 
         return data
 

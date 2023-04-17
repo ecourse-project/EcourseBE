@@ -55,7 +55,7 @@ class ClassDetailView(generics.RetrieveAPIView):
         instance = self.get_object()
         service = CourseManagementService(request.user)
         return Response(
-            service.custom_course_detail_data(self.get_serializer(instance).data)
+            service.custom_course_detail_data(self.get_serializer(instance).data, instance=instance)
         )
 
 
