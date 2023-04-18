@@ -24,6 +24,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "file",
         "price",
         "is_selling",
+        "created",
         "id",
         # "rating",
     )

@@ -109,6 +109,7 @@ class CourseAdmin(admin.ModelAdmin):
         "topic",
         "price",
         "is_selling",
+        "created",
         "id",
         # "rating",
     )
