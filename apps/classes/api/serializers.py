@@ -10,15 +10,21 @@ class ClassSerializer(CourseSerializer):
     lessons = LessonSerializer(many=True)
     topic = TopicSerializer()
 
-    class Meta(CourseSerializer.Meta):
+    class Meta:
         model = Class
-        fields = CourseManagementSerializer.Meta.fields + ("request_status",)
+        fields = CourseSerializer.Meta.fields + ("request_status",)
 
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
             return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
         return None
+
+    def to_representation(self, obj):
+        representation = super().to_representation(obj)
+        representation.pop("sold")
+        representation.pop("price")
+        return representation
 
 
 class ClassManagementSerializer(serializers.ModelSerializer):

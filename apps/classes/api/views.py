@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer
+from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer, ClassSerializer
 from apps.classes.models import ClassRequest
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
+from apps.classes.enums import ACCEPTED
 from apps.courses.services.services import CourseManagementService
 
 
@@ -42,21 +43,26 @@ class ClassListView(generics.ListAPIView):
 
 
 class ClassDetailView(generics.RetrieveAPIView):
-    serializer_class = ClassManagementSerializer
+    serializer_class = ClassSerializer
+
+    @staticmethod
+    def is_accepted(user, class_obj):
+        return ClassRequestService().get_user_request_status(user=user, class_obj=class_obj) == ACCEPTED
+
+    def get_serializer_class(self):
+        class_obj = ClassesService().get_all_classes_queryset.filter(id=self.request.query_params.get("class_id")).first()
+        if self.is_accepted(self.request.user, class_obj):
+            return ClassManagementSerializer
+        return self.serializer_class
 
     def get_object(self):
-        return ClassManagementService(
-            user=self.request.user
-        ).get_class_management_queryset.filter(
-            course_id=self.request.query_params.get("class_id")
-        ).first()
+        class_id = self.request.query_params.get("class_id")
+        user = self.request.user
+        class_obj = ClassesService().get_all_classes_queryset.filter(id=class_id).first()
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        service = CourseManagementService(request.user)
-        return Response(
-            service.custom_course_detail_data(self.get_serializer(instance).data, instance=instance)
-        )
+        if self.is_accepted(self.request.user, class_obj):
+            return ClassManagementService(user=user).get_class_management_queryset.filter(course=class_obj).first()
+        return ClassesService().get_all_classes_queryset.filter(id=class_id).first()
 
 
 class HomepageClassListAPIView(generics.ListAPIView):

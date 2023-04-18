@@ -51,11 +51,14 @@ class UploadImage(TimeStampedModel):
 
 class UploadCourse(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    is_class = models.BooleanField(default=False)
     data = models.JSONField(null=True, blank=True)
 
 
 class UploadDocument(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
     data = models.JSONField(null=True, blank=True)
 
 

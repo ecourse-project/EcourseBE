@@ -109,7 +109,7 @@ class DocumentUploadForm(forms.ModelForm):
 
         # Define your custom field data retrieval logic here
         if self.instance:
-            self.fields['my_custom_field'].choices = [("1", "1"), ("2", "2")]
+            self.fields["document_to_generate"].choices = [("1", "1"), ("2", "2")]
 
 
 class CourseUploadForm(forms.ModelForm):
@@ -134,31 +134,37 @@ class CourseUploadForm(forms.ModelForm):
 @admin.register(UploadCourse)
 class UploadCourseAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
+        "name",
+        "is_class",
     )
     form = CourseUploadForm
 
     def save_model(self, request, obj, form, change):
-        data = None
-        course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
-        if course_to_generate:
-            course_to_generate = course_to_generate.replace(" ", "_").lower()
-            data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
-        data = obj.data or data
-        if data:
-            UploadCourseServices().create_course_data([data])
+        if not change:
+            data = obj.data
+            if not data:
+                course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
+                if course_to_generate:
+                    course_to_generate = course_to_generate.replace(" ", "_").lower()
+                    data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
+                    data["course_of_class"] = obj.is_class
+            if data:
+                obj.name = data.get("name")
+                UploadCourseServices().create_course_data([data])
+
         obj.save()
 
 
 @admin.register(UploadDocument)
 class UploadDocumentAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
+        "name",
     )
     form = DocumentUploadForm
 
     def save_model(self, request, obj, form, change):
-        if obj.data:
+        if obj.data and not change:
+            obj.name = obj.data.get("name")
             UploadDocumentServices().create_document_data(obj.data)
 
         obj.save()
