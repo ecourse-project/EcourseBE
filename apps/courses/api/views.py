@@ -29,14 +29,14 @@ class CourseListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
         if topic:
             return service.get_course_mngt_queryset_by_selling.filter(course__topic__name__icontains=topic)
         elif list_id:
             return service.get_courses_mngt_by_list_id(list_id)
         else:
-            return service.get_course_management_queryset
+            return service.get_course_mngt_queryset_by_selling
 
 
 class UserCoursesListView(generics.ListAPIView):
@@ -101,7 +101,7 @@ class HomepageCourseListAPIView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
         if topic:
             return CourseService().get_courses_by_topic(topic)

@@ -140,12 +140,13 @@ class CourseManagementService:
         quiz_detail['quiz_answers'] = quiz_answers
         data['quiz_detail'] = quiz_detail
 
-        data["request_status"] = None
-        if data.get("course_of_class") and instance:
-            data["request_status"] = ClassRequestService().get_user_request_status(
-                user=self.user,
-                class_obj=instance.course,
-            )
+        if not data.get("request_status"):
+            data["request_status"] = None
+            if data.get("course_of_class") and instance:
+                data["request_status"] = ClassRequestService().get_user_request_status(
+                    user=self.user,
+                    class_obj=instance.course,
+                )
 
         return data
 

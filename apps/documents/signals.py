@@ -5,7 +5,7 @@ from django.dispatch import Signal, receiver
 from django.conf import settings
 
 from apps.documents.models import Document
-from apps.users.services import get_active_users
+from apps.users.services import get_users_to_create_doc_mngt
 from apps.documents.services.admin import init_doc_mngt
 
 
@@ -25,6 +25,6 @@ from apps.documents.services.admin import init_doc_mngt
 def init_document_rating(created, instance, **kwargs):
     if created:
         # DocumentRating.objects.create(document=instance)
-        users = get_active_users()
+        users = get_users_to_create_doc_mngt(instance)
         if users.count() > 0:
             init_doc_mngt(instance, users)

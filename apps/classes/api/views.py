@@ -64,6 +64,12 @@ class ClassDetailView(generics.RetrieveAPIView):
             return ClassManagementService(user=user).get_class_management_queryset.filter(course=class_obj).first()
         return ClassesService().get_all_classes_queryset.filter(id=class_id).first()
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        course_service = CourseManagementService(request.user)
+        return Response(course_service.custom_course_detail_data(serializer.data))
+
 
 class HomepageClassListAPIView(generics.ListAPIView):
     serializer_class = ListClassSerializer

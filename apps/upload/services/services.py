@@ -2,9 +2,9 @@ import json
 import os
 
 from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic, LessonManagement, CourseManagement
-from apps.courses.services.admin import init_course_mngt, prepare_course_to_create
+from apps.courses.services.admin import prepare_course_mngt_to_create
 from apps.documents.models import Document, DocumentTopic, DocumentManagement
-from apps.documents.services.admin import init_doc_mngt, prepare_doc_to_create
+from apps.documents.services.admin import prepare_doc_to_create
 from apps.users.services import get_active_users
 
 
@@ -34,7 +34,7 @@ class UploadCourseServices:
                 obj.lessons.add(*courses_lessons[index][1])
                 lesson_mngt_list.extend([LessonManagement(course=obj, lesson=lesson) for lesson in courses_lessons[index][1]])
             if not obj.course_of_class:
-                course_mngt_list.extend(prepare_course_to_create(course=obj, users=users))
+                course_mngt_list.extend(prepare_course_mngt_to_create(course=obj, users=users))
 
         if lesson_mngt_list:
             LessonManagement.objects.bulk_create(lesson_mngt_list)

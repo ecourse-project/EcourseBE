@@ -29,7 +29,7 @@ class DocumentListView(generics.ListAPIView):
         elif list_id:
             return service.get_documents_mngt_by_list_id(list_id)
         else:
-            return service.get_doc_management_queryset
+            return service.get_doc_mngt_queryset_by_selling
 
 
 class UserDocumentsListView(generics.ListAPIView):
@@ -72,7 +72,7 @@ class HomepageDocumentListAPIView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('document_id')
         if topic:
             return DocumentService().get_documents_by_topic(topic)
