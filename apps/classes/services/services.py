@@ -1,4 +1,6 @@
-from django.db.models import Prefetch
+import uuid
+
+from django.db.models import Prefetch, Q
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
@@ -28,6 +30,7 @@ class ClassesService:
 
 
 class ClassRequestService:
+
     def get_user_request_status(self, user: User, class_obj: Class) -> str:
         if ClassRequest.objects.filter(user=user, class_request=class_obj, accepted=True).exists():
             return ACCEPTED
@@ -35,6 +38,33 @@ class ClassRequestService:
             return REQUESTED
         else:
             return AVAILABLE
+
+    def get_request_status_from_multiple_classes(self, user, class_objs):
+        class_param = "class_request"
+        if not isinstance(class_objs, Class) and not isinstance(class_objs, Course):
+            class_param = "class_request__in"
+            if class_objs and isinstance(class_objs[0], uuid.UUID) or isinstance(class_objs[0], str):
+                class_param = "class_request_id__in"
+
+        return ClassRequest.objects.filter(Q(**{class_param: class_objs}) & Q(user=user))
+
+    def add_request_status(self, data, field, user, class_objs):
+        request_objs_ids = self.get_request_status_from_multiple_classes(user, class_objs).values_list("class_request_id", flat=True)
+        request_obj_accepted_ids = request_objs_ids.filter(accepted=True).values_list("class_request_id", flat=True)
+        request_obj_requested_ids = request_objs_ids.difference(request_obj_accepted_ids)
+
+        request_obj_accepted_ids = [str(obj_id) for obj_id in request_obj_accepted_ids]
+        request_obj_requested_ids = [str(obj_id) for obj_id in request_obj_requested_ids]
+
+        for index, obj in enumerate(data):
+            if obj["id"] in request_obj_accepted_ids:
+                data[index][field] = ACCEPTED
+            elif obj["id"] in request_obj_requested_ids:
+                data[index][field] = REQUESTED
+            else:
+                data[index][field] = AVAILABLE
+
+        return data
 
 
 class ClassManagementService:
@@ -49,3 +79,5 @@ class ClassManagementService:
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
             ),
         ).select_related('course__topic', 'course__thumbnail').filter(user=self.user, course__course_of_class=True)
+
+    # def add_request_status(self, data):

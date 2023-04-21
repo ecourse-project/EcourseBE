@@ -63,23 +63,11 @@ class ClassManagementSerializer(serializers.ModelSerializer):
 
 
 class ListClassSerializer(serializers.ModelSerializer):
-    request_status = serializers.SerializerMethodField()
-
     class Meta:
         model = Class
         fields = (
             "id",
             "name",
-            "request_status",
             "course_of_class",
             "thumbnail",
         )
-
-    def get_request_status(self, obj):
-        user = self.context.get("request").user if self.context.get("request") else None
-        if user and user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
-        return None
-
-
-

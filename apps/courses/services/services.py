@@ -82,9 +82,28 @@ class CourseManagementService:
                     user=self.user, course=course, last_update=localtime()
                 ) for course in CourseService().get_all_courses_queryset
             ])
+    def add_quiz_detail(self, data):
+        quiz_detail = {}
+        quiz_answers = []
+        correct_answers = 0
+        total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
+        for answer in total_answers:
+            quiz_answers.append({
+                "quiz_id": answer.quiz_id,
+                "answer_choice": answer.choice,
+                "correct_answer": answer.quiz.correct_answer.choice
+            })
+            if answer.choice == answer.quiz.correct_answer.choice:
+                correct_answers += 1
+
+        quiz_detail['correct_answers'] = correct_answers
+        quiz_detail['total_quiz'] = len(total_answers)
+        quiz_detail['quiz_answers'] = quiz_answers
+        data['quiz_detail'] = quiz_detail
+
+        return data
 
     def custom_course_detail_data(self, data, instance=None):
-        """ Docs & videos completed """
         for count, lesson in enumerate(data['lessons'], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
@@ -108,6 +127,9 @@ class CourseManagementService:
             else:
                 data['lessons'][count]['docs_completed'] = []
                 data['lessons'][count]['videos_completed'] = []
+
+        return data
+
 
         """ Rating """
         # course_rating = CourseRating.objects.filter(course_id=data['id']).first()

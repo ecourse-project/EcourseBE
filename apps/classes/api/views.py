@@ -5,10 +5,12 @@ from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
 from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer, ClassSerializer
-from apps.classes.models import ClassRequest
+from apps.classes.models import ClassRequest, Class
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
 from apps.classes.enums import ACCEPTED
 from apps.courses.services.services import CourseManagementService
+from apps.core.general.services import CustomDataServices
+from apps.core.general.enums import REQUEST_STATUS, EXTRA_FIELDS
 
 
 class JoinRequestView(APIView):
@@ -41,6 +43,21 @@ class ClassListView(generics.ListAPIView):
         else:
             return service.get_all_classes_queryset
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                CustomDataServices().custom_response_data(data=serializer.data, fields=[REQUEST_STATUS], user=request.user, class_objs=queryset)
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            CustomDataServices().custom_response_data(data=serializer.data, fields=[REQUEST_STATUS], user=request.user, class_objs=queryset)
+        )
+
 
 class ClassDetailView(generics.RetrieveAPIView):
     serializer_class = ClassSerializer
@@ -66,9 +83,17 @@ class ClassDetailView(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        print(11111111111111111111111111111111111111111111111111111111)
+        print(instance)
+        print(type(instance))
         serializer = self.get_serializer(instance)
-        course_service = CourseManagementService(request.user)
-        return Response(course_service.custom_course_detail_data(serializer.data))
+        class_obj = instance if isinstance(instance, Class) else instance.course
+        print(2222222222222222222222222222222222222)
+        print(type(class_obj))
+        custom_data = CustomDataServices(user=request.user)
+        return Response(custom_data.custom_response_data(data=serializer.data, fields=EXTRA_FIELDS, user=request.user, class_objs=class_obj))
+        # course_service = CourseManagementService(request.user)
+        # return Response(course_service.custom_course_detail_data(serializer.data))
 
 
 class HomepageClassListAPIView(generics.ListAPIView):
@@ -79,7 +104,7 @@ class HomepageClassListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         topic = self.request.query_params.get("topic")
-        list_id = self.request.query_params.getlist('course_id')
+        list_id = self.request.query_params.getlist("class_id")
         if topic:
             return ClassesService().get_classes_by_topic(topic)
         elif list_id:
