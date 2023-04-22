@@ -31,6 +31,7 @@ def deny(modeladmin, request, queryset):
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
+    list_filter = ("name", "topic")
     search_fields = (
         "name",
     )

@@ -13,6 +13,7 @@ class AnswerChoicesAdmin(admin.ModelAdmin):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
     search_fields = (
         "question",
         "course__name",
@@ -23,7 +24,7 @@ class QuizAdmin(admin.ModelAdmin):
     )
 
     def custom_question(self, obj):
-        return obj.question[:20]
+        return " ".join(obj.question.split(" ")[:4]) + "..."
 
 
 @admin.register(Answer)

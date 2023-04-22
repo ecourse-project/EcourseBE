@@ -15,9 +15,6 @@ class CustomListDataServices:
 
     def custom_response_list_data(self, data: list, **kwargs):
         fields = kwargs.get("fields", [])
-        if enums.DOCS_COMPLETED in fields and enums.VIDEOS_COMPLETED in fields:
-            fields.remove(enums.DOCS_COMPLETED)
-            fields.remove(enums.VIDEOS_COMPLETED)
 
         for field in fields:
             if field == enums.REQUEST_STATUS and kwargs.get("class_objs"):
@@ -46,8 +43,6 @@ class CustomDictDataServices:
         fields = kwargs.get("fields", [])
         if enums.DOCS_COMPLETED in fields and enums.VIDEOS_COMPLETED in fields:
             data = self.add_docs_videos_completed(data, enums.DOCS_COMPLETED, enums.VIDEOS_COMPLETED)
-            fields.remove(enums.DOCS_COMPLETED)
-            fields.remove(enums.VIDEOS_COMPLETED)
 
         for field in fields:
             if field == enums.REQUEST_STATUS and kwargs.get("class_objs"):
@@ -60,6 +55,7 @@ class CustomDictDataServices:
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
+                print(22222222222222222222222222222222222222222222222222)
                 lesson_obj = lesson_mngt.lesson
                 data["lessons"][index][doc_field] = (
                     CourseDocumentManagement.objects.filter(
