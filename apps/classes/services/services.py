@@ -56,6 +56,10 @@ class ClassRequestService:
         request_obj_accepted_ids = [str(obj_id) for obj_id in request_obj_accepted_ids]
         request_obj_requested_ids = [str(obj_id) for obj_id in request_obj_requested_ids]
 
+        is_dict_data = isinstance(data, dict)
+        if is_dict_data:
+            data = [data]
+
         for index, obj in enumerate(data):
             if obj["id"] in request_obj_accepted_ids:
                 data[index][field] = ACCEPTED
@@ -64,7 +68,7 @@ class ClassRequestService:
             else:
                 data[index][field] = AVAILABLE
 
-        return data
+        return data[0] if is_dict_data else data
 
 
 class ClassManagementService:

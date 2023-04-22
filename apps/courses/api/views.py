@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
+from apps.core.general.services import CustomDictDataServices
+from apps.core.general.enums import COURSE_EXTRA_FIELDS, CLASS_EXTRA_FIELDS
 from apps.courses.api.serializers import (
     CourseManagementSerializer,
     ListCourseManagementSerializer,
@@ -64,9 +66,12 @@ class CourseRetrieveView(generics.RetrieveAPIView):
             course = instance.course
             course.views += 1
             course.save(update_fields=['views'])
-        service = CourseManagementService(request.user)
+        custom_data = CustomDictDataServices(request.user)
         return Response(
-            service.custom_course_detail_data(self.get_serializer(instance).data)
+            custom_data.custom_response_dict_data(
+                data=self.get_serializer(instance).data,
+                fields=COURSE_EXTRA_FIELDS,
+            )
         )
 
 
@@ -74,6 +79,7 @@ class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
         data = self.request.data
         course = Course.objects.get(id=data.get('course_id'))
+        custom_data = CustomDictDataServices(request.user)
         course_service = CourseManagementService(request.user)
         course_service.update_lesson_progress(course_id=data.get('course_id'), lessons=data.get('lessons'))
 
@@ -81,13 +87,20 @@ class UpdateLessonProgress(APIView):
             class_service = ClassManagementService(user=self.request.user)
             class_mngt = class_service.get_class_management_queryset.filter(course_id=data.get('course_id')).first()
             return Response(
-                data=course_service.custom_course_detail_data(ClassManagementSerializer(class_mngt).data),
+                data=custom_data.custom_response_dict_data(
+                    data=ClassManagementSerializer(class_mngt).data,
+                    fields=CLASS_EXTRA_FIELDS,
+                    class_objs=course,
+                ),
                 status=status.HTTP_200_OK,
             )
 
         course_mngt = course_service.get_course_management_queryset.filter(course_id=data.get('course_id')).first()
         return Response(
-            data=course_service.custom_course_detail_data(CourseManagementSerializer(course_mngt).data),
+            data=custom_data.custom_response_dict_data(
+                data=CourseManagementSerializer(course_mngt).data,
+                fields=COURSE_EXTRA_FIELDS,
+            ),
             status=status.HTTP_200_OK,
         )
 
