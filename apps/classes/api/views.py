@@ -95,7 +95,7 @@ class ClassDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        class_obj = instance if check_class_course(instance) else instance.course
+        class_obj = instance if isinstance(instance, Course) or isinstance(instance, Class) else instance.course
         custom_data = CustomDictDataServices(user=request.user)
         return Response(
             custom_data.custom_response_dict_data(

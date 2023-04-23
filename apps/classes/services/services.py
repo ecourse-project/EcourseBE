@@ -42,7 +42,7 @@ class ClassRequestService:
 
     def get_request_status_from_multiple_classes(self, user, class_objs):
         class_param = "class_request"
-        if not check_class_course(class_objs):
+        if not isinstance(class_objs, Course) and not isinstance(class_objs, Class):
             class_param = "class_request__in"
             if class_objs and isinstance(class_objs[0], uuid.UUID) or isinstance(class_objs[0], str):
                 class_param = "class_request_id__in"
