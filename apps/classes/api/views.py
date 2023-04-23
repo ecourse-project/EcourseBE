@@ -11,6 +11,7 @@ from apps.classes.enums import ACCEPTED
 from apps.courses.services.services import CourseManagementService
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
+from apps.core.general.validate import check_class_course
 
 
 class JoinRequestView(APIView):
@@ -89,12 +90,12 @@ class ClassDetailView(generics.RetrieveAPIView):
 
         if self.is_accepted(self.request.user, class_obj):
             return ClassManagementService(user=user).get_class_management_queryset.filter(course=class_obj).first()
-        return ClassesService().get_all_classes_queryset.filter(id=class_id).first()
+        return class_obj
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        class_obj = instance if isinstance(instance, Class) else instance.course
+        class_obj = instance if check_class_course(instance) else instance.course
         custom_data = CustomDictDataServices(user=request.user)
         return Response(
             custom_data.custom_response_dict_data(

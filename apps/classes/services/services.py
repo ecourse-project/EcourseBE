@@ -6,6 +6,7 @@ from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 from apps.courses.models import Lesson, CourseDocument, Course
 from apps.users.models import User
+from apps.core.general.validate import check_class_course
 
 
 class ClassesService:
@@ -41,7 +42,7 @@ class ClassRequestService:
 
     def get_request_status_from_multiple_classes(self, user, class_objs):
         class_param = "class_request"
-        if not isinstance(class_objs, Class) and not isinstance(class_objs, Course):
+        if not check_class_course(class_objs):
             class_param = "class_request__in"
             if class_objs and isinstance(class_objs[0], uuid.UUID) or isinstance(class_objs[0], str):
                 class_param = "class_request_id__in"

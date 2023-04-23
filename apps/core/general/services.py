@@ -55,7 +55,6 @@ class CustomDictDataServices:
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
-                print(22222222222222222222222222222222222222222222222222)
                 lesson_obj = lesson_mngt.lesson
                 data["lessons"][index][doc_field] = (
                     CourseDocumentManagement.objects.filter(
@@ -114,3 +113,6 @@ class CustomDictDataServices:
         for score in range(1, 6):
             response["score_" + str(score)] = all_ratings.filter(rating=score).count()
         data[field] = response
+
+
+
