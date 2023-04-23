@@ -9,6 +9,7 @@ from apps.classes.models import ClassRequest, Class
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
 from apps.classes.enums import ACCEPTED
 from apps.courses.services.services import CourseManagementService
+from apps.courses.models import Course
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
 from apps.core.general.validate import check_class_course
