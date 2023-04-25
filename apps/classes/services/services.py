@@ -6,7 +6,6 @@ from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 from apps.courses.models import Lesson, CourseDocument, Course
 from apps.users.models import User
-from apps.core.general.validate import check_class_course
 
 
 class ClassesService:
@@ -31,7 +30,6 @@ class ClassesService:
 
 
 class ClassRequestService:
-
     def get_user_request_status(self, user: User, class_obj: Class) -> str:
         if ClassRequest.objects.filter(user=user, class_request=class_obj, accepted=True).exists():
             return ACCEPTED
@@ -84,5 +82,3 @@ class ClassManagementService:
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
             ),
         ).select_related('course__topic', 'course__thumbnail').filter(user=self.user, course__course_of_class=True)
-
-    # def add_request_status(self, data):

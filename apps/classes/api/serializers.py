@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.courses.api.serializers import LessonSerializer, TopicSerializer, CourseSerializer, CourseManagementSerializer
 from apps.classes.models import Class, ClassManagement
 from apps.classes.services.services import ClassRequestService
+from apps.upload.api.serializers import UploadImageSerializer
 
 
 class ClassSerializer(CourseSerializer):
@@ -63,6 +64,8 @@ class ClassManagementSerializer(serializers.ModelSerializer):
 
 
 class ListClassSerializer(serializers.ModelSerializer):
+    thumbnail = UploadImageSerializer()
+
     class Meta:
         model = Class
         fields = (
