@@ -1,15 +1,12 @@
-import csv
-import json
-
-# with open('data.json', 'r', encoding='utf-8') as csv_file:
-#     csv_reader = csv.reader(csv_file, delimiter=',')
-#     line_count = 0
-#     for row in csv_reader:
-#         print(row)
+from pathlib import Path
+from PIL import Image
 
 
-file = open("data.txt", encoding="utf=8")
-a = json.loads(file.read())
+def convert_to_webp(image_path: Path):
+    destination = image_path.with_suffix(".webp")
+    image = Image.open(image_path)
+    image.save(destination, format="webp")
+    return destination
 
-# print(a[0]["name"])
-print(len(str(a)))
+path = Path("D:\EcourseBE\image.png")
+convert_to_webp(path)
