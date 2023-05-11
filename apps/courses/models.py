@@ -5,7 +5,7 @@ from model_utils.models import TimeStampedModel
 
 from apps.users.models import User
 from apps.courses.enums import PROGRESS_STATUS, IN_PROGRESS, SALE_STATUSES, AVAILABLE
-from apps.upload.models import UploadImage, UploadFile
+from apps.upload.models import UploadImage, UploadFile, UploadVideo
 
 
 class CourseTopic(TimeStampedModel):
@@ -38,7 +38,7 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True)
     name = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
-    videos = models.ManyToManyField(UploadFile, blank=True)
+    videos = models.ManyToManyField(UploadVideo, blank=True)
     documents = models.ManyToManyField(CourseDocument, blank=True)
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
@@ -133,7 +133,7 @@ class CourseDocumentManagement(TimeStampedModel):
 
 class VideoManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    video = models.ForeignKey(UploadFile, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)
+    video = models.ForeignKey(UploadVideo, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)

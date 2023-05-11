@@ -12,7 +12,6 @@ class UploadFile(TimeStampedModel):
     file_path = models.FileField(max_length=128, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
-    duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
 
     class Meta:
         ordering = ["file_name"]
@@ -46,6 +45,30 @@ class UploadImage(TimeStampedModel):
 
     def delete(self, *args, **kwargs):
         self.delete_image()
+        super().delete(*args, **kwargs)
+
+
+class UploadVideo(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    video_name = models.CharField(max_length=255, null=True, blank=True)
+    video_path = models.FileField(max_length=128, null=True, blank=True)
+    video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
+    video_type = models.CharField(max_length=10, null=True, blank=True)
+    video_embedded_url = models.CharField(max_length=1000, null=True, blank=True)
+    duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
+    use_embedded_url = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["video_name"]
+
+    def __str__(self):
+        return str(self.video_name)
+
+    def delete_video(self):
+        self.video_path.delete()
+
+    def delete(self, *args, **kwargs):
+        self.delete_video()
         super().delete(*args, **kwargs)
 
 
