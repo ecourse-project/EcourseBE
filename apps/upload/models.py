@@ -14,6 +14,9 @@ class UploadFile(TimeStampedModel):
     file_type = models.CharField(max_length=10, null=True, blank=True)
     duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
 
+    class Meta:
+        ordering = ["file_name"]
+
     def __str__(self):
         return str(self.file_name)
 
@@ -32,6 +35,9 @@ class UploadImage(TimeStampedModel):
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
 
+    class Meta:
+        ordering = ["image_name"]
+
     def __str__(self):
         return str(self.image_name)
 
@@ -41,3 +47,23 @@ class UploadImage(TimeStampedModel):
     def delete(self, *args, **kwargs):
         self.delete_image()
         super().delete(*args, **kwargs)
+
+
+class UploadCourse(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    is_class = models.BooleanField(default=False)
+    data = models.JSONField(null=True, blank=True)
+
+
+class UploadDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    data = models.JSONField(null=True, blank=True)
+
+
+# class GenerateTestData(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     data_type = models.CharField(max_length=10, choices)
+
+

@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.courses.models import CourseManagement
+from apps.core.general.services import CustomDictDataServices
+from apps.core.general.enums import COURSE_EXTRA_FIELDS, CLASS_EXTRA_FIELDS
 from apps.courses.api.serializers import (
     CourseManagementSerializer,
     ListCourseManagementSerializer,
@@ -12,6 +13,9 @@ from apps.courses.api.serializers import (
 )
 from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
+from apps.courses.models import Course
+from apps.classes.services.services import ClassManagementService
+from apps.classes.api.serializers import ClassManagementSerializer
 
 
 class MostDownloadedCourseView(generics.ListAPIView):
@@ -24,18 +28,17 @@ class MostDownloadedCourseView(generics.ListAPIView):
 class CourseListView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
         if topic:
             return service.get_course_mngt_queryset_by_selling.filter(course__topic__name__icontains=topic)
         elif list_id:
             return service.get_courses_mngt_by_list_id(list_id)
         else:
-            return service.get_course_management_queryset
+            return service.get_course_mngt_queryset_by_selling
 
 
 class UserCoursesListView(generics.ListAPIView):
@@ -51,8 +54,11 @@ class CourseRetrieveView(generics.RetrieveAPIView):
     serializer_class = CourseManagementSerializer
 
     def get_object(self):
-        course_id = self.request.query_params.get('course_id')
-        return CourseManagement.objects.get(user=self.request.user, course_id=course_id)
+        return CourseManagementService(
+            user=self.request.user
+        ).get_course_management_queryset.filter(
+            course_id=self.request.query_params.get('course_id')
+        ).first()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -60,20 +66,43 @@ class CourseRetrieveView(generics.RetrieveAPIView):
             course = instance.course
             course.views += 1
             course.save(update_fields=['views'])
-        service = CourseManagementService(request.user)
+        custom_data = CustomDictDataServices(request.user)
         return Response(
-            service.custom_course_detail_data(self.get_serializer(instance).data)
+            custom_data.custom_response_dict_data(
+                data=self.get_serializer(instance).data,
+                fields=COURSE_EXTRA_FIELDS,
+            )
         )
 
 
 class UpdateLessonProgress(APIView):
     def post(self, request, *args, **kwargs):
         data = self.request.data
-        CourseManagementService(request.user).update_lesson_progress(
-            course_id=data.get('course_id'),
-            lessons=data.get('lessons'),
+        course = Course.objects.get(id=data.get('course_id'))
+        custom_data = CustomDictDataServices(request.user)
+        course_service = CourseManagementService(request.user)
+        course_service.update_lesson_progress(course_id=data.get('course_id'), lessons=data.get('lessons'))
+
+        if course.course_of_class:
+            class_service = ClassManagementService(user=self.request.user)
+            class_mngt = class_service.get_class_management_queryset.filter(course_id=data.get('course_id')).first()
+            return Response(
+                data=custom_data.custom_response_dict_data(
+                    data=ClassManagementSerializer(class_mngt).data,
+                    fields=CLASS_EXTRA_FIELDS,
+                    class_objs=course,
+                ),
+                status=status.HTTP_200_OK,
+            )
+
+        course_mngt = course_service.get_course_management_queryset.filter(course_id=data.get('course_id')).first()
+        return Response(
+            data=custom_data.custom_response_dict_data(
+                data=CourseManagementSerializer(course_mngt).data,
+                fields=COURSE_EXTRA_FIELDS,
+            ),
+            status=status.HTTP_200_OK,
         )
-        return Response(status=status.HTTP_200_OK)
 
 
 # ==========================> NEW REQUIREMENTS
@@ -85,7 +114,7 @@ class HomepageCourseListAPIView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
         if topic:
             return CourseService().get_courses_by_topic(topic)

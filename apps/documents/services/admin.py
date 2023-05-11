@@ -1,4 +1,4 @@
-from apps.documents.models import DocumentManagement
+from apps.documents.models import DocumentManagement, Document
 from django.utils.timezone import localtime
 
 
@@ -12,5 +12,9 @@ class DocumentAdminService:
         ).update(sale_status=sale_status, last_update=localtime())
 
 
-def init_doc_mngt(document, users):
-    DocumentManagement.objects.bulk_create([DocumentManagement(document=document, user=user) for user in users])
+def prepare_doc_to_create(document: Document, users):
+    return [DocumentManagement(document=document, user=user) for user in users]
+
+
+def init_doc_mngt(document: Document, users):
+    return DocumentManagement.objects.bulk_create(prepare_doc_to_create(document, users))

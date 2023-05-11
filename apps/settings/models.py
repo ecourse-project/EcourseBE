@@ -1,33 +1,50 @@
 import uuid
 
+from django_better_admin_arrayfield.models.fields import ArrayField
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-from apps.documents.models import DocumentTopic, Document
-from apps.courses.models import CourseTopic, Course
-from django_better_admin_arrayfield.models.fields import ArrayField
+from apps.documents.models import DocumentTopic
+from apps.courses.models import CourseTopic
+from apps.settings.enums import DATA_TYPE_CHOICES
+from apps.posts.models import PostTopic
 
 
 class Header(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=20, null=True, blank=True)
     display_name = models.CharField(max_length=20, null=True, blank=True)
+    data_type = models.CharField(max_length=20, choices=DATA_TYPE_CHOICES, null=True, blank=True)
+    order = models.SmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
 
     def __str__(self):
-        return self.name
+        return self.display_name
 
 
 class HeaderDetail(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     display_name = models.CharField(max_length=20, null=True, blank=True)
-    document_topic = models.ForeignKey(DocumentTopic, null=True, blank=True, on_delete=models.CASCADE)
-    course_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.CASCADE)
-    header = models.ForeignKey(Header, null=True, blank=True, related_name="header_detail", on_delete=models.CASCADE)
+    header = models.ForeignKey(Header, null=True, blank=True, related_name="header_detail", on_delete=models.SET_NULL)
+    document_topic = models.ForeignKey(DocumentTopic, null=True, blank=True, on_delete=models.SET_NULL)
+    course_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL)
+    class_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL, related_name="class_header_detail")
+    post_topic = models.ForeignKey(PostTopic, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["header", "order"]
 
 
 class HomePageDetail(models.Model):
     display_name = models.CharField(max_length=100, null=True, blank=True)
     documents = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     courses = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+    classes = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+    posts = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created']
 

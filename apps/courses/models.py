@@ -10,7 +10,7 @@ from apps.upload.models import UploadImage, UploadFile
 
 class CourseTopic(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=20, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -65,11 +65,11 @@ class Course(TimeStampedModel):
     thumbnail = models.ForeignKey(
         UploadImage, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True,
     )
-    is_selling = models.BooleanField(default=True)
     views = models.PositiveIntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    is_selling = models.BooleanField(default=True)
+    course_of_class = models.BooleanField(default=False)
     num_of_rates = models.PositiveIntegerField(default=0)
-    total_lessons = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["name"]
@@ -83,15 +83,17 @@ class CourseManagement(TimeStampedModel):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     last_update = models.DateTimeField(null=True, blank=True)
-    progress = models.SmallIntegerField(default=0, null=True, blank=True)
+    progress = models.SmallIntegerField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=PROGRESS_STATUS, default=IN_PROGRESS)
-    mark = models.DecimalField(max_digits=3, decimal_places=1, default=0)
+    mark = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     is_done_quiz = models.BooleanField(default=False)
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
+    user_in_class = models.BooleanField(null=True)
 
     class Meta:
         ordering = ["course__name"]
+        verbose_name_plural = "Management - Courses"
 
     def __str__(self):
         return f"{self.course.name} - {self.user.__str__()}"
@@ -107,6 +109,7 @@ class LessonManagement(TimeStampedModel):
 
     class Meta:
         unique_together = ('lesson', 'course')
+        verbose_name_plural = "Management - Lessons"
 
 
 class CourseDocumentManagement(TimeStampedModel):
@@ -125,6 +128,7 @@ class CourseDocumentManagement(TimeStampedModel):
 
     class Meta:
         unique_together = ('document', 'lesson', 'course', 'user')
+        verbose_name_plural = "Management - Course's Documents"
 
 
 class VideoManagement(TimeStampedModel):
@@ -137,7 +141,8 @@ class VideoManagement(TimeStampedModel):
     is_available = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(id)
+        return str(self.id)
 
     class Meta:
         unique_together = ('video', 'lesson', 'course', 'user')
+        verbose_name_plural = "Management - Videos"

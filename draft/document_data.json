@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Lionel Messi",
+    "description": "Lionel Andrés Messi, còn được gọi là Leo Messi, là một cầu thủ bóng đá chuyên nghiệp người Argentina hiện đang thi đấu ở vị trí tiền đạo cho câu lạc bộ Ligue 1 Paris Saint-Germain",
+    "topic": "Tham khảo",
+    "price": 100000,
+    "is_selling": true
+  },
+  {
+    "name": "Cristiano Ronaldo",
+    "description": "Cristiano Ronaldo dos Santos Aveiro là một cầu thủ bóng đá chuyên nghiệp người Bồ Đào Nha hiện đang thi đấu ở vị trí tiền đạo và là đội trưởng của câu lạc bộ Saudi Pro League Al Nassr",
+    "topic": "Tham khảo",
+    "price": 70000,
+    "is_selling": false
+  }
+]

@@ -17,6 +17,7 @@ class CreateOrderView(APIView):
         cart = user.cart
         documents = Document.objects.filter(id__in=self.request.data.get('documents', []))
         courses = Course.objects.filter(id__in=self.request.data.get('courses', []))
+
         total_price = self.request.data.get('total_price', 0)
         if (not documents) and (not courses):
             raise NoItemsException

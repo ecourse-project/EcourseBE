@@ -1,0 +1,157 @@
+[
+  {
+     "name": "Trí tuệ nhân tạo",
+     "topic": "AI",
+     "description": "Trong khoa học máy tính, trí tuệ nhân tạo hay AI (tiếng Anh: artificial intelligence), đôi khi được gọi là trí thông minh nhân tạo, là trí thông minh được thể hiện bằng máy móc, trái ngược với trí thông minh tự nhiên của con người.",
+     "price": 780000,
+     "course_of_class": true,
+     "lessons": [
+        {
+            "name": "Nhận dạng chữ cái quang học",
+            "lesson_number": 1,
+            "content": "Nhận dạng ký tự quang học, là loại phần mềm máy tính được tạo ra để chuyển các hình ảnh của chữ viết tay hoặc chữ đánh máy thành các văn bản tài liệu. OCR được hình thành từ một lĩnh vực nghiên cứu về nhận dạng mẫu, trí tuệ nhận tạo và machine vision.",
+            "documents": [
+                {
+                    "name": "Trợ giúp người mắc bệnh mù và khiếm thị",
+                    "description": "",
+                    "topic": null
+                },
+                {
+                    "name": "Tìm kiếm và thực hành dữ liệu",
+                    "description": "",
+                    "topic": null
+                },
+                {
+                    "name": "Cập nhập dữ liệu nhanh chóng",
+                    "description": "",
+                    "topic": null
+                }
+            ]
+        },
+        {
+            "name": "Nhận dạng chữ viết tay",
+            "lesson_number": 2,
+            "content": "Nhận dạng chữ viết tay (Handwriting recognition - HWR), còn được gọi là Nhận dạng văn bản viết tay (Handwritten Text Recognition - HTR), là khả năng máy tính nhận và giải thích dữ liệu chữ viết tay dễ hiểu từ các nguồn như tài liệu giấy, ảnh, màn hình cảm ứng và các thiết bị khác",
+            "documents": [
+                {
+                    "name": "Trích xuất chữ",
+                    "description": "Nhận dạng ký tự ngoại tuyến thường liên quan đến việc quét một biểu mẫu hoặc tài liệu được viết vào lúc nào đó trong quá khứ. Điều này có nghĩa là các ký tự riêng lẻ có trong hình ảnh được quét sẽ cần phải được trích xuất.",
+                    "topic": null
+                },
+                {
+                    "name": "Nhận dạng chữ",
+                    "description": "Sau khi trích xuất các ký tự riêng lẻ xảy ra, một công cụ nhận dạng được sử dụng để xác định ký tự máy tính tương ứng. Một số kỹ thuật nhận dạng khác nhau hiện đang có sẵn.",
+                    "topic": null
+                },
+                {
+                    "name": "Khai thác tính năng",
+                    "description": "Khai thác tính năng hoạt động theo cách tương tự như nhận dạng mạng thần kinh. Tuy nhiên, các lập trình viên phải tự xác định các thuộc tính mà họ cảm thấy là quan trọng.",
+                    "topic": null
+                }
+            ]
+        },
+        {
+            "name": "Nhận dạng tiếng nói",
+            "lesson_number": 3,
+            "content": "Nhận dạng tiếng nói là một quá trình nhận dạng mẫu, còn được gọi là nhận dạng giọng nói tự động (ASR), nhận dạng giọng nói máy tính hoặc chuyển đổi giọng nói thành văn bản (STT).",
+            "documents": []
+        }
+    ]
+  },
+  {
+     "name": "Lịch sử",
+     "topic": "KHXH",
+     "description": "Lịch sử VN, lịch sử thế giới",
+     "price": 0,
+     "course_of_class": true,
+     "lessons": [
+        {
+           "name": "Lịch sử Việt Nam",
+           "lesson_number": 1,
+           "content": "Lịch sử Việt Nam (Hán-Nôm: 歷史越南) nếu tính từ lúc có mặt con người sinh sống thì đã có hàng vạn năm trước Công Nguyên, còn tính từ khi cơ cấu nhà nước được hình thành thì mới khoảng từ năm 700 năm trước công nguyên.",
+           "documents": [
+              {
+                 "name": "Thời tiền sử",
+                 "description": "Văn hóa Tràng An là một trong những nền văn hóa cổ nhất ở Việt Nam, hình thành từ thời kỳ đồ đá cũ khoảng 25 Ka BP (Kilo annum before present, ngàn năm trước).",
+                 "topic": null
+              },
+              {
+                 "name": "Hồng Bàng",
+                 "description": "Hồng Bàng thị (chữ Hán: 鴻龐氏) hay Thời đại Hồng Bàng là một giai đoạn lịch sử thuộc thời đại thượng cổ của lịch sử Việt Nam.",
+                 "topic": null
+              },
+              {
+                 "name": "An Dương Vương",
+                 "description": "An Dương Vương (chữ Hán: 安陽王), tên thật là Thục Phán (蜀泮),[2] là người lập nên nước Âu Lạc, nhà nước thứ hai trong lịch sử Việt Nam sau nhà nước Văn Lang.",
+                 "topic": null
+              }
+           ]
+        },
+        {
+           "name": "Lịch sử thế giới",
+           "lesson_number": 2,
+           "content": "Lịch sử thế giới hay còn gọi là lịch sử loài người, bắt đầu từ thời đại đồ đá cũ đến nay trong quá trình tiến hóa loài người.",
+           "documents": [
+              {
+                "name": "Vùng Lưỡng Hà",
+                "description": "Lưỡng Hà là vùng đất thuộc vùng đồng bằng trăng lưỡi liềm, nơi khai sinh ra các nhà nước thành bang cổ đại. Vùng giao nhau của sông Tigris và sông Euphrates đã tạo nên một vùng đất màu mỡ và nguồn cung cấp nước cho tưới tiêu.",
+                "topic": null
+              },
+              {
+                "name": "Lưu vực sông Nin",
+                "description": "Lưu vực sông Nin ở Bắc Phi là nơi ra đời nền văn minh Ai Cập cổ đại. Khoảng 6000 năm TCN, xuất hiện các vương quốc của xã hội tiền Ai Cập cổ đại (trước khi xuất hiện chế độ quân chủ ở Ai Cập) có kĩ năng trồng trọt và chăn thả gia súc.",
+                "topic": null
+              }
+           ]
+        }
+    ]
+  },
+  {
+     "name": "Hóa học",
+     "topic": "KHTN",
+     "description": "Hóa vô cơ, hóa hữu cơ",
+     "price": 900000,
+     "course_of_class": false,
+     "lessons": [
+        {
+           "name": "Hóa vô cơ",
+           "lesson_number": 1,
+           "content": "Hóa vô cơ liên quan đến tổng hợp và hành vi của các hợp chất vô cơ và cơ kim. Lĩnh vực này bao gồm tất cả các hợp chất hóa học ngoại trừ vô số các hợp chất hữu cơ, là các đối tượng của hóa học hữu cơ. Sự khác biệt giữa hai ngành không phải là tuyệt đối, vì có nhiều sự chồng chéo trong phân ngành hóa học cơ kim",
+           "documents": [
+              {
+                 "name": "Tổng quan",
+                 "description": "Văn hóa Tràng An là một trong những nền văn hóa cổ nhất ở Việt Nam, hình thành từ thời kỳ đồ đá cũ khoảng 25 Ka BP (Kilo annum before present, ngàn năm trước).",
+                 "topic": null
+              },
+              {
+                 "name": "Hóa vô cơ căn bản",
+                 "description": null,
+                 "topic": null
+              },
+              {
+                 "name": "Hợp kim, kim loại kiềm",
+                 "description": null,
+                 "topic": null
+              }
+           ]
+        },
+        {
+           "name": "Hóa hữu cơ",
+           "lesson_number": 2,
+           "content": "Hóa hữu cơ hay hóa học hữu cơ là một phân ngành hóa học nghiên cứu về cấu trúc, tính chất, thành phần và phản ứng hóa học của những hợp chất hữu cơ và vật liệu hữu cơ. Nghiên cứu cấu trúc xác định thành phần hóa học và công thức của hợp chất",
+           "documents": [
+              {
+                "name": "Axit amin",
+                "description": null,
+                "topic": null
+              },
+              {
+                "name": "Đường",
+                "description": null,
+                "topic": null
+              }
+           ]
+        }
+    ]
+  }
+]

@@ -7,20 +7,23 @@ from apps.courses.models import (
     CourseDocument,
     LessonManagement,
     CourseManagement,
+    CourseDocumentManagement,
+    VideoManagement,
 )
 from apps.courses.services.admin import (
-    init_course_mngt,
     insert_remove_docs_videos,
 )
 from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
-from apps.users.services import get_active_users
-from apps.rating.models import CourseRating
 
 
 @admin.register(CourseDocument)
 class CourseDocumentAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+        "topic__name",
+    )
     list_display = (
         "name",
         "topic",
@@ -36,7 +39,7 @@ class CourseDocumentAdmin(admin.ModelAdmin):
 
 
 @admin.register(CourseTopic)
-class TopicAdmin(admin.ModelAdmin):
+class CourseTopicAdmin(admin.ModelAdmin):
     list_display = (
         "name",
     )
@@ -96,26 +99,29 @@ class LessonAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
+    list_filter = ("name", "topic", "is_selling")
     search_fields = (
         "id",
         "name",
     )
     list_display = (
-        "id",
         "name",
         "topic",
-        "total_lessons",
         "price",
         "is_selling",
-        "rating",
+        "created",
+        "id",
+        # "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "rating", "num_of_rates", "total_lessons")
+    readonly_fields = ("sold", "views", "num_of_rates", "rating")
 
-    # def save_model(self, request, obj, form, change):
-    #     obj.save()
+    def save_model(self, request, obj, form, change):
+        if obj.course_of_class:
+            obj.is_selling = False
+        obj.save()
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
@@ -138,8 +144,82 @@ class CourseAdmin(admin.ModelAdmin):
                 insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
             LessonManagement.objects.bulk_create(lesson_mngt_list)
 
-    def delete_model(self, request, obj):
-        CourseManagement.objects.filter(course=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
-        obj.delete()
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course_of_class=False)
+
+
+@admin.register(CourseManagement)
+class CourseManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course__course_of_class", "course", "user", "sale_status")
+    search_fields = (
+        "user__email",
+        "course__name",
+        "sale_status",
+    )
+    list_display = (
+        "user",
+        "course",
+        "progress",
+        "mark",
+        "is_done_quiz",
+        "sale_status",
+    )
+    readonly_fields = ("progress", "user_in_class")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(course__course_of_class=False)
+
+
+@admin.register(LessonManagement)
+class LessonManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "course__name",
+    )
+    list_display = (
+        "course",
+        "lesson",
+    )
+
+
+@admin.register(CourseDocumentManagement)
+class CourseDocumentManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "user__email",
+        "course__name",
+    )
+    list_display = (
+        "user",
+        "course",
+        "lesson",
+        "document",
+        "is_completed",
+        "is_available",
+    )
+
+
+@admin.register(VideoManagement)
+class VideoManagementAdmin(admin.ModelAdmin):
+    list_filter = ("course",)
+    search_fields = (
+        "user__email",
+        "course__name",
+    )
+    list_display = (
+        "user",
+        "course",
+        "lesson",
+        "video",
+        "is_completed",
+        "is_available",
+    )
+
+
+
+
+
 
 

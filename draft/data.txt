@@ -1,0 +1,61 @@
+[
+  {
+     "name": "Trí tuệ nhân tạo",
+     "topic": "AI",
+     "description": "Trong khoa học máy tính, trí tuệ nhân tạo hay AI (tiếng Anh: artificial intelligence), đôi khi được gọi là trí thông minh nhân tạo, là trí thông minh được thể hiện bằng máy móc, trái ngược với trí thông minh tự nhiên của con người.",
+     "price": 780000,
+     "course_of_class": true,
+     "lessons": [
+        {
+            "name": "Nhận dạng chữ cái quang học",
+            "lesson_number": 1,
+            "content": "Nhận dạng ký tự quang học, là loại phần mềm máy tính được tạo ra để chuyển các hình ảnh của chữ viết tay hoặc chữ đánh máy thành các văn bản tài liệu. OCR được hình thành từ một lĩnh vực nghiên cứu về nhận dạng mẫu, trí tuệ nhận tạo và machine vision.",
+            "documents": [
+                {
+                    "name": "Trợ giúp người mắc bệnh mù và khiếm thị",
+                    "description": "",
+                    "topic": null
+                },
+                {
+                    "name": "Tìm kiếm và thực hành dữ liệu",
+                    "description": "",
+                    "topic": null
+                },
+                {
+                    "name": "Cập nhập dữ liệu nhanh chóng",
+                    "description": "",
+                    "topic": null
+                }
+            ]
+        },
+        {
+            "name": "Nhận dạng chữ viết tay",
+            "lesson_number": 2,
+            "content": "Nhận dạng chữ viết tay (Handwriting recognition - HWR), còn được gọi là Nhận dạng văn bản viết tay (Handwritten Text Recognition - HTR), là khả năng máy tính nhận và giải thích dữ liệu chữ viết tay dễ hiểu từ các nguồn như tài liệu giấy, ảnh, màn hình cảm ứng và các thiết bị khác",
+            "documents": [
+                {
+                    "name": "Trích xuất chữ",
+                    "description": "Nhận dạng ký tự ngoại tuyến thường liên quan đến việc quét một biểu mẫu hoặc tài liệu được viết vào lúc nào đó trong quá khứ. Điều này có nghĩa là các ký tự riêng lẻ có trong hình ảnh được quét sẽ cần phải được trích xuất.",
+                    "topic": null
+                },
+                {
+                    "name": "Nhận dạng chữ",
+                    "description": "Sau khi trích xuất các ký tự riêng lẻ xảy ra, một công cụ nhận dạng được sử dụng để xác định ký tự máy tính tương ứng. Một số kỹ thuật nhận dạng khác nhau hiện đang có sẵn.",
+                    "topic": null
+                },
+                {
+                    "name": "Khai thác tính năng",
+                    "description": "Khai thác tính năng hoạt động theo cách tương tự như nhận dạng mạng thần kinh. Tuy nhiên, các lập trình viên phải tự xác định các thuộc tính mà họ cảm thấy là quan trọng.",
+                    "topic": null
+                }
+            ]
+        },
+        {
+            "name": "Nhận dạng tiếng nói",
+            "lesson_number": 2,
+            "content": "Nhận dạng tiếng nói là một quá trình nhận dạng mẫu, còn được gọi là nhận dạng giọng nói tự động (ASR), nhận dạng giọng nói máy tính hoặc chuyển đổi giọng nói thành văn bản (STT).",
+            "documents": []
+        }
+    ]
+  }
+]

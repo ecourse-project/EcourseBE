@@ -1,10 +1,9 @@
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
-from apps.courses.models import CourseManagement, LessonManagement, Course
+from apps.courses.models import Course
 from apps.courses.enums import IN_PROGRESS, COMPLETED
-from apps.rating.models import CourseRating
-from apps.users.services import get_active_users
+from apps.users.services import get_users_to_create_course_mngt
 from apps.courses.services.admin import init_course_mngt
 
 
@@ -26,24 +25,13 @@ def calculate_lesson_progress(lesson_mngt):
 
 
 @receiver(post_save, sender=Course)
-def create_rating(created, instance, **kwargs):
-    if created:
-        CourseRating.objects.create(course=instance)
-        users = get_active_users()
-        if users.count() > 0:
-            init_course_mngt(instance, users)
+def create_user_data(created, instance, **kwargs):
+    # if created:
+    #     # CourseRating.objects.create(course=instance)
+    #     if not instance.course_of_class and users.exists() > 0:
+    #         init_course_mngt(instance, users)
 
-# @receiver(m2m_changed, sender=LessonManagement.docs_completed.through)
-# def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
-#     if action == "post_add" or action == "post_remove":
-#         calculate_lesson_progress(instance)
-#         course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
-#         calculate_course_progress(course_mngt)
-#
-#
-# @receiver(m2m_changed, sender=LessonManagement.videos_completed.through)
-# def update_lesson_course_progress(sender, instance: LessonManagement, action, model, pk_set, **kwargs):
-#     if action == "post_add" or action == "post_remove":
-#         calculate_lesson_progress(instance)
-#         course_mngt = CourseManagement.objects.filter(user=instance.user, course=instance.course).first()
-#         calculate_course_progress(course_mngt)
+    if not instance.course_of_class:
+        users = get_users_to_create_course_mngt(instance)
+        if users.exists():
+            init_course_mngt(instance, users)

@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
 from apps.documents.services.services import DocumentManagementService, DocumentService
 from apps.documents.enums import BOUGHT
-from apps.documents.models import DocumentManagement
 from apps.core.pagination import StandardResultsSetPagination
 
 
@@ -30,7 +29,7 @@ class DocumentListView(generics.ListAPIView):
         elif list_id:
             return service.get_documents_mngt_by_list_id(list_id)
         else:
-            return service.get_doc_management_queryset
+            return service.get_doc_mngt_queryset_by_selling
 
 
 class UserDocumentsListView(generics.ListAPIView):
@@ -46,8 +45,11 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
     serializer_class = DocumentManagementSerializer
 
     def get_object(self):
-        document_id = self.request.query_params.get('document_id')
-        return DocumentManagement.objects.get(user=self.request.user, document_id=document_id)
+        return DocumentManagementService(
+            user=self.request.user
+        ).get_doc_management_queryset.filter(
+            document_id=self.request.query_params.get('document_id')
+        ).first()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -70,7 +72,7 @@ class HomepageDocumentListAPIView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('document_id')
         if topic:
             return DocumentService().get_documents_by_topic(topic)

@@ -4,33 +4,34 @@ from django.db.models import Q
 from apps.documents.models import Document, DocumentManagement, DocumentTopic
 from apps.documents.enums import AVAILABLE, IN_CART
 
-from apps.rating.models import DocumentRating
-
 from apps.upload.enums import video_ext_list
 from apps.upload.models import UploadFile
+
+from apps.upload.services.services import UploadCourseServices
 
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
+    list_filter = ("is_selling",)
     search_fields = (
-        "id",
         "name",
     )
     list_display = (
-        "id",
         "name",
+        "topic",
         # "description",
-        # "title",
         "thumbnail",
         "file",
         "price",
         "is_selling",
-        "rating",
+        "created",
+        "id",
+        # "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "rating", "num_of_rates")
+    readonly_fields = ("sold", "views", "num_of_rates", "rating")
 
     # def save_model(self, request, obj, form, change):
     #     obj.save()
@@ -50,6 +51,24 @@ class DocumentAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentTopic)
 class DocumentTopicAdmin(admin.ModelAdmin):
+    search_fields = (
+        "name",
+    )
     list_display = (
         "name",
+    )
+
+
+@admin.register(DocumentManagement)
+class DocumentManagementAdmin(admin.ModelAdmin):
+    list_filter = ("document", "user", "sale_status")
+    search_fields = (
+        "document__name",
+        "user__email",
+        "sale_status",
+    )
+    list_display = (
+        "user",
+        "document",
+        "sale_status",
     )

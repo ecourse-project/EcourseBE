@@ -133,11 +133,12 @@ export interface Document {
   sale_status?: SaleStatusEnum;
   is_selling: boolean;
   views: number;
-  rating: number;
+  // rating: number;
   num_of_rates: number;
   is_favorite?: boolean;
-  rating_detail?: Rating[];
-  my_rating?: Rating;
+  // rating_detail?: Rating[];
+  // my_rating?: Rating;
+  download: boolean;
 }
 
 export interface IDocumentUpload {
@@ -220,25 +221,37 @@ export interface Course {
   id: string;
   modified: string;
   name: string;
-  topic: Topic;
-  description: string;
-  price: number;
-  sold: number;
+  topic?: Topic;
+  description?: string;
+  price?: number;
+  sold?: number;
   lessons?: Lesson[];
   progress?: number;
   status?: ProgressStatusEnum;
   thumbnail?: OImageUpload;
   sale_status?: SaleStatusEnum;
-  views: number;
-  rating: number;
-  num_of_rates: number;
+  // views: number;
+  // rating: number;
+  // num_of_rates: number;
   mark?: number;
   is_done_quiz?: boolean;
   is_favorite?: boolean;
-  rating_detail?: Rating[];
-  my_rating?: Rating;
+  // rating_detail?: Rating[];
+  // my_rating?: Rating;
   quiz_detail?: QuizResult;
-  rating_stats?: RatingStats;
+  // rating_stats?: RatingStats;
+  request_status?: RequestStatus;
+}
+
+// ===========================================Classes===========================================
+export enum RequestStatus {
+  ACCEPTED = 'accepted',
+  REQUESTED = 'requested',
+  AVAILABLE = 'available',
+}
+
+export interface Class {
+
 }
 
 // ===========================================Comments===========================================
@@ -332,13 +345,13 @@ export interface UserRatingInfo {
 
 export interface RateDocArgs {
   document_id: string;
-  rating: RatingEnum;
+  // rating: RatingEnum;
   comment: string;
 }
 
 export interface RateCourseArgs {
   course_id: string;
-  rating: RatingEnum;
+  // rating: RatingEnum;
   comment: string;
 }
 
@@ -346,7 +359,7 @@ export interface Rating {
   id: string;
   created: string;
   user: UserRatingInfo;
-  rating: RatingEnum;
+  // rating: RatingEnum;
   comment: string;
 }
 
@@ -404,73 +417,40 @@ export interface QuizResult {
 export enum NavTypeEnum {
   DOCUMENT = 'DOCUMENT',
   COURSE = 'COURSE',
-}
-export interface NavDetail {
-  type: NavTypeEnum;
-  topic: string[];
+  CLASS = 'CLASS',
+  POST = 'POST',
 }
 
 export interface Nav {
   header: string;
-  detail: NavDetail;
+  topic: string[];
+  type: NavTypeEnum;
 }
 
 export interface HomepageDetail {
   document_id: string[];
   course_id: string[];
+  class_id: string[];
+  post_id: string[];
+
 }
 
 export interface Homepage {
   topic: string;
   detail: HomepageDetail;
 }
-//========================================================
 
-
-
-
-
-
-
-// import { apiIns } from 'src/config/apiClient';
-// import apiURL from 'src/apis';
-import { apiClient } from 'src/lib/config/apiClient';
-import {
-  CalculatePriceArgs,
-  Course,
-  CourseComment,
-  CreateOrderArg,
-  Document,
-  FavoriteList,
-  Homepage,
-  MoveEnum,
-  Nav,
-  OCart,
-  OIsExist,
-  OPasswordChange,
-  OPasswordRest,
-  ORegistration,
-  OutputAdd,
-  OutputCancel,
-  OutputOrder,
-  OutputRemove,
-  OVerifyToken,
-  Pagination,
-  PaginationParams,
-  Quiz,
-  QuizResult,
-  QuizResultArgs,
-  RateCourseArgs,
-  RateDocArgs,
-  Rating,
-  RatingEnum,
-  RatingStats,
-  TotalPrice,
-  UpdateLessonArgs,
-  UpdateProgressArgs,
-  User,
-} from 'src/lib/types/backend_modal';
-
+// ===========================================Post===========================================
+export interface Post {
+  id: string;
+  created: string;
+  modified: string;
+  name: string;
+  topic: string;
+  content: string;
+  thumbnail: OImageUpload;
+  images: OImageUpload[];
+}
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;
   const newParams = [...params];
@@ -481,8 +461,18 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
   return newURL;
 };
 
+
+// ===========================================Configuration===========================================
+export interface PersonalInfo {
+  name: string;
+  payment_info: string[];
+}
+
+
+
 export const apiURL = {
   login: () => 'api/users-auth/token/',
+  refresh: () => 'api/users-auth/token/refresh/',
   me: () => 'api/users/me/',
   register: () => 'api/users-auth/registration/',
   existEmail: (email) => `api/users/exists/?email=${email}`,
@@ -555,6 +545,35 @@ export const apiURL = {
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
   initData: () => `api/settings/init/`,
+
+  getHomeClasses: (limit, page, topic?, class_id?: string[]) => {
+    let url = `api/classes/home/?limit=${limit}&page=${page}&topic=${topic}`;
+    if (class_id) {
+      url = parseParamsToUrL(url, class_id, `class_id`);
+    }
+    return url;
+  },
+  listClasses: (limit, page, topic?, class_id?: string[]) => {
+    let url = `api/classes/?limit=${limit}&page=${page}&topic=${topic}`;
+    if (class_id) {
+      url = parseParamsToUrL(url, class_id, `class_id`);
+    }
+    return url;
+  },
+  getClassDetail: (class_id) => `api/classes/detail/?class_id=${class_id}`,
+  requestJoinClass: () => `api/classes/join-request/`,
+  updateClassProgress: () => `api/classes/update-lesson-progress/`,
+
+  getPostDetail: (post_id) => `api/posts/detail/?post_id=${post_id}`,
+  listPosts: (limit, page, topic?, post_id?: string[]) => {
+    let url = `api/posts/?limit=${limit}&page=${page}&topic=${topic}`;
+    if (post_id) {
+      url = parseParamsToUrL(url, post_id, `post_id`);
+    }
+    return url;
+  },
+
+  getPersonalInfo: () => `api/configuration/personal-info/`,
 };
 
 class CourseService {
@@ -682,7 +701,7 @@ class CourseService {
     return apiClient.get(apiURL.getCourseDetail(id));
   }
 
-  static updateLessonProgress(params: UpdateProgressArgs): Promise<any> {
+  static updateLessonProgress(params: UpdateProgressArgs): Promise<Course> {
     return apiClient.post(apiURL.updateLessonProgress(), params);
   }
 
@@ -746,5 +765,38 @@ class CourseService {
   static initData(): Promise<{"success": true}> {
     return apiClient.get(apiURL.initData());
   }
+
+  static getHomeClasses(limit: number, page: number, topic?: string, class_id?: string[]): Promise<Pagination<Course>> {
+    return apiClient.get(apiURL.getHomeClasses(limit, page, topic, class_id));
+  }
+
+  static listClasses(limit: number, page: number, topic?: string, class_id?: string[]): Promise<Pagination<Course>> {
+    return apiClient.get(apiURL.listClasses(limit, page, topic, class_id));
+  }
+
+  static getClassDetail(class_id: string): Promise<Course> {
+    return apiClient.get(apiURL.getClassDetail(class_id));
+  }
+
+  static requestJoinClass(class_id: string): Promise<{ request_status: RequestStatus }> {
+    return apiClient.post(apiURL.requestJoinClass(), { class_id: class_id });
+  }
+
+  static listPosts(limit: number, page: number, topic?: string, post_id?: string[]): Promise<Pagination<Post>> {
+    return apiClient.get(apiURL.listPosts(limit, page, topic, post_id));
+  }
+
+  static getPostDetail(post_id: string): Promise<Post> {
+    return apiClient.get(apiURL.getPostDetail(post_id));
+  }
+
+  static updateClassProgress(params: UpdateProgressArgs): Promise<Course> {
+    return apiClient.post(apiURL.updateClassProgress(), params);
+  }
+
+  static getPersonalInfo(): Promise<PersonalInfo> {
+    return apiClient.get(apiURL.getPersonalInfo());
+  }
+
 }
 export default CourseService;

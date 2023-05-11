@@ -1,10 +1,14 @@
 from math import ceil
+import os
+import json
 
 from django.contrib import admin
 from django.core.files.storage import default_storage
+from django import forms
 
-from apps.upload.models import UploadImage, UploadFile
+from apps.upload.models import UploadImage, UploadFile, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path
+from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
 from apps.upload.enums import video_ext_list
 
 from moviepy.editor import VideoFileClip
@@ -14,6 +18,10 @@ from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 
 @admin.register(UploadFile)
 class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    search_fields = (
+        "file_name",
+        "file_type",
+    )
     list_display = (
         "file_name",
         "file_path",
@@ -22,7 +30,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "duration",
         "created",
     )
-    readonly_fields = ("file_size", "file_type", "duration")
+    readonly_fields = ("file_size", "file_type", "duration", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Files(self, request):
@@ -43,8 +51,8 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
         obj.save()
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
     # def has_delete_permission(self, request, obj=None):
     #     return False
@@ -52,6 +60,10 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
 @admin.register(UploadImage)
 class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    search_fields = (
+        "image_name",
+        "image_type",
+    )
     list_display = (
         "image_name",
         "image_path",
@@ -59,7 +71,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "image_type",
         "created",
     )
-    readonly_fields = ("image_size", "image_type")
+    readonly_fields = ("image_size", "image_type", "created")
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Images(self, request):
@@ -77,9 +89,83 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             obj.image_type = file_ext or None
         obj.save()
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    # def has_change_permission(self, request, obj=None):
+    #     return False
 
     # def has_delete_permission(self, request, obj=None):
     #     return False
+
+
+class DocumentUploadForm(forms.ModelForm):
+    # Define your custom form field here
+    document_to_generate = forms.ChoiceField(choices=[])
+
+    class Meta:
+        model = UploadDocument
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Define your custom field data retrieval logic here
+        if self.instance:
+            self.fields["document_to_generate"].choices = [("1", "1"), ("2", "2")]
+
+
+class CourseUploadForm(forms.ModelForm):
+    ROOT_DIR = "templates/data/courses/"
+    course_to_generate = forms.ChoiceField(choices=[])
+
+    class Meta:
+        model = UploadCourse
+        fields = '__all__'
+
+    def get_course_title(self):
+        return [name.replace("_", " ").title() for name in os.listdir(self.ROOT_DIR)]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Define your custom field data retrieval logic here
+        if self.instance:
+            self.fields["course_to_generate"].choices = [("None", "None")] + [(name, name) for name in self.get_course_title()]
+
+
+@admin.register(UploadCourse)
+class UploadCourseAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "is_class",
+    )
+    form = CourseUploadForm
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            data = obj.data
+            if not data:
+                course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
+                if course_to_generate:
+                    course_to_generate = course_to_generate.replace(" ", "_").lower()
+                    data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
+                    data["course_of_class"] = obj.is_class
+            if data:
+                obj.name = data.get("name")
+                UploadCourseServices().create_course_data([data])
+
+        obj.save()
+
+
+@admin.register(UploadDocument)
+class UploadDocumentAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+    )
+    form = DocumentUploadForm
+
+    def save_model(self, request, obj, form, change):
+        if obj.data and not change:
+            obj.name = obj.data.get("name")
+            UploadDocumentServices().create_document_data(obj.data)
+
+        obj.save()
 
