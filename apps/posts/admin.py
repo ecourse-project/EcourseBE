@@ -1,6 +1,15 @@
 from django.contrib import admin
 
 from apps.posts.models import PostTopic, Post
+from django import forms
+from ckeditor.widgets import CKEditorWidget
+
+
+class PostAdminForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorWidget())
+    class Meta:
+        model = Post
+        fields = '__all__'
 
 
 @admin.register(PostTopic)
@@ -25,3 +34,4 @@ class PostAdmin(admin.ModelAdmin):
         "topic",
         "created",
     )
+    form = PostAdminForm

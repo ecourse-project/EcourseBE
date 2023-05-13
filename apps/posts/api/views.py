@@ -2,13 +2,13 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
 from apps.core.pagination import StandardResultsSetPagination
-from apps.posts.api.serializers import PostSerializer
+from apps.posts.api.serializers import PostSerializer, ListPostSerializer
 from apps.posts.services.services import PostsService
 
 
 class PostListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
-    serializer_class = PostSerializer
+    serializer_class = ListPostSerializer
     permission_classes = (AllowAny,)
     authentication_classes = ()
 

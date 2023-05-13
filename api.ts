@@ -445,13 +445,12 @@ export interface Homepage {
 // ===========================================Post===========================================
 export interface Post {
   id: string;
-  created: string;
-  modified: string;
+  created?: string;
+  modified?: string;
   name: string;
-  topic: string;
-  content: string;
+  topic?: string;
+  content?: string;
   thumbnail: OImageUpload;
-  images: OImageUpload[];
 }
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;

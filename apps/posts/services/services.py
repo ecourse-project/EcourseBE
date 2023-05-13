@@ -6,7 +6,7 @@ from apps.posts.models import Post
 class PostsService:
     @property
     def get_all_posts_queryset(self):
-        return Post.objects.prefetch_related("images").select_related("thumbnail", "topic")
+        return Post.objects.select_related("thumbnail", "topic")
 
     def get_posts_by_topic(self, topic):
         if topic.strip():

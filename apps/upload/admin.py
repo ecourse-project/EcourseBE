@@ -5,6 +5,7 @@ import json
 from django.contrib import admin
 from django.core.files.storage import default_storage
 from django import forms
+from django.conf import settings
 
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path
@@ -107,13 +108,16 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     )
     list_display = (
         "image_name",
-        "image_path",
+        "image_url",
         "image_size",
         "image_type",
         "created",
     )
     readonly_fields = ("image_size", "image_type", "created")
     actions = (delete_data,)
+
+    def image_url(self, obj):
+        return settings.BASE_URL + obj.image_path.url
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Images(self, request):
