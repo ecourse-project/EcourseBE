@@ -17,8 +17,11 @@ from django.template.defaulttags import url
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static, serve
+from django.views.decorators.csrf import csrf_exempt
+
 import debug_toolbar
 from ckeditor_uploader import views as ckeditor_views
+from apps.upload.api.views import CustomImageUploadView
 
 
 urlpatterns = [
@@ -26,7 +29,7 @@ urlpatterns = [
     path('api/', include("apps.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-    path('ckeditor/upload/', ckeditor_views.upload, name='ckeditor_upload'),
+    path('ckeditor/upload/', csrf_exempt(CustomImageUploadView.as_view()), name='ckeditor_upload'),
     path('ckeditor/browse/', ckeditor_views.browse, name='ckeditor_browse'),
 ]
 

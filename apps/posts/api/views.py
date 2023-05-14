@@ -13,7 +13,7 @@ class PostListView(generics.ListAPIView):
     authentication_classes = ()
 
     def get_queryset(self):
-        topic = self.request.query_params.get("topic")
+        topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
         if topic:
             return PostsService().get_posts_by_topic(topic)
