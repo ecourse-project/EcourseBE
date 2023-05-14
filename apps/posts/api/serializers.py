@@ -13,6 +13,7 @@ class ListPostSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "thumbnail",
+            "content_summary",
         )
 
 
@@ -30,5 +31,5 @@ class PostSerializer(serializers.ModelSerializer):
             "topic",
             "content",
             "thumbnail",
+            "content_summary",
         )
-

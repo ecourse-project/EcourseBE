@@ -36,3 +36,4 @@ class PostAdmin(admin.ModelAdmin):
         "created",
     )
     form = PostAdminForm
+    readonly_fields = ("views",)

@@ -449,8 +449,9 @@ export interface Post {
   modified?: string;
   name: string;
   topic?: string;
-  content?: string;
   thumbnail: OImageUpload;
+  content?: string;
+  content_summary: string;
 }
 
 
@@ -574,6 +575,7 @@ export const apiURL = {
     }
     return url;
   },
+  listPostTopics: () =>  `api/posts/topics/`,
 
   getPaymentInfo: () => `api/configuration/payment-info/`,
 };
@@ -790,6 +792,10 @@ class CourseService {
 
   static getPostDetail(post_id: string): Promise<Post> {
     return apiClient.get(apiURL.getPostDetail(post_id));
+  }
+
+  static listPostTopics(): Promise<string[]> {
+    return apiClient.get(apiURL.listPostTopics());
   }
 
   static updateClassProgress(params: UpdateProgressArgs): Promise<Course> {

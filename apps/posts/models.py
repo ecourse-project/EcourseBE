@@ -26,9 +26,11 @@ class Post(TimeStampedModel):
     topic = models.ForeignKey(PostTopic, on_delete=models.SET_NULL, null=True, blank=True)
     thumbnail = models.ForeignKey(UploadImage, related_name="posts", on_delete=models.SET_NULL, null=True, blank=True)
     content = RichTextUploadingField(null=True, blank=True)
+    content_summary = models.TextField(null=True, blank=True)
+    views = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["views"]
 
     def __str__(self):
         return self.name
