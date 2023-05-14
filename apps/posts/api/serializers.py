@@ -11,6 +11,7 @@ class ListPostSerializer(serializers.ModelSerializer):
         model = Post
         fields = (
             "id",
+            "modified",
             "name",
             "thumbnail",
             "content_summary",
