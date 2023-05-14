@@ -5,7 +5,7 @@ from apps.configuration.api.serializers import PersonalInfoSerializer
 from apps.configuration.models import PersonalInfo
 
 
-class PersonalInfoView(APIView):
+class PaymentInfoView(APIView):
     def get(self, request, *args, **kwargs):
         info = PersonalInfo.objects.all()
         if not info.exists():

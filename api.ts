@@ -452,6 +452,14 @@ export interface Post {
   content?: string;
   thumbnail: OImageUpload;
 }
+
+
+// ===========================================Configuration===========================================
+export interface PaymentInfo {
+  name: string;
+  payment_info: string[];
+}
+
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;
   const newParams = [...params];
@@ -461,13 +469,6 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
   }
   return newURL;
 };
-
-
-// ===========================================Configuration===========================================
-export interface PersonalInfo {
-  name: string;
-  payment_info: string[];
-}
 
 
 
@@ -574,7 +575,7 @@ export const apiURL = {
     return url;
   },
 
-  getPersonalInfo: () => `api/configuration/personal-info/`,
+  getPaymentInfo: () => `api/configuration/payment-info/`,
 };
 
 class CourseService {
@@ -795,8 +796,8 @@ class CourseService {
     return apiClient.post(apiURL.updateClassProgress(), params);
   }
 
-  static getPersonalInfo(): Promise<PersonalInfo> {
-    return apiClient.get(apiURL.getPersonalInfo());
+  static getPaymentInfo(): Promise<PaymentInfo> {
+    return apiClient.get(apiURL.getPaymentInfo());
   }
 
 }

@@ -3,5 +3,5 @@ from apps.configuration.api import views
 
 
 urlpatterns = [
-    path("personal-info/", views.PersonalInfoView.as_view()),
+    path("payment-info/", views.PaymentInfoView.as_view()),
 ]
