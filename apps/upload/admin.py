@@ -10,7 +10,7 @@ from django.conf import settings
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
-from apps.upload.enums import video_ext_list
+from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
 
 from moviepy.editor import VideoFileClip
 from admin_extra_buttons.api import ExtraButtonsMixin, button
@@ -49,7 +49,7 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:
-            save_path, file_ext = get_file_path(file_name=obj.video_path.name, new_file_name=obj.id)
+            save_path, file_ext = get_file_path(file_name=obj.video_path.name, new_file_name=obj.id, upload_type=VIDEO)
             default_storage.save(save_path, obj.video_path)
             obj.video_path = save_path
             obj.video_size = ceil(obj.video_path.size / 1024)
@@ -85,7 +85,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:
-            save_path, file_ext = get_file_path(file_name=obj.file_path.name, new_file_name=obj.id)
+            save_path, file_ext = get_file_path(file_name=obj.file_path.name, new_file_name=obj.id, upload_type=FILE)
             default_storage.save(save_path, obj.file_path)
             obj.file_path = save_path
             obj.file_size = ceil(obj.file_path.size / 1024)
@@ -128,7 +128,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:
-            save_path, file_ext = get_file_path(file_name=obj.image_path.name, new_file_name=obj.id)
+            save_path, file_ext = get_file_path(file_name=obj.image_path.name, new_file_name=obj.id, upload_type=IMAGE)
             default_storage.save(save_path, obj.image_path)
             obj.image_path = save_path
             obj.image_size = ceil(obj.image_path.size / 1024)

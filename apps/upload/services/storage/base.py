@@ -10,13 +10,17 @@ from django.utils.module_loading import import_string
 from ckeditor_uploader import utils
 from ckeditor_uploader.utils import storage
 
+from apps.upload.enums import FILE, IMAGE, VIDEO
 
-def get_file_path(file_name, new_file_name="default", folder_name=None):
+
+def get_file_path(file_name, new_file_name="default", folder_name=None, upload_type=FILE):
+    upload_type += "s"
     date_now = datetime.now()
     if not folder_name:
-        folder = "/".join([str(date_now.year), f"{date_now:%m}", f"{date_now:%d}"])
+        folder = "/".join([str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
     else:
-        folder = "/".join([folder_name, str(date_now.year), f"{date_now:%m}", f"{date_now:%d}"])
+        folder = "/".join([folder_name, str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
+
     file_name_split = os.path.splitext(file_name)
     file_ext = file_name_split[1] or ""
     return f"{folder}/{new_file_name}{file_ext}", file_ext.replace(".", "").lower()
@@ -60,6 +64,6 @@ def custom_get_upload_filename(upload_name, request):
 
     return (
         image_id,
-        storage.get_available_name(os.path.join(upload_path, f"{str(image_id)}{file_ext}")),
+        storage.get_available_name(os.path.join(upload_path, f"{IMAGE}s", f"{str(image_id)}{file_ext}")),
         file_ext.replace(".", "").lower(),
     )

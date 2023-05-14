@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Line Break Test</title>
+  <script>
+    function addLineBreaks() {
+      var element = document.getElementById("text");
+      var text = element.innerHTML;
+      element.innerHTML = text.replace(/\n/g, "<br>");
+    }
+  </script>
+</head>
+<body onload="addLineBreaks()">
+  <pre id="text">
+    {{ directory }}
+  </pre>
+
+  <pre>
+  Media root: {{ media_root }}
+  Storage:
+       File: {{ storage.file }} MB
+       Image: {{ storage.image }} MB
+       Video: {{ storage.video }} MB
+       Total: {{ storage.total }} MB
+  </pre>
+</body>
+</html>
