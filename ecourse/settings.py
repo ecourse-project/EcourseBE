@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
     'django_better_admin_arrayfield',
     'admin_extra_buttons',
     'ckeditor',
+    'ckeditor_uploader',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -259,35 +260,100 @@ EMAIL_PORT = env("EMAIL_PORT", default="EMAIL_PORT")
 # CKEDITOR
 CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'
 
+# CKEDITOR_CONFIGS = {
+#     'default': {
+#         "skin": "moono-lisa",
+#         "toolbar_Basic": [["Source", "-", "Bold", "Italic"]],
+#         "toolbar_Full": [
+#             [
+#                 "Styles",
+#                 "Format",
+#                 "Bold",
+#                 "Italic",
+#                 "Underline",
+#                 "Strike",
+#                 "SpellChecker",
+#                 # "Undo",
+#                 # "Redo",
+#             ],
+#             ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+#             ["Link", "Unlink", "Anchor"],
+#             ["Image", "Table", "HorizontalRule"],
+#             ["TextColor", "BGColor"],
+#             # ["Smiley", "SpecialChar"],
+#             ["Templates", "Source"],
+#         ],
+#         "toolbar": "Full",
+#         "height": 500,
+#         "width": 835,
+#         "filebrowserWindowWidth": 940,
+#         "filebrowserWindowHeight": 725,
+#     }
+# }
+
 CKEDITOR_CONFIGS = {
     'default': {
-        "skin": "moono-lisa",
-        "toolbar_Basic": [["Source", "-", "Bold", "Italic"]],
-        "toolbar_Full": [
-            [
-                "Styles",
-                "Format",
-                "Bold",
-                "Italic",
-                "Underline",
-                "Strike",
-                "SpellChecker",
-                # "Undo",
-                # "Redo",
-            ],
-            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-            ["Link", "Unlink", "Anchor"],
-            ["Image", "Table", "HorizontalRule"],
-            ["TextColor", "BGColor"],
-            # ["Smiley", "SpecialChar"],
-            ["Templates", "Source"],
+        'skin': 'moono',
+        # 'skin': 'office2013',
+        'toolbar_Basic': [
+            ['Source', '-', 'Bold', 'Italic']
         ],
-        "toolbar": "Full",
-        "height": 500,
-        "width": 835,
-        "filebrowserWindowWidth": 940,
-        "filebrowserWindowHeight": 725,
+        'toolbar_YourCustomToolbarConfig': [
+            {'name': 'document', 'items': ['Source', '-', 'Save', 'NewPage', 'Preview', 'Print', '-', 'Templates']},
+            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
+            {'name': 'forms',
+             'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
+                       'HiddenField']},
+            '/',
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph',
+             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
+                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl',
+                       'Language']},
+            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
+            {'name': 'insert',
+             'items': ['Image', 'Flash', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak', 'Iframe']},
+            '/',
+            {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
+            {'name': 'about', 'items': ['About']},
+            '/',  # put this to force next toolbar on new line
+            {'name': 'yourcustomtools', 'items': [
+                # put the name of your editor.ui.addButton here
+                'Preview',
+                'Maximize',
+
+            ]},
+        ],
+        'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
+        # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
+        # 'height': 291,
+        # 'width': '100%',
+        'height': 500,
+        'width': 940,
+        # 'toolbarCanCollapse': True,
+        # 'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
+        'tabSpaces': 4,
+        'extraPlugins': ','.join([
+            'uploadimage', # the upload image feature
+            # your extra plugins here
+            'div',
+            'autolink',
+            'autoembed',
+            'embedsemantic',
+            'autogrow',
+            # 'devtools',
+            'widget',
+            'lineutils',
+            'clipboard',
+            'dialog',
+            'dialogui',
+            'elementspath'
+        ]),
     }
 }
 
-
+CKEDITOR_UPLOAD_PATH = "media/"

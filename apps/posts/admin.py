@@ -2,11 +2,12 @@ from django.contrib import admin
 
 from apps.posts.models import PostTopic, Post
 from django import forms
-from ckeditor.widgets import CKEditorWidget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 
 class PostAdminForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditorWidget())
+    content = forms.CharField(widget=CKEditorUploadingWidget())
+
     class Meta:
         model = Post
         fields = '__all__'

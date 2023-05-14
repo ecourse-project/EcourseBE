@@ -18,12 +18,16 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static, serve
 import debug_toolbar
+from ckeditor_uploader import views as ckeditor_views
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include("apps.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    path('ckeditor/upload/', ckeditor_views.upload, name='ckeditor_upload'),
+    path('ckeditor/browse/', ckeditor_views.browse, name='ckeditor_browse'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

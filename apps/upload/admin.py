@@ -215,3 +215,5 @@ class UploadDocumentAdmin(admin.ModelAdmin):
 
         obj.save()
 
+
+
