@@ -25,9 +25,9 @@ class SystemInfoView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        file_size = round(UploadFile.objects.all().aggregate(Sum("file_size"))["file_size__sum"] / 1024, 2)
-        image_size = round(UploadImage.objects.all().aggregate(Sum("image_size"))["image_size__sum"] / 1024, 2)
-        video_size = round(UploadVideo.objects.all().aggregate(Sum("video_size"))["video_size__sum"] / 1024, 2)
+        file_size = round((UploadFile.objects.all().aggregate(Sum("file_size")).get("file_size__sum") or 0) / 1024, 2)
+        image_size = round((UploadImage.objects.all().aggregate(Sum("image_size")).get("image_size__sum") or 0) / 1024, 2)
+        video_size = round((UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024, 2)
 
         data = {
             "media_root": settings.MEDIA_ROOT,
@@ -41,3 +41,16 @@ class SystemInfoView(APIView):
         }
 
         return render(request, "data/system/system_info.html", data)
+
+
+class GetDataFromDatabase(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+
+
+        return render(request, "data/system/system_info.html", data)
+
+
+
