@@ -101,7 +101,7 @@ export interface OFileUpload {
   file_name: string;
   duration: number;
   video_embedded_url?: string;
-  use_embedded_url?: string;
+  use_embedded_url?: boolean;
 }
 
 export interface IImageUpload {
@@ -243,6 +243,7 @@ export interface Course {
   quiz_detail?: QuizResult;
   // rating_stats?: RatingStats;
   request_status?: RequestStatus;
+  course_of_class?: boolean;
 }
 
 // ===========================================Classes===========================================
