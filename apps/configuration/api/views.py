@@ -1,6 +1,11 @@
+import json
+import os.path
+import shutil
+
 from django.conf import settings
 from django.db.models import Sum
 from django.shortcuts import render
+from django.core.serializers import serialize
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,6 +13,8 @@ from rest_framework.permissions import AllowAny
 
 from apps.configuration.api.serializers import PersonalInfoSerializer
 from apps.configuration.models import PersonalInfo
+from apps.configuration.model_choices import models
+from apps.configuration.services.database_services import apply_action
 from apps.core.system import get_tree_str
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
 
@@ -48,9 +55,50 @@ class GetDataFromDatabase(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
+        query_params = self.request.query_params
+        model = models.get(query_params.get("model", "").strip())
+        data = json.loads(query_params.get("data", "{}").strip())
+        action = query_params.get("action", "").strip().lower()
+        extra_action = query_params.get("extra_action", "").strip().lower()
+
+        response_data_string = "No data"
+        if model:
+            output_data = apply_action(model=model, data=data, action=action, extra_action=extra_action)
+            if isinstance(output_data, int) or isinstance(output_data, str):
+                response_data_string = output_data
+            else:
+                response_data_json = serialize(
+                    'json',
+                    [output_data] if isinstance(output_data, model) else output_data,
+                    use_natural_foreign_keys=True,
+                    use_natural_primary_keys=True
+                )
+                response_data_string = json.dumps(json.loads(response_data_json), indent=4)
+
+        context = {
+            "response_data_string": response_data_string,
+        }
+
+        return render(request, "data/system/database_display.html", context)
 
 
-        return render(request, "data/system/system_info.html", data)
+class DirectoryManagement(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        delete_path = self.request.query_params.get("path", "").strip()
+        full_path = os.path.join(settings.MEDIA_ROOT, delete_path).replace("/", "\\")
+        message = f"{full_path} deleted"
+        try:
+            os.rmdir(full_path)
+        except Exception:
+            message = f"Cannot delete {full_path}"
+
+        context = {
+            "message": message,
+        }
+        return render(request, "data/system/directory_management.html", context)
 
 
 

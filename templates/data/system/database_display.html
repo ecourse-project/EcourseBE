@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <title>Data Display</title>
+  <script>
+    function addLineBreaks() {
+      var element = document.getElementById("text");
+      var text = element.innerHTML;
+      element.innerHTML = text.replace(/\n/g, "<br>");
+    }
+  </script>
 </head>
-<body>
-
+<body onload="addLineBreaks()">
+  <pre id="text">
+    {{ response_data_string }}
+  </pre>
 </body>
 </html>

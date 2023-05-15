@@ -51,7 +51,3 @@ models = {
     "User": User,
     "UserResetPassword": UserResetPassword,
 }
-
-action = {
-    "create": User.objects.filter
-}
