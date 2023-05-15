@@ -49,14 +49,14 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not change:
-            save_path, file_ext = get_file_path(file_name=obj.video_path.name, new_file_name=obj.id, upload_type=VIDEO)
-            default_storage.save(save_path, obj.video_path)
-            obj.video_path = save_path
-            obj.video_size = ceil(obj.video_path.size / 1024)
-            obj.video_type = file_ext or None
-            if file_ext and file_ext.upper() in video_ext_list:
-                obj.duration = VideoFileClip(obj.video_path.path).duration
-
+            if obj.video_path:
+                save_path, file_ext = get_file_path(file_name=obj.video_path.name, new_file_name=obj.id, upload_type=VIDEO)
+                default_storage.save(save_path, obj.video_path)
+                obj.video_path = save_path
+                obj.video_size = ceil(obj.video_path.size / 1024)
+                obj.video_type = file_ext or None
+                if file_ext and file_ext.upper() in video_ext_list:
+                    obj.duration = VideoFileClip(obj.video_path.path).duration
         obj.save()
 
 
