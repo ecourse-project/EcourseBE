@@ -21,7 +21,9 @@ class UploadVideoSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_video_path(cls, obj):
-        return settings.BASE_URL + obj.video_path.url
+        if obj.video_path:
+            return settings.BASE_URL + obj.video_path.url
+        return ""
 
     def to_representation(self, obj):
         """Move fields from profile to user representation."""
