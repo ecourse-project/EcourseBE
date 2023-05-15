@@ -90,8 +90,12 @@ class DirectoryManagement(APIView):
         delete_path = self.request.query_params.get("path", "").strip()
         full_path = os.path.join(settings.MEDIA_ROOT, delete_path).replace("/", "\\")
         message = f"{full_path} deleted"
+
         try:
-            os.rmdir(full_path)
+            if os.path.isdir(full_path):
+                os.rmdir(full_path)
+            else:
+                os.remove(full_path)
         except Exception:
             message = f"Cannot delete {full_path}"
 
