@@ -1,6 +1,6 @@
 import json
 import os.path
-import shutil
+# import subprocess
 
 from django.conf import settings
 from django.db.models import Sum
@@ -36,7 +36,7 @@ class SystemInfoView(APIView):
         image_size = round((UploadImage.objects.all().aggregate(Sum("image_size")).get("image_size__sum") or 0) / 1024, 2)
         video_size = round((UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024, 2)
 
-        data = {
+        context = {
             "media_root": settings.MEDIA_ROOT,
             "directory": get_tree_str(settings.MEDIA_ROOT),
             "storage": {
@@ -47,7 +47,23 @@ class SystemInfoView(APIView):
             }
         }
 
-        return render(request, "data/system/system_info.html", data)
+        # # Command to execute
+        # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"
+        #
+        # # Execute the command
+        # result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        #
+        # # Check the result
+        # if result.returncode == 0:
+        #     # Command executed successfully
+        #     output = result.stdout
+        #     print(output)
+        # else:
+        #     # An error occurred
+        #     error = result.stderr
+        #     print(f"Command execution failed: {error}")
+
+        return render(request, "data/system/system_info.html", context)
 
 
 class GetDataFromDatabase(APIView):
@@ -102,6 +118,18 @@ class DirectoryManagement(APIView):
         context = {
             "message": message,
         }
+
+        # import shutil
+        #
+        # # Source file path
+        # source_file = '/path/to/source/file.txt'
+        #
+        # # Destination directory path
+        # destination_dir = '/path/to/destination/'
+        #
+        # # Move the file to the destination directory
+        # shutil.move(source_file, destination_dir)
+
         return render(request, "data/system/directory_management.html", context)
 
 

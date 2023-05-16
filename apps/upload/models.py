@@ -9,7 +9,7 @@ from apps.users.models import User
 class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file_name = models.CharField(max_length=255, null=True, blank=True)
-    file_path = models.FileField(max_length=128, null=True, blank=True)
+    file_path = models.FileField(max_length=255, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
 
@@ -30,7 +30,7 @@ class UploadFile(TimeStampedModel):
 class UploadImage(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image_name = models.CharField(max_length=255, null=True, blank=True)
-    image_path = models.ImageField(max_length=128, null=True, blank=True)
+    image_path = models.ImageField(max_length=255, null=True, blank=True)
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
 
@@ -51,7 +51,7 @@ class UploadImage(TimeStampedModel):
 class UploadVideo(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     video_name = models.CharField(max_length=255, null=True, blank=True)
-    video_path = models.FileField(max_length=128, null=True, blank=True)
+    video_path = models.FileField(max_length=255, null=True, blank=True)
     video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     video_type = models.CharField(max_length=10, null=True, blank=True)
     video_embedded_url = models.CharField(max_length=1000, null=True, blank=True)

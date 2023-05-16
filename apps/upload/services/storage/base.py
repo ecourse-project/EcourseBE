@@ -1,16 +1,15 @@
+from math import ceil
 from datetime import datetime
 import os
-import inspect
-import warnings
 import uuid
 
 from django.conf import settings
-from django.utils.module_loading import import_string
+from django.core.files.storage import default_storage
 
-from ckeditor_uploader import utils
 from ckeditor_uploader.utils import storage
+from moviepy.editor import VideoFileClip
 
-from apps.upload.enums import FILE, IMAGE, VIDEO
+from apps.upload.enums import FILE, IMAGE, VIDEO, video_ext_list
 
 
 def get_file_path(file_name, new_file_name="default", folder_name=None, upload_type=FILE):
@@ -24,6 +23,26 @@ def get_file_path(file_name, new_file_name="default", folder_name=None, upload_t
     file_name_split = os.path.splitext(file_name)
     file_ext = file_name_split[1] or ""
     return f"{folder}/{new_file_name}{file_ext}", file_ext.replace(".", "").lower()
+
+
+def store_file_upload(upload_obj, upload_path, upload_type):
+    save_path, file_ext = get_file_path(file_name=upload_path.name, new_file_name=upload_obj.id, upload_type=upload_type)
+    default_storage.save(save_path, upload_path)
+
+    if upload_type.lower() == IMAGE:
+        upload_obj.image_path = save_path
+        upload_obj.image_size = ceil(upload_obj.image_path.size / 1024)
+        upload_obj.image_type = file_ext or None
+    elif upload_type.lower() == VIDEO:
+        upload_obj.video_path = save_path
+        upload_obj.video_size = ceil(upload_obj.video_path.size / 1024)
+        upload_obj.video_type = file_ext or None
+        if file_ext and file_ext.upper() in video_ext_list:
+            upload_obj.duration = VideoFileClip(upload_obj.video_path.path).duration
+    else:
+        upload_obj.file_path = save_path
+        upload_obj.file_size = ceil(upload_obj.file_path.size / 1024)
+        upload_obj.file_type = file_ext or None
 
 
 def get_user_path(user):
