@@ -97,7 +97,7 @@ class DirectoryManagement(APIView):
         file_type = self.request.query_params.get("file_type", "").strip()
 
         if root == "base":
-            root = settings.BASE_DIR
+            root = str(settings.BASE_DIR)
         else:
             root = settings.MEDIA_ROOT
         root = root.replace(chr(92), "/").strip("/")

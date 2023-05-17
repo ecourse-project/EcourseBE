@@ -75,15 +75,17 @@ def move_file(root: str, source_file: str, destination_dir: str, upload_type: st
         return
 
     source_file = source_file.strip("/")
-    destination_dir = destination_dir.replace(chr(92), "/").replace("media", "").strip("/")
+    destination_dir = destination_dir.replace(chr(92), "/").strip("/")
 
+    old_path = "/".join([root, source_file])
     new_path = "/".join([root, destination_dir])
+
     file_name = os.path.basename(source_file)
     save_path = "/".join([destination_dir, file_name])
 
     if not os.path.isdir(new_path):
         os.mkdir(new_path)
-    shutil.move("/".join([root, source_file]), new_path)
+    shutil.move(old_path, new_path)
 
     if upload_type.lower() == IMAGE:
         UploadImage.objects.filter(image_path=source_file).update(image_path=save_path)

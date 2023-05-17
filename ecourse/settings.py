@@ -170,6 +170,7 @@ TIME_ZONE = "Asia/Ho_Chi_Minh"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+DEFAULT_CMD_FILE_EXT = env.str("DEFAULT_CMD_FILE_EXT", default="diephaibinh")
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "staticfiles/"

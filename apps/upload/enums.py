@@ -17,4 +17,3 @@ COURSE = "COURSE",
 FILE = "file"
 IMAGE = "image"
 VIDEO = "video"
-

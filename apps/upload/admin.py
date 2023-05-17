@@ -142,6 +142,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         else:
             if obj.image_path:
                 store_file_upload(obj, obj.image_path, IMAGE)
+
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
