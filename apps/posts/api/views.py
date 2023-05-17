@@ -20,10 +20,14 @@ class PostListView(generics.ListAPIView):
     def get_queryset(self):
         topic = self.request.query_params.get("topic", "").strip()
         list_id = self.request.query_params.getlist('course_id')
+        header = self.request.query_params.get("header", "").strip()
+
         if topic:
-            return PostsService().get_posts_by_topic(topic)
+            return PostsService().get_posts_by_topic(topic, header)
         elif list_id:
-            return PostsService().get_posts_by_list_id(list_id)
+            return PostsService().get_posts_by_list_id(list_id, header)
+        elif header:
+            return PostsService().get_all_posts_queryset.filter(header__icontains=header)
         else:
             return PostsService().get_all_posts_queryset
 

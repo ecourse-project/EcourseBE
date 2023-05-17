@@ -1,0 +1,15 @@
+/api/configuration/system-info/
+
+/api/configuration/database/?action=filter&model=Cart&data={"user__email": "haibinh2322gmail.com"}&extra_action=count
+- action: all, first, last, get, filter, create
+- extra_action: count
+- model
+- data
+
+/api/configuration/dir-management/?action=move&source=2023/05/15/abc.txt&destination=2023/05/15/files&file_type=file
+- action: delete, move
+- file_type: image, video, file
+- source
+- destination
+
+

@@ -20,8 +20,7 @@ class HeaderDetailAdmin(admin.ModelAdmin):
         "header",
         "order",
         "document_topic",
-        "course_topic",
-        "class_topic",
+        "course_and_class_topic",
         "post_topic",
     )
 
