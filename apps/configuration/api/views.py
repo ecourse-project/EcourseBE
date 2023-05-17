@@ -122,9 +122,6 @@ class ExecuteCommand(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-
-        return Response()
-
         # # Command to execute
         # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"
         #
@@ -140,3 +137,7 @@ class ExecuteCommand(APIView):
         #     # An error occurred
         #     error = result.stderr
         #     print(f"Command execution failed: {error}")
+
+        return Response()
+
+
