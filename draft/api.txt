@@ -7,9 +7,16 @@
 - data
 
 /api/configuration/dir-management/?action=move&source=2023/05/15/abc.txt&destination=2023/05/15/files&file_type=file
+- root:
+    + base -> BASE_DIR
+    + anything -> MEDIA_ROOT
 - action: delete, move
 - file_type: image, video, file
 - source
 - destination
+
+
+/api/configuration/command
+
 
 

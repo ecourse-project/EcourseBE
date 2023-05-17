@@ -15,9 +15,9 @@ from apps.configuration.api.serializers import PersonalInfoSerializer
 from apps.configuration.models import PersonalInfo
 from apps.configuration.model_choices import models
 from apps.configuration.services.database_services import apply_action
+from apps.configuration.services.dir_management import apply_dir_action
 from apps.core.system import get_tree_str
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
-from apps.upload.services.upload import move_file
 
 
 class PaymentInfoView(APIView):
@@ -38,8 +38,10 @@ class SystemInfoView(APIView):
         video_size = round((UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024, 2)
 
         context = {
+            "base_dir": settings.BASE_DIR,
             "media_root": settings.MEDIA_ROOT,
-            "directory": get_tree_str(settings.MEDIA_ROOT),
+            "directory": get_tree_str(settings.BASE_DIR / "apps"),
+            "media": get_tree_str(settings.MEDIA_ROOT),
             "storage": {
                 "file": file_size,
                 "image": image_size,
@@ -89,28 +91,24 @@ class DirectoryManagement(APIView):
 
     def get(self, request, *args, **kwargs):
         action = self.request.query_params.get("action", "").strip()
+        root = self.request.query_params.get("root", settings.MEDIA_ROOT).strip()
         source = self.request.query_params.get("source", "").strip()
         destination = self.request.query_params.get("destination", "").strip()
         file_type = self.request.query_params.get("file_type", "").strip()
 
-        full_path = "/".join([settings.MEDIA_ROOT, source]).replace(chr(92), "/")
-        message = f"{action} {source or full_path}"
+        if root == "base":
+            root = settings.BASE_DIR
+        else:
+            root = settings.MEDIA_ROOT
+        root = root.replace(chr(92), "/").strip("/")
 
-        if action == "delete":
-            try:
-                if os.path.isdir(full_path):
-                    os.rmdir(full_path)
-                else:
-                    os.remove(full_path)
-                message = f"{full_path} {action}d"
-            except Exception:
-                message = f"Cannot {action} {full_path}"
-        elif action == "move":
-            try:
-                move_file(source, destination, file_type)
-                message = f"{full_path} {action}d"
-            except Exception:
-                message = f"Cannot {action} {source}"
+        message = apply_dir_action(
+            action=action,
+            root=root,
+            source=source,
+            destination=destination,
+            file_type=file_type
+        )
 
         context = {
             "message": message,
@@ -118,6 +116,14 @@ class DirectoryManagement(APIView):
 
         return render(request, "data/system/directory_management.html", context)
 
+
+class ExecuteCommand(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+
+        return Response()
 
         # # Command to execute
         # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"

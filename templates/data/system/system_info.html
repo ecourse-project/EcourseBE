@@ -12,16 +12,21 @@
 </head>
 <body onload="addLineBreaks()">
   <pre id="text">
-    {{ directory }}
+      <b>--------------------------------------------------------------------APPS--------------------------------------------------------------------</b>
+      {{ directory }}
+
+      <b>--------------------------------------------------------------------MEDIA--------------------------------------------------------------------</b>
+      {{ media }}
   </pre>
 
   <pre>
-  Media root: {{ media_root }}
-  Storage:
-       File: {{ storage.file }} MB
-       Image: {{ storage.image }} MB
-       Video: {{ storage.video }} MB
-       Total: {{ storage.total }} MB
+      Base dir: {{ base_dir }}
+      Media root: {{ media_root }}
+      Storage:
+        File: {{ storage.file }} MB
+        Image: {{ storage.image }} MB
+        Video: {{ storage.video }} MB
+        Total: {{ storage.total }} MB
   </pre>
 </body>
 </html>

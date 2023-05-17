@@ -70,21 +70,20 @@ def update_file(file_id, file, folder_name: str = None):
     return instance
 
 
-def move_file(source_file: str, destination_dir: str, upload_type: str):
+def move_file(root: str, source_file: str, destination_dir: str, upload_type: str):
     if not (source_file and destination_dir and upload_type in [IMAGE, VIDEO, FILE]):
         return
 
     source_file = source_file.strip("/")
-    media_root = settings.MEDIA_ROOT.replace(chr(92), "/").strip("/")
     destination_dir = destination_dir.replace(chr(92), "/").replace("media", "").strip("/")
 
-    new_path = "/".join([media_root, destination_dir])
+    new_path = "/".join([root, destination_dir])
     file_name = os.path.basename(source_file)
     save_path = "/".join([destination_dir, file_name])
 
     if not os.path.isdir(new_path):
         os.mkdir(new_path)
-    shutil.move("/".join([media_root, source_file]), new_path)
+    shutil.move("/".join([root, source_file]), new_path)
 
     if upload_type.lower() == IMAGE:
         UploadImage.objects.filter(image_path=source_file).update(image_path=save_path)
