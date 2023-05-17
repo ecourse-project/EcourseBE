@@ -17,6 +17,7 @@ from apps.configuration.model_choices import models
 from apps.configuration.services.database_services import apply_action
 from apps.core.system import get_tree_str
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
+from apps.upload.services.upload import move_file
 
 
 class PaymentInfoView(APIView):
@@ -46,22 +47,6 @@ class SystemInfoView(APIView):
                 "total": file_size + image_size + video_size,
             }
         }
-
-        # # Command to execute
-        # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"
-        #
-        # # Execute the command
-        # result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        #
-        # # Check the result
-        # if result.returncode == 0:
-        #     # Command executed successfully
-        #     output = result.stdout
-        #     print(output)
-        # else:
-        #     # An error occurred
-        #     error = result.stderr
-        #     print(f"Command execution failed: {error}")
 
         return render(request, "data/system/system_info.html", context)
 
@@ -103,34 +88,49 @@ class DirectoryManagement(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        delete_path = self.request.query_params.get("path", "").strip()
-        full_path = os.path.join(settings.MEDIA_ROOT, delete_path).replace("/", "\\")
-        message = f"{full_path} deleted"
+        action = self.request.query_params.get("action", "").strip()
+        source = self.request.query_params.get("source", "").strip()
+        destination = self.request.query_params.get("destination", "").strip()
+        file_type = self.request.query_params.get("file_type", "").strip()
 
-        try:
-            if os.path.isdir(full_path):
-                os.rmdir(full_path)
-            else:
-                os.remove(full_path)
-        except Exception:
-            message = f"Cannot delete {full_path}"
+        full_path = "/".join([settings.MEDIA_ROOT, source]).replace(chr(92), "/")
+        message = f"{action} {source or full_path}"
+
+        if action == "delete":
+            try:
+                if os.path.isdir(full_path):
+                    os.rmdir(full_path)
+                else:
+                    os.remove(full_path)
+                message = f"{full_path} {action}d"
+            except Exception:
+                message = f"Cannot {action} {full_path}"
+        elif action == "move":
+            try:
+                move_file(source, destination, file_type)
+                message = f"{full_path} {action}d"
+            except Exception:
+                message = f"Cannot {action} {source}"
 
         context = {
             "message": message,
         }
 
-        # import shutil
-        #
-        # # Source file path
-        # source_file = '/path/to/source/file.txt'
-        #
-        # # Destination directory path
-        # destination_dir = '/path/to/destination/'
-        #
-        # # Move the file to the destination directory
-        # shutil.move(source_file, destination_dir)
-
         return render(request, "data/system/directory_management.html", context)
 
 
-
+        # # Command to execute
+        # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"
+        #
+        # # Execute the command
+        # result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        #
+        # # Check the result
+        # if result.returncode == 0:
+        #     # Command executed successfully
+        #     output = result.stdout
+        #     print(output)
+        # else:
+        #     # An error occurred
+        #     error = result.stderr
+        #     print(f"Command execution failed: {error}")
