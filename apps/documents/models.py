@@ -57,9 +57,3 @@ class DocumentManagement(TimeStampedModel):
 
     def __str__(self):
         return f"{self.document.name} - {self.user.__str__()}"
-
-
-# def HomePageDocument
-
-
-

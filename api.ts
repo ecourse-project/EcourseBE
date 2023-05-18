@@ -100,6 +100,8 @@ export interface OFileUpload {
   file_type: string;
   file_name: string;
   duration: number;
+  video_embedded_url?: string;
+  use_embedded_url?: boolean;
 }
 
 export interface IImageUpload {
@@ -241,6 +243,7 @@ export interface Course {
   quiz_detail?: QuizResult;
   // rating_stats?: RatingStats;
   request_status?: RequestStatus;
+  course_of_class?: boolean;
 }
 
 // ===========================================Classes===========================================
@@ -421,9 +424,14 @@ export enum NavTypeEnum {
   POST = 'POST',
 }
 
+export interface Topic {
+  label: string;
+  value: string;
+}
+
 export interface Nav {
   header: string;
-  topic: string[];
+  topic: Topic[];
   type: NavTypeEnum;
 }
 
@@ -443,14 +451,22 @@ export interface Homepage {
 // ===========================================Post===========================================
 export interface Post {
   id: string;
-  created: string;
-  modified: string;
+  created?: string;
+  modified?: string;
   name: string;
-  topic: string;
-  content: string;
+  topic?: string;
   thumbnail: OImageUpload;
-  images: OImageUpload[];
+  content?: string;
+  content_summary: string;
 }
+
+
+// ===========================================Configuration===========================================
+export interface PaymentInfo {
+  name: string;
+  payment_info: string[];
+}
+
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {
   let newURL = url;
   const newParams = [...params];
@@ -460,13 +476,6 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
   }
   return newURL;
 };
-
-
-// ===========================================Configuration===========================================
-export interface PersonalInfo {
-  name: string;
-  payment_info: string[];
-}
 
 
 
@@ -565,15 +574,16 @@ export const apiURL = {
   updateClassProgress: () => `api/classes/update-lesson-progress/`,
 
   getPostDetail: (post_id) => `api/posts/detail/?post_id=${post_id}`,
-  listPosts: (limit, page, topic?, post_id?: string[]) => {
-    let url = `api/posts/?limit=${limit}&page=${page}&topic=${topic}`;
+  listPosts: (limit, page, topic?, header?, post_id?: string[]) => {
+    let url = `api/posts/?limit=${limit}&page=${page}&topic=${topic}&header=${header}`;
     if (post_id) {
       url = parseParamsToUrL(url, post_id, `post_id`);
     }
     return url;
   },
+  listPostTopics: () =>  `api/posts/topics/`,
 
-  getPersonalInfo: () => `api/configuration/personal-info/`,
+  getPaymentInfo: () => `api/configuration/payment-info/`,
 };
 
 class CourseService {
@@ -782,20 +792,24 @@ class CourseService {
     return apiClient.post(apiURL.requestJoinClass(), { class_id: class_id });
   }
 
-  static listPosts(limit: number, page: number, topic?: string, post_id?: string[]): Promise<Pagination<Post>> {
-    return apiClient.get(apiURL.listPosts(limit, page, topic, post_id));
+  static listPosts(limit: number, page: number, topic?: string, header?: string, post_id?: string[]): Promise<Pagination<Post>> {
+    return apiClient.get(apiURL.listPosts(limit, page, topic, header, post_id));
   }
 
   static getPostDetail(post_id: string): Promise<Post> {
     return apiClient.get(apiURL.getPostDetail(post_id));
   }
 
+  static listPostTopics(): Promise<string[]> {
+    return apiClient.get(apiURL.listPostTopics());
+  }
+
   static updateClassProgress(params: UpdateProgressArgs): Promise<Course> {
     return apiClient.post(apiURL.updateClassProgress(), params);
   }
 
-  static getPersonalInfo(): Promise<PersonalInfo> {
-    return apiClient.get(apiURL.getPersonalInfo());
+  static getPaymentInfo(): Promise<PaymentInfo> {
+    return apiClient.get(apiURL.getPaymentInfo());
   }
 
 }

@@ -1,6 +1,39 @@
 from rest_framework import serializers
-from apps.upload.models import UploadFile, UploadImage
+from apps.upload.models import UploadFile, UploadImage, UploadVideo
 from django.conf import settings
+
+
+class UploadVideoSerializer(serializers.ModelSerializer):
+    video_path = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UploadVideo
+        fields = (
+            "id",
+            "video_name",
+            "video_size",
+            "video_path",
+            "video_type",
+            "video_embedded_url",
+            "duration",
+            "use_embedded_url",
+        )
+
+    @classmethod
+    def get_video_path(cls, obj):
+        if obj.video_path:
+            return settings.BASE_URL + obj.video_path.url
+        return ""
+
+    def to_representation(self, obj):
+        """Move fields from profile to user representation."""
+        representation = super().to_representation(obj)
+        representation["file_name"] = representation.pop("video_name")
+        representation["file_size"] = representation.pop("video_size")
+        representation["file_path"] = representation.pop("video_path")
+        representation["file_type"] = representation.pop("video_type")
+
+        return representation
 
 
 class UploadFileSerializer(serializers.ModelSerializer):
@@ -14,7 +47,6 @@ class UploadFileSerializer(serializers.ModelSerializer):
             "file_size",
             "file_path",
             "file_type",
-            "duration",
         )
 
     @classmethod

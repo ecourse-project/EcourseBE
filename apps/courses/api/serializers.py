@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.courses.models import Course, Lesson, CourseTopic, CourseDocument, CourseManagement
-from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
+from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer, UploadVideoSerializer
 
 
 class CourseDocumentSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class TopicSerializer(serializers.ModelSerializer):
 
 
 class LessonSerializer(serializers.ModelSerializer):
-    videos = UploadFileSerializer(many=True)
+    videos = UploadVideoSerializer(many=True)
     documents = CourseDocumentSerializer(many=True)
 
     class Meta:

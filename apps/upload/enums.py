@@ -14,3 +14,6 @@ video_ext_list = [MP4, MOV, WMV, AVI, AVCHD, FLV, F4V, SWF, MKV]
 DOCUMENT = "DOCUMENT",
 COURSE = "COURSE",
 
+FILE = "file"
+IMAGE = "image"
+VIDEO = "video"

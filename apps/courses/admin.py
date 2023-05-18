@@ -82,19 +82,19 @@ class LessonAdmin(admin.ModelAdmin):
         )
 
     # Query objects for many to many
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        # if db_field.name == "documents":
-        #     kwargs["queryset"] = CourseDocument.objects.exclude(
-        #         id__in=Lesson.documents.through.objects.all().values_list('coursedocument_id', flat=True)
-        #     )
-
-        if db_field.name == "videos":
-            q_list = Q()
-            for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
-                q_list |= q
-            kwargs["queryset"] = UploadFile.objects.filter(q_list)
-            # kwargs["queryset"] = UploadFile.objects.filter(file_type__iexact="mov")
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
+    # def formfield_for_manytomany(self, db_field, request, **kwargs):
+    #     # if db_field.name == "documents":
+    #     #     kwargs["queryset"] = CourseDocument.objects.exclude(
+    #     #         id__in=Lesson.documents.through.objects.all().values_list('coursedocument_id', flat=True)
+    #     #     )
+    #
+    #     if db_field.name == "videos":
+    #         q_list = Q()
+    #         for q in [Q(file_type__iexact=ext) for ext in video_ext_list]:
+    #             q_list |= q
+    #         kwargs["queryset"] = UploadFile.objects.filter(q_list)
+    #         # kwargs["queryset"] = UploadFile.objects.filter(file_type__iexact="mov")
+    #     return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 @admin.register(Course)

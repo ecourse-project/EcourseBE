@@ -28,8 +28,7 @@ class HeaderDetail(models.Model):
     display_name = models.CharField(max_length=20, null=True, blank=True)
     header = models.ForeignKey(Header, null=True, blank=True, related_name="header_detail", on_delete=models.SET_NULL)
     document_topic = models.ForeignKey(DocumentTopic, null=True, blank=True, on_delete=models.SET_NULL)
-    course_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL)
-    class_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL, related_name="class_header_detail")
+    course_and_class_topic = models.ForeignKey(CourseTopic, null=True, blank=True, on_delete=models.SET_NULL)
     post_topic = models.ForeignKey(PostTopic, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveSmallIntegerField(default=1)
 

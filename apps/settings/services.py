@@ -44,7 +44,14 @@ def get_headers() -> list:
         list_header.append({
             "header": header.display_name,
             "type": header.data_type.lower() if header.data_type else "",
-            "topic": [detail.display_name for detail in header_detail] if header_detail.exists() else []
+            "topic": [
+                {
+                    "label": detail.display_name,
+                    "value": getattr(
+                        detail.document_topic or detail.course_and_class_topic or detail.post_topic, "name", ""
+                    )
+                } for detail in header_detail
+            ] if header_detail.exists() else []
             # "type": get_header_query_type(header_detail.first()),
         })
     return list_header

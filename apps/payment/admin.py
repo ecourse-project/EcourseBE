@@ -14,6 +14,7 @@ from apps.courses.services.admin import CourseAdminService
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    list_filter = ("user", "status")
     search_fields = (
         "user__email",
     )

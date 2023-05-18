@@ -1,19 +1,63 @@
-from math import ceil
 import os
 import json
 
 from django.contrib import admin
-from django.core.files.storage import default_storage
 from django import forms
+from django.conf import settings
 
-from apps.upload.models import UploadImage, UploadFile, UploadCourse, UploadDocument
-from apps.upload.services.storage.base import get_file_path
+from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
+from apps.upload.services.storage.base import get_file_path, store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
-from apps.upload.enums import video_ext_list
+from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
 
-from moviepy.editor import VideoFileClip
+
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
+
+
+@admin.action(description='Delete records and files for selected data')
+def delete_data(modeladmin, request, queryset):
+    for data in queryset:
+        data.delete()
+
+
+@admin.register(UploadVideo)
+class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    search_fields = (
+        "video_name",
+        "video_type",
+    )
+    list_display = (
+        "video_name",
+        "video_path",
+        "video_size",
+        "video_type",
+        "duration",
+        "created",
+    )
+    readonly_fields = ("video_size", "video_type", "duration", "created")
+    actions = (delete_data,)
+
+    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    def Delete_All_Files(self, request):
+        qs = self.get_queryset(request)
+        if qs.exists():
+            self.get_queryset(request).delete()
+        return HttpResponseRedirectToReferrer(request)
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            if obj.video_path and str(form.initial.get("video_path")) != str(obj.video_path):
+                if form.initial.get("video_path"):
+                    try:
+                        os.remove(form.initial.get("video_path").path)
+                    except Exception:
+                        pass
+                store_file_upload(obj, obj.video_path, VIDEO)
+        else:
+            if obj.video_path:
+                store_file_upload(obj, obj.video_path, VIDEO)
+        obj.save()
 
 
 @admin.register(UploadFile)
@@ -27,10 +71,10 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "file_path",
         "file_size",
         "file_type",
-        "duration",
         "created",
     )
-    readonly_fields = ("file_size", "file_type", "duration", "created")
+    readonly_fields = ("file_size", "file_type", "created")
+    actions = (delete_data,)
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Files(self, request):
@@ -40,15 +84,17 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            save_path, file_ext = get_file_path(file_name=obj.file_path.name, new_file_name=obj.id)
-            default_storage.save(save_path, obj.file_path)
-            obj.file_path = save_path
-            obj.file_size = ceil(obj.file_path.size / 1024)
-            obj.file_type = file_ext or None
-            if file_ext and file_ext.upper() in video_ext_list:
-                obj.duration = VideoFileClip(obj.file_path.path).duration
-
+        if change:
+            if obj.file_path and str(form.initial.get("file_path")) != str(obj.file_path):
+                if form.initial.get("file_path"):
+                    try:
+                        os.remove(form.initial.get("file_path").path)
+                    except Exception:
+                        pass
+                store_file_upload(obj, obj.file_path, FILE)
+        else:
+            if obj.file_path:
+                store_file_upload(obj, obj.file_path, FILE)
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
@@ -66,12 +112,16 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     )
     list_display = (
         "image_name",
-        "image_path",
+        "image_url",
         "image_size",
         "image_type",
         "created",
     )
     readonly_fields = ("image_size", "image_type", "created")
+    actions = (delete_data,)
+
+    def image_url(self, obj):
+        return settings.BASE_URL + obj.image_path.url
 
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Delete_All_Images(self, request):
@@ -81,12 +131,18 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            save_path, file_ext = get_file_path(file_name=obj.image_path.name, new_file_name=obj.id)
-            default_storage.save(save_path, obj.image_path)
-            obj.image_path = save_path
-            obj.image_size = ceil(obj.image_path.size / 1024)
-            obj.image_type = file_ext or None
+        if change:
+            if obj.image_path and str(form.initial.get("image_path")) != str(obj.image_path):
+                if form.initial.get("image_path"):
+                    try:
+                        os.remove(form.initial.get("image_path").path)
+                    except Exception:
+                        pass
+                store_file_upload(obj, obj.image_path, IMAGE)
+        else:
+            if obj.image_path:
+                store_file_upload(obj, obj.image_path, IMAGE)
+
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
@@ -168,4 +224,6 @@ class UploadDocumentAdmin(admin.ModelAdmin):
             UploadDocumentServices().create_document_data(obj.data)
 
         obj.save()
+
+
 

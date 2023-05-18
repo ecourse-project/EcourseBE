@@ -1,8 +1,11 @@
+import os
+import shutil
+
 from django.core.files.storage import default_storage
-from rest_framework.request import Request
-from apps.upload.exceptions import FileEmptyException
+
 from apps.upload.services.storage.base import get_file_path
-from apps.upload.models import UploadFile, UploadImage
+from apps.upload.models import UploadFile, UploadImage, UploadVideo
+from apps.upload.enums import FILE, IMAGE, VIDEO
 
 
 def get_user(request):
@@ -64,3 +67,30 @@ def update_file(file_id, file, folder_name: str = None):
     instance.file_type = file.name.split(".")[-1]
     instance.save(update_fields=['file_path', 'file_size', 'file_type'])
     return instance
+
+
+def move_file(root: str, source_file: str, destination_dir: str, upload_type: str):
+    if not (source_file and destination_dir and upload_type in [IMAGE, VIDEO, FILE]):
+        return
+
+    source_file = source_file.strip("/")
+    destination_dir = destination_dir.replace(chr(92), "/").strip("/")
+
+    old_path = "/".join([root, source_file])
+    new_path = "/".join([root, destination_dir])
+
+    file_name = os.path.basename(source_file)
+    save_path = "/".join([destination_dir, file_name])
+
+    if not os.path.isdir(new_path):
+        os.mkdir(new_path)
+    shutil.move(old_path, new_path)
+
+    if upload_type.lower() == IMAGE:
+        UploadImage.objects.filter(image_path=source_file).update(image_path=save_path)
+    elif upload_type.lower() == VIDEO:
+        UploadVideo.objects.filter(video_path=source_file).update(video_path=save_path)
+    else:
+        UploadFile.objects.filter(file_path=source_file).update(file_path=save_path)
+
+

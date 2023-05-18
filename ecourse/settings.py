@@ -75,6 +75,8 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'django_better_admin_arrayfield',
     'admin_extra_buttons',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -168,6 +170,7 @@ TIME_ZONE = "Asia/Ho_Chi_Minh"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+DEFAULT_CMD_FILE_EXT = env.str("DEFAULT_CMD_FILE_EXT", default="py")
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "staticfiles/"
@@ -222,8 +225,8 @@ CORS_ALLOW_HEADERS = (
 ALLOWED_HOSTS = [env("DJANGO_ALLOWED_HOSTS", default="*")]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env("ACCESS_TOKEN_LIFETIME_MINUTES", default=360)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env("REFRESH_TOKEN_LIFETIME_MINUTES", default=360)),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env.int("ACCESS_TOKEN_LIFETIME_MINUTES", default=360)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=env.int("REFRESH_TOKEN_LIFETIME_MINUTES", default=360)),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -254,3 +257,39 @@ EMAIL_HOST = env("EMAIL_HOST", default="EMAIL_HOST")
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env("EMAIL_PORT", default="EMAIL_PORT")
+
+# CKEDITOR
+CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        "skin": "moono-lisa",
+        "toolbar_Basic": [["Source", "-", "Bold", "Italic"]],
+        "toolbar_Full": [
+            [
+                "Styles",
+                "Format",
+                "Bold",
+                "Italic",
+                "Underline",
+                "Strike",
+                "SpellChecker",
+                # "Undo",
+                # "Redo",
+            ],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ["Link", "Unlink", "Anchor"],
+            ["Image", "Table", "HorizontalRule"],
+            ["TextColor", "BGColor"],
+            # ["Smiley", "SpecialChar"],
+            ["Templates", "Source"],
+        ],
+        "toolbar": "Full",
+        "height": 500,
+        "width": 835,
+        "filebrowserWindowWidth": 940,
+        "filebrowserWindowHeight": 725,
+    }
+}
+
+CKEDITOR_UPLOAD_PATH = ""
