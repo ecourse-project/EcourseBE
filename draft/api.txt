@@ -16,7 +16,8 @@
 - destination
 
 
-/api/configuration/command
+/api/configuration/command/?command=python manage.py command
+- command
 
 
 
