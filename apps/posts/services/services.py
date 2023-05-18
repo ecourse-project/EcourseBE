@@ -16,7 +16,7 @@ class PostsService:
         if topic.strip():
             query &= Q(topic__name__icontains=topic.strip())
         if header:
-            query &= Q(header__icontains=header)
+            query &= Q(header__display_name__icontains=header)
         return self.get_all_posts_queryset.filter(query)
 
     def get_posts_by_list_id(self, list_id, header=""):
@@ -27,5 +27,5 @@ class PostsService:
         if list_id:
             query &= Q(id__in=list_id)
         if header:
-            query &= Q(header__icontains=header)
+            query &= Q(header__display_name__icontains=header)
         return self.get_all_posts_queryset.filter(query)

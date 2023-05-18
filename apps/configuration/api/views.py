@@ -99,7 +99,7 @@ class DirectoryManagement(APIView):
             root = str(settings.BASE_DIR)
         else:
             root = settings.MEDIA_ROOT
-        root = root.replace(chr(92), "/").strip("/")
+        root = root.replace(chr(92), "/").rstrip("/")
 
         message = apply_dir_action(
             action=action,

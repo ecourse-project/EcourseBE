@@ -27,7 +27,7 @@ class PostListView(generics.ListAPIView):
         elif list_id:
             return PostsService().get_posts_by_list_id(list_id, header)
         elif header:
-            return PostsService().get_all_posts_queryset.filter(header__icontains=header)
+            return PostsService().get_all_posts_queryset.filter(header__display_name__icontains=header)
         else:
             return PostsService().get_all_posts_queryset
 
