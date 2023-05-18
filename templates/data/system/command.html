@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>System Information</title>
+  <script>
+    function addLineBreaks() {
+      var element = document.getElementById("text");
+      var text = element.innerHTML;
+      element.innerHTML = text.replace(/\n/g, "<br>");
+    }
+  </script>
+</head>
+<body onload="addLineBreaks()">
+    <pre id="text">
+        {{ message }}
+    </pre>
+</body>
+</html>

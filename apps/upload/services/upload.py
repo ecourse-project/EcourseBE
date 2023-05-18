@@ -2,7 +2,6 @@ import os
 import shutil
 
 from django.core.files.storage import default_storage
-from django.conf import settings
 
 from apps.upload.services.storage.base import get_file_path
 from apps.upload.models import UploadFile, UploadImage, UploadVideo
