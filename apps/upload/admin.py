@@ -4,12 +4,12 @@ import json
 from django.contrib import admin
 from django import forms
 from django.conf import settings
+from django.db.models import Q
 
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path, store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
 from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
-
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
@@ -83,6 +83,11 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             self.get_queryset(request).delete()
         return HttpResponseRedirectToReferrer(request)
 
+    def get_queryset(self, request):
+        return super(UploadFileAdmin, self).get_queryset(request).filter(
+            ~Q(file_type__iexact=settings.DEFAULT_CMD_FILE_EXT)
+        )
+
     def save_model(self, request, obj, form, change):
         if change:
             if obj.file_path and str(form.initial.get("file_path")) != str(obj.file_path):
@@ -95,6 +100,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         else:
             if obj.file_path:
                 store_file_upload(obj, obj.file_path, FILE)
+
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
@@ -144,6 +150,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
                 store_file_upload(obj, obj.image_path, IMAGE)
 
         obj.save()
+
 
     # def has_change_permission(self, request, obj=None):
     #     return False
