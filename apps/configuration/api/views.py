@@ -62,10 +62,11 @@ class GetDataFromDatabase(APIView):
         data = json.loads(query_params.get("data", "{}").strip())
         action = query_params.get("action", "").strip().lower()
         extra_action = query_params.get("extra_action", "").strip().lower()
+        extra_data = json.loads(query_params.get("extra_data", "{}").strip())
 
         response_data_string = "No data"
         if model:
-            output_data = apply_action(model=model, data=data, action=action, extra_action=extra_action)
+            output_data = apply_action(model=model, data=data, action=action, extra_data=extra_data, extra_action=extra_action)
             if isinstance(output_data, int) or isinstance(output_data, str):
                 response_data_string = output_data
             else:
