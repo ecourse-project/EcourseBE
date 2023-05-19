@@ -14,6 +14,6 @@ class ConfigurationAdmin(admin.ModelAdmin):
 @admin.register(PersonalInfo)
 class ConfigurationAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
-        "name",
+        "id",
     )
 

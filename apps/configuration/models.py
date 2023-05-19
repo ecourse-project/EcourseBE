@@ -11,5 +11,6 @@ class Configuration(models.Model):
 
 class PersonalInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    payment_info = ArrayField(models.CharField(max_length=255), null=True, blank=True)
+    method = models.CharField(max_length=50, null=True, blank=True)
+    payment_info = models.TextField(null=True, blank=True)
+    content = models.TextField(null=True, blank=True)
