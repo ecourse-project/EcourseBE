@@ -23,5 +23,7 @@ def apply_dir_action(action: str, root: str, source: str, destination: str = "",
             message = f"{source_path} is {action}d -> {des_path}"
         except Exception:
             message = f"Cannot {action} {source_path}"
+    elif action == "create folder":
+        os.mkdir(source_path)
 
     return message

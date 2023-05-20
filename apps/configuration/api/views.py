@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models import Sum
 from django.shortcuts import render
 from django.core.serializers import serialize
+from rest_framework.serializers import ModelSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -45,7 +46,7 @@ class SystemInfoView(APIView):
                 "file": file_size,
                 "image": image_size,
                 "video": video_size,
-                "total": file_size + image_size + video_size,
+                "total": round(file_size + image_size + video_size, 2),
             }
         }
 
@@ -62,22 +63,28 @@ class GetDataFromDatabase(APIView):
         data = json.loads(query_params.get("data", "{}").strip())
         action = query_params.get("action", "").strip().lower()
         extra_action = query_params.get("extra_action", "").strip().lower()
+        extra_data = json.loads(query_params.get("extra_data", "{}").strip())
 
         response_data_string = "No data"
+        message = f"{model}.objects.{action}(**{data})" + (f".{extra_action}(**{extra_data})" if extra_action else "")
         if model:
-            output_data = apply_action(model=model, data=data, action=action, extra_action=extra_action)
-            if isinstance(output_data, int) or isinstance(output_data, str):
-                response_data_string = output_data
-            else:
-                response_data_json = serialize(
-                    'json',
-                    [output_data] if isinstance(output_data, model) else output_data,
-                    use_natural_foreign_keys=True,
-                    use_natural_primary_keys=True
-                )
-                response_data_string = json.dumps(json.loads(response_data_json), indent=4)
+            try:
+                output_data = apply_action(model=model, data=data, action=action, extra_data=extra_data, extra_action=extra_action)
+                if isinstance(output_data, int) or isinstance(output_data, str):
+                    response_data_string = output_data
+                else:
+                    response_data_json = serialize(
+                        'json',
+                        [output_data] if isinstance(output_data, model) else output_data,
+                        use_natural_foreign_keys=True,
+                        use_natural_primary_keys=True
+                    )
+                    response_data_string = json.dumps(json.loads(response_data_json), indent=4)
+            except Exception:
+                message = "Execute failed"
 
         context = {
+            "message": message,
             "response_data_string": response_data_string,
         }
 
@@ -99,7 +106,7 @@ class DirectoryManagement(APIView):
             root = str(settings.BASE_DIR)
         else:
             root = settings.MEDIA_ROOT
-        root = root.replace(chr(92), "/").strip("/")
+        root = root.replace(chr(92), "/").rstrip("/")
 
         message = apply_dir_action(
             action=action,

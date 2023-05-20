@@ -1,4 +1,4 @@
-def apply_action(model, data: dict, action: str, extra_action: str = ""):
+def apply_action(model, data: dict, action: str, extra_data, extra_action: str = "", ):
     if action == "all":
         data = model.objects.all()
     elif action == "first":
@@ -17,6 +17,11 @@ def apply_action(model, data: dict, action: str, extra_action: str = ""):
     if extra_action and data:
         if extra_action == "count":
             return data.count()
+        # elif extra_action == "values_list":
+        #     return data.values_list("name", flat=True)
+        elif extra_action == "delete":
+            data.delete()
+            return data
 
     return data
 

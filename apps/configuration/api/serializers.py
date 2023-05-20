@@ -7,6 +7,7 @@ class PersonalInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonalInfo
         fields = (
-            "name",
+            "method",
             "payment_info",
+            "content",
         )

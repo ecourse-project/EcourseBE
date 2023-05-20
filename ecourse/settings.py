@@ -269,6 +269,7 @@ CKEDITOR_CONFIGS = {
             [
                 "Styles",
                 "Format",
+                "FontSize",
                 "Bold",
                 "Italic",
                 "Underline",
@@ -291,5 +292,6 @@ CKEDITOR_CONFIGS = {
         "filebrowserWindowHeight": 725,
     }
 }
+
 
 CKEDITOR_UPLOAD_PATH = ""

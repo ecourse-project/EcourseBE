@@ -463,8 +463,9 @@ export interface Post {
 
 // ===========================================Configuration===========================================
 export interface PaymentInfo {
-  name: string;
-  payment_info: string[];
+  method: string;
+  payment_info: string;
+  content: string;
 }
 
 const parseParamsToUrL = (url: string, params: string[], paramsName: string) => {

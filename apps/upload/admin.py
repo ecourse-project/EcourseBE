@@ -38,12 +38,12 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     readonly_fields = ("video_size", "video_type", "duration", "created")
     actions = (delete_data,)
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Files(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Videos(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -76,12 +76,12 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     readonly_fields = ("file_size", "file_type", "created")
     actions = (delete_data,)
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Files(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Files(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def get_queryset(self, request):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
@@ -129,12 +129,12 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     def image_url(self, obj):
         return settings.BASE_URL + obj.image_path.url
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Images(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Images(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
         if change:
