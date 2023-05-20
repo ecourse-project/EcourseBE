@@ -8,11 +8,21 @@ from apps.configuration.models import Configuration, PersonalInfo
 class ConfigurationAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "document_time_limit",
+        "document_unlimited_time",
     )
+
+    list_editable = (
+        "document_time_limit",
+        "document_unlimited_time",
+    )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(PersonalInfo)
-class ConfigurationAdmin(admin.ModelAdmin, DynamicArrayMixin):
+class PersonalInfoAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "id",
     )

@@ -2,7 +2,7 @@
 
 /api/configuration/database/?action=filter&model=Cart&data={"user__email": "haibinh2322gmail.com"}&extra_action=count
 - action: all, first, last, get, filter, create
-- extra_action: count
+- extra_action: count, values_list, delete
 - model
 - data
 
@@ -10,7 +10,7 @@
 - root:
     + base -> BASE_DIR
     + anything -> MEDIA_ROOT
-- action: delete, move
+- action: delete, move, create folder
 - file_type: image, video, file
 - source
 - destination

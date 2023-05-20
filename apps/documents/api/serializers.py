@@ -60,10 +60,14 @@ class DocumentManagementSerializer(serializers.ModelSerializer):
         return representation
 
     def get_download(self, obj):
-        if obj.sale_status == BOUGHT and Configuration.objects.first():
-            user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()
-            document_time_limit = Configuration.objects.first().document_time_limit
-            if user_order and document_time_limit:
-                if (user_order.created + timedelta(hours=document_time_limit)).timestamp() > datetime.now().timestamp():
-                    return True
-        return False
+        config = Configuration.objects.first()
+        if config:
+            if not config.document_unlimited_time:
+                if obj.sale_status == BOUGHT and Configuration.objects.first():
+                    user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()
+                    document_time_limit = config.document_time_limit
+                    if user_order and document_time_limit:
+                        if (user_order.created + timedelta(hours=document_time_limit)).timestamp() > datetime.now().timestamp():
+                            return True
+                return False
+        return True

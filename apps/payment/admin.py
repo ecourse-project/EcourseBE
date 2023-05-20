@@ -26,6 +26,9 @@ class OrderAdmin(admin.ModelAdmin):
         "created",
     )
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def save_model(self, request, obj, form, change):
         """
         Given a model instance save it to the database.
