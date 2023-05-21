@@ -57,17 +57,25 @@ class DocumentManagementSerializer(serializers.ModelSerializer):
         for key in document_representation:
             representation[key] = document_representation[key]
 
+        if representation.get("download") is False or not representation.get("sale_status") == BOUGHT:
+            representation.pop("file")
+
         return representation
 
     def get_download(self, obj):
         config = Configuration.objects.first()
-        if config:
-            if not config.document_unlimited_time:
-                if obj.sale_status == BOUGHT and Configuration.objects.first():
-                    user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()
-                    document_time_limit = config.document_time_limit
-                    if user_order and document_time_limit:
-                        if (user_order.created + timedelta(hours=document_time_limit)).timestamp() > datetime.now().timestamp():
-                            return True
-                return False
-        return True
+        is_unlimited = config.document_unlimited_time if config else True
+        if not is_unlimited:
+            if obj.sale_status == BOUGHT and Configuration.objects.first():
+                user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()
+                document_time_limit = config.document_time_limit
+                if user_order and document_time_limit:
+                    if (user_order.created + timedelta(hours=document_time_limit)).timestamp() > datetime.now().timestamp():
+                        return True
+            return False
+        else:
+            if obj.sale_status == BOUGHT:
+                user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()
+                return True if user_order else False
+            return False
+

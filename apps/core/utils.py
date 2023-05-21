@@ -55,3 +55,12 @@ def query_debugger(func):
         return result
 
     return inner_func
+
+
+def get_default_hidden_file_type():
+    return [ext.strip() for ext in settings.DEFAULT_HIDDEN_FILE_EXT.split(",")]
+
+
+def generate_file_name_by_id(obj_id):
+    return ''.join(random.sample(obj_id, len(obj_id)))
+

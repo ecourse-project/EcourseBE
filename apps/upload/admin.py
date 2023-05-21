@@ -6,13 +6,13 @@ from django import forms
 from django.conf import settings
 from django.db.models import Q
 
+from apps.core.utils import get_default_hidden_file_type
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
-from apps.upload.services.storage.base import get_file_path, store_file_upload
+from apps.upload.services.storage.base import store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
-from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
+from apps.upload.enums import VIDEO, IMAGE, FILE
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
-from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 
 
 @admin.action(description='Delete records and files for selected data')
@@ -85,7 +85,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
-            ~Q(file_type__iexact=settings.DEFAULT_CMD_FILE_EXT)
+            ~Q(file_type__in=get_default_hidden_file_type())
         )
 
     def save_model(self, request, obj, form, change):

@@ -12,6 +12,8 @@ class UploadFile(TimeStampedModel):
     file_path = models.FileField(max_length=255, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
+    file_embedded_url = models.CharField(max_length=1000, null=True, blank=True)
+    use_embedded_url = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["file_name"]

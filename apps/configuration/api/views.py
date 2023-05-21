@@ -65,30 +65,20 @@ class GetDataFromDatabase(APIView):
         extra_action = query_params.get("extra_action", "").strip().lower()
         extra_data = json.loads(query_params.get("extra_data", "{}").strip())
 
-        response_data_string = "No data"
-        message = f"{model}.objects.{action}(**{data})" + (f".{extra_action}(**{extra_data})" if extra_action else "")
-        if model:
-            try:
+        response = {"message": "Cannot get data"}
+        try:
+            if model:
                 output_data = apply_action(model=model, data=data, action=action, extra_data=extra_data, extra_action=extra_action)
                 if isinstance(output_data, int) or isinstance(output_data, str):
-                    response_data_string = output_data
+                    response = {"result": output_data}
                 else:
-                    response_data_json = serialize(
-                        'json',
-                        [output_data] if isinstance(output_data, model) else output_data,
-                        use_natural_foreign_keys=True,
-                        use_natural_primary_keys=True
-                    )
-                    response_data_string = json.dumps(json.loads(response_data_json), indent=4)
-            except Exception:
-                message = "Execute failed"
+                    meta_class = type('Meta', (object,), {'model': model, 'fields': '__all__'})
+                    serializer_class = type('serializer_class', (ModelSerializer,), {'Meta': meta_class})
+                    response = serializer_class(output_data, many=True).data
+        except Exception:
+            pass
 
-        context = {
-            "message": message,
-            "response_data_string": response_data_string,
-        }
-
-        return render(request, "data/system/database_display.html", context)
+        return Response(response)
 
 
 class DirectoryManagement(APIView):
