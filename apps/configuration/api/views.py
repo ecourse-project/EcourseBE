@@ -4,8 +4,6 @@ import subprocess
 from django.conf import settings
 from django.db.models import Sum
 from django.shortcuts import render
-from django.core.serializers import serialize
-from rest_framework.serializers import ModelSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,7 +15,16 @@ from apps.configuration.model_choices import models
 from apps.configuration.services.database_services import apply_action
 from apps.configuration.services.dir_management import apply_dir_action
 from apps.core.system import get_tree_str
+from apps.core.utils import create_serializer_class
+from apps.core.general.services import search_item
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
+
+
+class SearchItemView(APIView):
+    def get(self, request, *args, **kwargs):
+        search_type = self.request.query_params.get("search_type", "").strip()
+        name = self.request.query_params.get("name", "").strip()
+        return Response(data=search_item(item_name=name, search_type=search_type, user=request.user))
 
 
 class PaymentInfoView(APIView):
@@ -72,8 +79,7 @@ class GetDataFromDatabase(APIView):
                 if isinstance(output_data, int) or isinstance(output_data, str):
                     response = {"result": output_data}
                 else:
-                    meta_class = type('Meta', (object,), {'model': model, 'fields': '__all__'})
-                    serializer_class = type('serializer_class', (ModelSerializer,), {'Meta': meta_class})
+                    serializer_class = create_serializer_class(model_class=model, fields="__all__")
                     response = serializer_class(output_data, many=True).data
         except Exception:
             pass

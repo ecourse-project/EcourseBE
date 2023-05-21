@@ -27,14 +27,17 @@ class DocumentSerializer(serializers.ModelSerializer):
             'description',
             'topic',
             'price',
-            'sold',
             'thumbnail',
             'file',
             'is_selling',
-            'views',
-            # 'rating',
-            'num_of_rates',
         )
+
+    def to_representation(self, obj):
+        representation = super().to_representation(obj)
+        user = self.context.get("request").user
+        if user.is_anonymous or not user.is_authenticated:
+            representation.pop("file", None)
+        return representation
 
 
 class DocumentManagementSerializer(serializers.ModelSerializer):
@@ -51,14 +54,13 @@ class DocumentManagementSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, obj):
-        """Move fields from profile to user representation."""
         representation = super().to_representation(obj)
         document_representation = representation.pop('document')
         for key in document_representation:
             representation[key] = document_representation[key]
 
         if representation.get("download") is False or not representation.get("sale_status") == BOUGHT:
-            representation.pop("file")
+            representation.pop("file", None)
 
         return representation
 

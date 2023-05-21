@@ -55,23 +55,31 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "lesson_number",
-        "course_class",
+        "course_include",
+        "class_include",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("total_documents", "total_videos")
 
-    def course_class(self, obj):
-        courses = obj.courses.all().values_list(*["id", "name", "course_of_class"])
+    def course_include(self, obj):
+        courses = obj.courses.filter(course_of_class=False).values_list(*["id", "name"])
         html_res = [
             f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
-            if item[2] else f'<a href="{settings.BASE_URL}/admin/courses/course/{item[0]}/change/">{item[1]}</a>'
             for item in courses
         ]
 
         return format_html("<br>".join([res for res in html_res]))
 
+    def class_include(self, obj):
+        classes = obj.courses.filter(course_of_class=True).values_list(*["id", "name"])
+        html_res = [
+            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            for item in classes
+        ]
+
+        return format_html("<br>".join([res for res in html_res]))
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance

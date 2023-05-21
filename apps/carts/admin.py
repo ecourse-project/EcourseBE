@@ -4,8 +4,7 @@ from apps.carts.models import Cart
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_filter = ("user",)
-    search_fields = ("user__email",)
+    search_fields = ("user__email", "user__full_name")
     list_display = (
         "user",
         "total_price",

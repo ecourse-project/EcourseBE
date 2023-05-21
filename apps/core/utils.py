@@ -2,11 +2,14 @@ import re
 import functools
 import random
 import time
+from typing import Union, List, Tuple, Text
 from string import ascii_letters, digits
 
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import connection, reset_queries
+
+from rest_framework.serializers import ModelSerializer
 
 
 def is_absolute_url(url: str) -> bool:
@@ -63,4 +66,9 @@ def get_default_hidden_file_type():
 
 def generate_file_name_by_id(obj_id):
     return ''.join(random.sample(obj_id, len(obj_id)))
+
+
+def create_serializer_class(model_class, fields: Union[List, Tuple, Text]):
+    meta_class = type('Meta', (object,), {'model': model_class, 'fields': fields})
+    return type(f'{meta_class}Serializer', (ModelSerializer,), {'Meta': meta_class})
 
