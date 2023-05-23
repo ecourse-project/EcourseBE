@@ -6,13 +6,13 @@ from django import forms
 from django.conf import settings
 from django.db.models import Q
 
+from apps.core.utils import get_default_hidden_file_type
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
-from apps.upload.services.storage.base import get_file_path, store_file_upload
+from apps.upload.services.storage.base import store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
 from apps.upload.enums import VIDEO, IMAGE, FILE
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
-from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 from ipware.ip import get_client_ip
 
 
@@ -39,12 +39,12 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     readonly_fields = ("video_size", "video_type", "duration", "created")
     actions = (delete_data,)
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Files(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Videos(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -78,16 +78,16 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     readonly_fields = ("file_size", "file_type", "created")
     actions = (delete_data,)
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Files(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Files(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def get_queryset(self, request):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
-            ~Q(file_type__iexact=settings.DEFAULT_CMD_FILE_EXT)
+            ~Q(file_type__in=get_default_hidden_file_type())
         )
 
     def save_model(self, request, obj, form, change):
@@ -132,12 +132,12 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     def image_url(self, obj):
         return settings.BASE_URL + obj.image_path.url
 
-    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
-    def Delete_All_Images(self, request):
-        qs = self.get_queryset(request)
-        if qs.exists():
-            self.get_queryset(request).delete()
-        return HttpResponseRedirectToReferrer(request)
+    # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    # def Delete_All_Images(self, request):
+    #     qs = self.get_queryset(request)
+    #     if qs.exists():
+    #         self.get_queryset(request).delete()
+    #     return HttpResponseRedirectToReferrer(request)
 
     def save_model(self, request, obj, form, change):
         if change:

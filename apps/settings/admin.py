@@ -15,6 +15,7 @@ class HeaderAdmin(admin.ModelAdmin):
 
 @admin.register(HeaderDetail)
 class HeaderDetailAdmin(admin.ModelAdmin):
+    list_filter = ("header",)
     list_display = (
         "display_name",
         "header",

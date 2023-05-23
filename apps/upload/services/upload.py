@@ -86,6 +86,7 @@ def move_file(root: str, source_file: str, destination_dir: str, upload_type: st
         os.mkdir(new_path)
     shutil.move(old_path, new_path)
 
+    source_file = source_file.replace("media", "").strip("/")
     if upload_type.lower() == IMAGE:
         UploadImage.objects.filter(image_path=source_file).update(image_path=save_path)
     elif upload_type.lower() == VIDEO:

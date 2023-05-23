@@ -25,7 +25,7 @@ runserver.default_port = env("PORT", default="8000")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = env("BASE_URL", default="https://be.creativeteaching.net")
+BASE_URL = env("BASE_URL", default="http://be.creativeteaching.net")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -69,12 +69,13 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    'rest_framework',
-    'rest_framework_simplejwt',
     'corsheaders',
     'debug_toolbar',
-    'django_better_admin_arrayfield',
     'admin_extra_buttons',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'django_better_admin_arrayfield',
+    'django_extensions',
     'ckeditor',
     'ckeditor_uploader',
 ]
@@ -170,7 +171,7 @@ TIME_ZONE = "Asia/Ho_Chi_Minh"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-DEFAULT_CMD_FILE_EXT = env.str("DEFAULT_CMD_FILE_EXT", default="py")
+DEFAULT_HIDDEN_FILE_EXT = env.str("DEFAULT_HIDDEN_FILE_EXT", default="py")
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "staticfiles/"

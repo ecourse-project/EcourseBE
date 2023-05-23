@@ -14,8 +14,8 @@ class UploadVideoSerializer(serializers.ModelSerializer):
             "video_size",
             "video_path",
             "video_type",
-            "video_embedded_url",
             "duration",
+            "video_embedded_url",
             "use_embedded_url",
         )
 
@@ -32,6 +32,7 @@ class UploadVideoSerializer(serializers.ModelSerializer):
         representation["file_size"] = representation.pop("video_size")
         representation["file_path"] = representation.pop("video_path")
         representation["file_type"] = representation.pop("video_type")
+        representation["file_embedded_url"] = representation.pop("video_embedded_url")
 
         return representation
 
@@ -47,6 +48,8 @@ class UploadFileSerializer(serializers.ModelSerializer):
             "file_size",
             "file_path",
             "file_type",
+            "file_embedded_url",
+            "use_embedded_url",
         )
 
     @classmethod

@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.utils.html import format_html
+from django.conf import settings
+
 from apps.courses.models import (
     Course,
     Lesson,
@@ -13,7 +16,6 @@ from apps.courses.models import (
 from apps.courses.services.admin import (
     insert_remove_docs_videos,
 )
-from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 
@@ -53,15 +55,31 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "lesson_number",
-        "list_documents",
+        "course_include",
+        "class_include",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("total_documents", "total_videos")
 
-    def list_documents(self, obj):
-        return ", ".join([doc.name for doc in obj.documents.all()])
+    def course_include(self, obj):
+        courses = obj.courses.filter(course_of_class=False).values_list(*["id", "name"])
+        html_res = [
+            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            for item in courses
+        ]
+
+        return format_html("<br>".join([res for res in html_res]))
+
+    def class_include(self, obj):
+        classes = obj.courses.filter(course_of_class=True).values_list(*["id", "name"])
+        html_res = [
+            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            for item in classes
+        ]
+
+        return format_html("<br>".join([res for res in html_res]))
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance

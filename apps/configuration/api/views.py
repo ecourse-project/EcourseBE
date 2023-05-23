@@ -4,7 +4,6 @@ import subprocess
 from django.conf import settings
 from django.db.models import Sum
 from django.shortcuts import render
-from django.core.serializers import serialize
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,7 +15,16 @@ from apps.configuration.model_choices import models
 from apps.configuration.services.database_services import apply_action
 from apps.configuration.services.dir_management import apply_dir_action
 from apps.core.system import get_tree_str
+from apps.core.utils import create_serializer_class
+from apps.core.general.services import search_item
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
+
+
+class SearchItemView(APIView):
+    def get(self, request, *args, **kwargs):
+        search_type = self.request.query_params.get("search_type", "").strip()
+        name = self.request.query_params.get("name", "").strip()
+        return Response(data=search_item(item_name=name, search_type=search_type, user=request.user))
 
 
 class PaymentInfoView(APIView):
@@ -45,7 +53,7 @@ class SystemInfoView(APIView):
                 "file": file_size,
                 "image": image_size,
                 "video": video_size,
-                "total": file_size + image_size + video_size,
+                "total": round(file_size + image_size + video_size, 2),
             }
         }
 
@@ -64,25 +72,19 @@ class GetDataFromDatabase(APIView):
         extra_action = query_params.get("extra_action", "").strip().lower()
         extra_data = json.loads(query_params.get("extra_data", "{}").strip())
 
-        response_data_string = "No data"
-        if model:
-            output_data = apply_action(model=model, data=data, action=action, extra_data=extra_data, extra_action=extra_action)
-            if isinstance(output_data, int) or isinstance(output_data, str):
-                response_data_string = output_data
-            else:
-                response_data_json = serialize(
-                    'json',
-                    [output_data] if isinstance(output_data, model) else output_data,
-                    use_natural_foreign_keys=True,
-                    use_natural_primary_keys=True
-                )
-                response_data_string = json.dumps(json.loads(response_data_json), indent=4)
+        response = {"message": "Cannot get data"}
+        try:
+            if model:
+                output_data = apply_action(model=model, data=data, action=action, extra_data=extra_data, extra_action=extra_action)
+                if isinstance(output_data, int) or isinstance(output_data, str):
+                    response = {"result": output_data}
+                else:
+                    serializer_class = create_serializer_class(model_class=model, fields="__all__")
+                    response = serializer_class(output_data, many=True).data
+        except Exception:
+            pass
 
-        context = {
-            "response_data_string": response_data_string,
-        }
-
-        return render(request, "data/system/database_display.html", context)
+        return Response(response)
 
 
 class DirectoryManagement(APIView):

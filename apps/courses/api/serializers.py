@@ -61,9 +61,6 @@ class CourseSerializer(serializers.ModelSerializer):
             "sold",
             "lessons",
             "thumbnail",
-            # "views",
-            # "rating",
-            # "num_of_rates",
         )
 
 
@@ -131,9 +128,6 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "price",
             "sold",
             "thumbnail",
-            # "views",
-            # "rating",
-            # "num_of_rates",
         )
 
 
