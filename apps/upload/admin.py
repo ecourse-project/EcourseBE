@@ -9,10 +9,11 @@ from django.db.models import Q
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
 from apps.upload.services.storage.base import get_file_path, store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
-from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
+from apps.upload.enums import VIDEO, IMAGE, FILE
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
+from ipware.ip import get_client_ip
 
 
 @admin.action(description='Delete records and files for selected data')
@@ -57,6 +58,7 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         else:
             if obj.video_path:
                 store_file_upload(obj, obj.video_path, VIDEO)
+        obj.ip_address = get_client_ip(request)
         obj.save()
 
 
@@ -101,6 +103,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             if obj.file_path:
                 store_file_upload(obj, obj.file_path, FILE)
 
+        obj.ip_address = get_client_ip(request)
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
@@ -149,6 +152,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             if obj.image_path:
                 store_file_upload(obj, obj.image_path, IMAGE)
 
+        obj.ip_address = get_client_ip(request)
         obj.save()
 
 

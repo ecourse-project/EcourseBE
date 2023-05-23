@@ -12,6 +12,7 @@ class UploadFile(TimeStampedModel):
     file_path = models.FileField(max_length=255, null=True, blank=True)
     file_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     file_type = models.CharField(max_length=10, null=True, blank=True)
+    ip_address = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         ordering = ["file_name"]
@@ -33,6 +34,7 @@ class UploadImage(TimeStampedModel):
     image_path = models.ImageField(max_length=255, null=True, blank=True)
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
+    ip_address = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         ordering = ["image_name"]
@@ -57,6 +59,7 @@ class UploadVideo(TimeStampedModel):
     video_embedded_url = models.CharField(max_length=1000, null=True, blank=True)
     duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
     use_embedded_url = models.BooleanField(default=False)
+    ip_address = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta:
         ordering = ["video_name"]
