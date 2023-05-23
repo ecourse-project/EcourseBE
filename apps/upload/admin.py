@@ -61,6 +61,11 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         obj.ip_address = get_client_ip(request)
         obj.save()
 
+    def get_fields(self, request, obj=None):
+        fields = super(UploadVideoAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
+
 
 @admin.register(UploadFile)
 class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
@@ -89,6 +94,11 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
             ~Q(file_type__in=get_default_hidden_file_type())
         )
+
+    def get_fields(self, request, obj=None):
+        fields = super(UploadFileAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -138,6 +148,11 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     #     if qs.exists():
     #         self.get_queryset(request).delete()
     #     return HttpResponseRedirectToReferrer(request)
+
+    def get_fields(self, request, obj=None):
+        fields = super(UploadImageAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
 
     def save_model(self, request, obj, form, change):
         if change:
