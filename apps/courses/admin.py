@@ -136,7 +136,6 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "num_of_rates", "rating")
 
     def get_fields(self, request, obj=None):
         fields = super(CourseAdmin, self).get_fields(request, obj)

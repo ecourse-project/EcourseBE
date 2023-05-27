@@ -40,7 +40,7 @@ class ClassAdmin(admin.ModelAdmin):
         "topic",
         "id",
     )
-    readonly_fields = ("is_selling", "sold", "views", "num_of_rates", "rating", "price")
+    readonly_fields = ("is_selling", "price")
 
     def get_queryset(self, request):
         qs = super(ClassAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
