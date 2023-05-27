@@ -57,6 +57,7 @@ LOCAL_APPS = [
     'apps.classes.apps.ClassesConfig',
     'apps.posts.apps.PostsConfig',
     'apps.configuration.apps.ConfigurationConfig',
+    'apps.system.apps.SystemConfig',
 ]
 
 DJANGO_APPS = [

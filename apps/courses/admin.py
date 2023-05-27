@@ -39,6 +39,9 @@ class CourseDocumentAdmin(admin.ModelAdmin):
         form.base_fields['file'].queryset = UploadFile.objects.filter(~q_list)
         return form
 
+    def get_queryset(self, request):
+        return super(CourseDocumentAdmin, self).get_queryset(request).prefetch_related("topic")
+
 
 @admin.register(CourseTopic)
 class CourseTopicAdmin(admin.ModelAdmin):
@@ -129,12 +132,17 @@ class CourseAdmin(admin.ModelAdmin):
         "is_selling",
         "created",
         "id",
-        # "rating",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("sold", "views", "num_of_rates", "rating")
+
+    def get_fields(self, request, obj=None):
+        fields = super(CourseAdmin, self).get_fields(request, obj)
+        for field in ["sold", "views", "num_of_rates", "rating"]:
+            fields.remove(field)
+        return fields
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -163,7 +171,7 @@ class CourseAdmin(admin.ModelAdmin):
             LessonManagement.objects.bulk_create(lesson_mngt_list)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(CourseAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
         return qs.filter(course_of_class=False)
 
 
@@ -186,7 +194,7 @@ class CourseManagementAdmin(admin.ModelAdmin):
     readonly_fields = ("progress", "user_in_class")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(CourseManagementAdmin, self).get_queryset(request).select_related("user", "course")
         return qs.filter(course__course_of_class=False)
 
 
@@ -200,6 +208,9 @@ class LessonManagementAdmin(admin.ModelAdmin):
         "course",
         "lesson",
     )
+
+    def get_queryset(self, request):
+        return super(LessonManagementAdmin, self).get_queryset(request).select_related("lesson", "course")
 
 
 @admin.register(CourseDocumentManagement)
@@ -218,6 +229,11 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
         "is_available",
     )
 
+    def get_queryset(self, request):
+        return super(CourseDocumentManagementAdmin, self).get_queryset(request).select_related(
+            "document", "lesson", "course", "user",
+        )
+
 
 @admin.register(VideoManagement)
 class VideoManagementAdmin(admin.ModelAdmin):
@@ -234,6 +250,12 @@ class VideoManagementAdmin(admin.ModelAdmin):
         "is_completed",
         "is_available",
     )
+
+    def get_queryset(self, request):
+        return super(VideoManagementAdmin, self).get_queryset(request).select_related(
+            "video", "lesson", "course", "user",
+        )
+
 
 
 

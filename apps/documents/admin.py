@@ -7,8 +7,6 @@ from apps.documents.enums import AVAILABLE, IN_CART
 from apps.upload.enums import video_ext_list
 from apps.upload.models import UploadFile
 
-from apps.upload.services.services import UploadCourseServices
-
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
@@ -19,22 +17,26 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "topic",
-        # "description",
         "thumbnail",
         "file",
         "price",
         "is_selling",
         "created",
         "id",
-        # "rating",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("sold", "views", "num_of_rates", "rating")
 
-    # def save_model(self, request, obj, form, change):
-    #     obj.save()
+    def get_fields(self, request, obj=None):
+        fields = super(DocumentAdmin, self).get_fields(request, obj)
+        for field in ["sold", "views", "num_of_rates", "rating"]:
+            fields.remove(field)
+        return fields
+
+    def get_queryset(self, request):
+        return super(DocumentAdmin, self).get_queryset(request).select_related('file', 'topic')
 
     def delete_model(self, request, obj):
         DocumentManagement.objects.filter(document=obj, sale_status__in=[AVAILABLE, IN_CART]).delete()
@@ -72,3 +74,6 @@ class DocumentManagementAdmin(admin.ModelAdmin):
         "document",
         "sale_status",
     )
+
+    def get_queryset(self, request):
+        return super(DocumentManagementAdmin, self).get_queryset(request).select_related("user", "document")

@@ -9,3 +9,6 @@ class CartAdmin(admin.ModelAdmin):
         "user",
         "total_price",
     )
+
+    def get_queryset(self, request):
+        return super(CartAdmin, self).get_queryset(request).select_related("user")

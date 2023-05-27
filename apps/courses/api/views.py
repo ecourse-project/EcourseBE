@@ -1,3 +1,5 @@
+from django.db.models import F
+
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -64,7 +66,7 @@ class CourseRetrieveView(generics.RetrieveAPIView):
         instance = self.get_object()
         if instance.sale_status != BOUGHT:
             course = instance.course
-            course.views += 1
+            course.views = F("views") + 1
             course.save(update_fields=['views'])
         custom_data = CustomDictDataServices(request.user)
         return Response(

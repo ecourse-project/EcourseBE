@@ -26,6 +26,8 @@ class QuizAdmin(admin.ModelAdmin):
     def custom_question(self, obj):
         return " ".join(obj.question.split(" ")[:4]) + "..."
 
+    def get_queryset(self, request):
+        return super(QuizAdmin, self).get_queryset(request).select_related("course")
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
@@ -38,6 +40,8 @@ class AnswerAdmin(admin.ModelAdmin):
         'choice',
     )
 
+    def get_queryset(self, request):
+        return super(AnswerAdmin, self).get_queryset(request).select_related("user", "quiz")
 
 
 
