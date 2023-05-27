@@ -1,3 +1,5 @@
+from django.db.models import F
+
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -55,7 +57,7 @@ class DocumentRetrieveView(generics.RetrieveAPIView):
         instance = self.get_object()
         if instance.sale_status != BOUGHT:
             doc = instance.document
-            doc.views += 1
+            doc.views = F("views") + 1
             doc.save(update_fields=['views'])
         service = DocumentManagementService(request.user)
         return Response(

@@ -58,3 +58,6 @@ class OrderAdmin(admin.ModelAdmin):
                 course_service.disable_courses_data(all_courses)
 
         obj.save()
+
+    def get_queryset(self, request):
+        return super(OrderAdmin, self).get_queryset(request).select_related("user")

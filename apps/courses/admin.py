@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.utils.html import format_html
+from django.conf import settings
+
 from apps.courses.models import (
     Course,
     Lesson,
@@ -13,7 +16,6 @@ from apps.courses.models import (
 from apps.courses.services.admin import (
     insert_remove_docs_videos,
 )
-from apps.courses.enums import AVAILABLE, IN_CART
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 
@@ -37,6 +39,9 @@ class CourseDocumentAdmin(admin.ModelAdmin):
         form.base_fields['file'].queryset = UploadFile.objects.filter(~q_list)
         return form
 
+    def get_queryset(self, request):
+        return super(CourseDocumentAdmin, self).get_queryset(request).prefetch_related("topic")
+
 
 @admin.register(CourseTopic)
 class CourseTopicAdmin(admin.ModelAdmin):
@@ -53,15 +58,31 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "lesson_number",
-        "list_documents",
+        "course_include",
+        "class_include",
     )
     ordering = (
         "name",
     )
     readonly_fields = ("total_documents", "total_videos")
 
-    def list_documents(self, obj):
-        return ", ".join([doc.name for doc in obj.documents.all()])
+    def course_include(self, obj):
+        courses = obj.courses.filter(course_of_class=False).values_list(*["id", "name"])
+        html_res = [
+            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            for item in courses
+        ]
+
+        return format_html("<br>".join([res for res in html_res]))
+
+    def class_include(self, obj):
+        classes = obj.courses.filter(course_of_class=True).values_list(*["id", "name"])
+        html_res = [
+            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            for item in classes
+        ]
+
+        return format_html("<br>".join([res for res in html_res]))
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
@@ -111,12 +132,16 @@ class CourseAdmin(admin.ModelAdmin):
         "is_selling",
         "created",
         "id",
-        # "rating",
     )
     ordering = (
         "name",
     )
-    readonly_fields = ("sold", "views", "num_of_rates", "rating")
+
+    def get_fields(self, request, obj=None):
+        fields = super(CourseAdmin, self).get_fields(request, obj)
+        for field in ["sold", "views", "num_of_rates", "rating"]:
+            fields.remove(field)
+        return fields
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -145,7 +170,7 @@ class CourseAdmin(admin.ModelAdmin):
             LessonManagement.objects.bulk_create(lesson_mngt_list)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(CourseAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
         return qs.filter(course_of_class=False)
 
 
@@ -168,7 +193,7 @@ class CourseManagementAdmin(admin.ModelAdmin):
     readonly_fields = ("progress", "user_in_class")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(CourseManagementAdmin, self).get_queryset(request).select_related("user", "course")
         return qs.filter(course__course_of_class=False)
 
 
@@ -182,6 +207,9 @@ class LessonManagementAdmin(admin.ModelAdmin):
         "course",
         "lesson",
     )
+
+    def get_queryset(self, request):
+        return super(LessonManagementAdmin, self).get_queryset(request).select_related("lesson", "course")
 
 
 @admin.register(CourseDocumentManagement)
@@ -200,6 +228,11 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
         "is_available",
     )
 
+    def get_queryset(self, request):
+        return super(CourseDocumentManagementAdmin, self).get_queryset(request).select_related(
+            "document", "lesson", "course", "user",
+        )
+
 
 @admin.register(VideoManagement)
 class VideoManagementAdmin(admin.ModelAdmin):
@@ -216,6 +249,12 @@ class VideoManagementAdmin(admin.ModelAdmin):
         "is_completed",
         "is_available",
     )
+
+    def get_queryset(self, request):
+        return super(VideoManagementAdmin, self).get_queryset(request).select_related(
+            "video", "lesson", "course", "user",
+        )
+
 
 
 

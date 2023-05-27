@@ -45,3 +45,6 @@ class PostAdmin(admin.ModelAdmin):
         if db_field.name == "header":
             kwargs["queryset"] = Header.objects.filter(data_type=POST)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        return super(PostAdmin, self).get_queryset(request).select_related("topic")

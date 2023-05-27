@@ -6,13 +6,14 @@ from django import forms
 from django.conf import settings
 from django.db.models import Q
 
+from apps.core.utils import get_default_hidden_file_type
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument
-from apps.upload.services.storage.base import get_file_path, store_file_upload
+from apps.upload.services.storage.base import store_file_upload
 from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
-from apps.upload.enums import video_ext_list, VIDEO, IMAGE, FILE
+from apps.upload.enums import VIDEO, IMAGE, FILE
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
-from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
+from ipware.ip import get_client_ip
 
 
 @admin.action(description='Delete records and files for selected data')
@@ -57,7 +58,13 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         else:
             if obj.video_path:
                 store_file_upload(obj, obj.video_path, VIDEO)
+        obj.ip_address = get_client_ip(request)
         obj.save()
+
+    def get_fields(self, request, obj=None):
+        fields = super(UploadVideoAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
 
 
 @admin.register(UploadFile)
@@ -85,8 +92,13 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
-            ~Q(file_type__iexact=settings.DEFAULT_CMD_FILE_EXT)
+            ~Q(file_type__in=get_default_hidden_file_type())
         )
+
+    def get_fields(self, request, obj=None):
+        fields = super(UploadFileAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -101,6 +113,7 @@ class UploadFileAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             if obj.file_path:
                 store_file_upload(obj, obj.file_path, FILE)
 
+        obj.ip_address = get_client_ip(request)
         obj.save()
 
     # def has_change_permission(self, request, obj=None):
@@ -136,6 +149,11 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     #         self.get_queryset(request).delete()
     #     return HttpResponseRedirectToReferrer(request)
 
+    def get_fields(self, request, obj=None):
+        fields = super(UploadImageAdmin, self).get_fields(request, obj)
+        fields.remove("ip_address")
+        return fields
+
     def save_model(self, request, obj, form, change):
         if change:
             if obj.image_path and str(form.initial.get("image_path")) != str(obj.image_path):
@@ -149,6 +167,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
             if obj.image_path:
                 store_file_upload(obj, obj.image_path, IMAGE)
 
+        obj.ip_address = get_client_ip(request)
         obj.save()
 
 

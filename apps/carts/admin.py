@@ -4,9 +4,11 @@ from apps.carts.models import Cart
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_filter = ("user",)
-    search_fields = ("user__email",)
+    search_fields = ("user__email", "user__full_name")
     list_display = (
         "user",
         "total_price",
     )
+
+    def get_queryset(self, request):
+        return super(CartAdmin, self).get_queryset(request).select_related("user")

@@ -40,10 +40,10 @@ class ClassAdmin(admin.ModelAdmin):
         "topic",
         "id",
     )
-    readonly_fields = ("is_selling", "sold", "views", "num_of_rates", "rating", "price")
+    readonly_fields = ("is_selling", "price")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(ClassAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
         return qs.filter(course_of_class=True)
 
     def save_related(self, request, form, formsets, change):
@@ -106,6 +106,9 @@ class ClassRequestAdmin(admin.ModelAdmin):
         form.base_fields['class_request'].queryset = Class.objects.filter(course_of_class=True)
         return form
 
+    def get_queryset(self, request):
+        return super(ClassRequestAdmin, self).get_queryset(request).select_related("user", "class_request")
+
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
@@ -125,5 +128,5 @@ class ClassManagementAdmin(admin.ModelAdmin):
     readonly_fields = ("progress", "user_in_class", "status", "sale_status")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super(ClassManagementAdmin, self).get_queryset(request).select_related("user", "course")
         return qs.filter(course__course_of_class=True)

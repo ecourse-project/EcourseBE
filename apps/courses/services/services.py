@@ -6,13 +6,10 @@ from apps.courses.models import (
     Lesson,
     CourseDocument,
     CourseManagement,
-    LessonManagement,
     CourseDocumentManagement,
     VideoManagement,
 )
 from apps.courses.enums import BOUGHT, PENDING
-from apps.quiz.models import Answer
-from apps.classes.services.services import ClassRequestService
 
 
 class CourseService:
@@ -50,7 +47,7 @@ class CourseManagementService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file"))),
             ),
-        ).select_related('course__topic', 'course__thumbnail').filter(user=self.user, course__course_of_class=False)
+        ).select_related("user", "course__topic", "course__thumbnail").filter(user=self.user, course__course_of_class=False)
 
     @property
     def get_course_mngt_queryset_by_selling(self):

@@ -1,9 +1,16 @@
 from django.contrib import admin
 from apps.users.models import User, UserResetPassword
-# from django.contrib.auth.admin import UserAdmin
 from apps.core.utils import id_generator
 
-admin.site.register(User)
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    search_fields = ("email", "full_name", "phone")
+    list_display = (
+        'email',
+        'full_name',
+        'phone',
+    )
 
 
 @admin.register(UserResetPassword)
