@@ -66,7 +66,7 @@ class DocumentManagementSerializer(serializers.ModelSerializer):
 
     def get_download(self, obj):
         config = Configuration.objects.first()
-        is_unlimited = config.document_unlimited_time if config else True
+        is_unlimited = config.unlimited_document_time if config else True
         if not is_unlimited:
             if obj.sale_status == BOUGHT and Configuration.objects.first():
                 user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()

@@ -1,16 +1,24 @@
 from django.contrib import admin
+from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
+
 from apps.users.models import User, UserResetPassword
 from apps.core.utils import id_generator
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
     search_fields = ("email", "full_name", "phone")
     list_display = (
         'email',
         'full_name',
         'phone',
     )
+
+    def get_fields(self, request, obj=None):
+        fields = super(UserAdmin, self).get_fields(request, obj)
+        for field in ["groups", "user_permissions"]:
+            fields.remove(field)
+        return fields
 
 
 @admin.register(UserResetPassword)

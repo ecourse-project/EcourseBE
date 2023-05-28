@@ -34,6 +34,12 @@ class UploadVideoSerializer(serializers.ModelSerializer):
         representation["file_type"] = representation.pop("video_type")
         representation["file_embedded_url"] = representation.pop("video_embedded_url")
 
+        if obj.use_embedded_url and obj.video_embedded_url:
+            representation.pop("file_path")
+            representation.pop("file_type")
+        else:
+            representation.pop("video_embedded_url")
+
         return representation
 
 
@@ -55,6 +61,18 @@ class UploadFileSerializer(serializers.ModelSerializer):
     @classmethod
     def get_file_path(cls, obj):
         return settings.BASE_URL + obj.file_path.url
+
+    def to_representation(self, obj):
+        """Move fields from profile to user representation."""
+        representation = super().to_representation(obj)
+
+        if obj.use_embedded_url and obj.file_embedded_url:
+            representation.pop("file_path")
+            representation.pop("file_type")
+        elif not obj.use_embedded_url:
+            representation.pop("file_embedded_url")
+
+        return representation
 
 
 class UploadImageSerializer(serializers.ModelSerializer):

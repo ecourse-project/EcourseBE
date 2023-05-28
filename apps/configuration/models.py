@@ -1,13 +1,14 @@
 import uuid
 
 from django.db import models
-from django_better_admin_arrayfield.models.fields import ArrayField
 
 
 class Configuration(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     document_time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(hours)")
-    document_unlimited_time = models.BooleanField(default=False)
+    unlimited_document_time = models.BooleanField(default=False)
+    ip_address_limit = models.PositiveSmallIntegerField(default=3)
+    unlimited_ip_addresses = models.BooleanField(default=False)
 
 
 class PersonalInfo(models.Model):

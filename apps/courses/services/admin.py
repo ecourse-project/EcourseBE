@@ -17,6 +17,10 @@ class CourseAdminService:
 
     def init_courses_data(self, courses):
         for course in courses:
+            course_mngt = CourseManagement.objects.filter(course=course, user=self.user).first()
+            if not course_mngt or (course_mngt and course_mngt.init_data is True):
+                continue
+
             all_lessons = course.lessons.all()
             for lesson in all_lessons:
                 """ Initial documents of course """
@@ -29,8 +33,8 @@ class CourseAdminService:
                     VideoManagement(user=self.user, video=video, lesson=lesson, course=course)
                     for video in lesson.videos.all()
                 ])
-            """ Initial lessons """
-            for lesson in all_lessons:
+
+                """ Initial lessons """
                 LessonManagement.objects.get_or_create(lesson=lesson, course=course)
 
     def disable_courses_data(self, courses):
