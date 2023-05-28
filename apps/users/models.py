@@ -1,7 +1,8 @@
 import uuid
 
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 from apps.core.utils import get_media_url
 
@@ -19,6 +20,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     avatar = models.CharField(null=True, blank=True, max_length=1000)
     phone = models.CharField(default="", blank=True, max_length=30)
+    ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
+    unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
 
     def __str__(self):
         return self.email

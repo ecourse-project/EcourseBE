@@ -2,9 +2,10 @@ from rest_framework import serializers
 
 from apps.payment.models import Order
 from apps.documents.api.serializers import DocumentManagementSerializer
-from apps.documents.models import DocumentManagement
+from apps.documents.models import DocumentManagement, Document
 from apps.courses.api.serializers import CourseManagementSerializer
-from apps.courses.models import CourseManagement
+from apps.courses.models import CourseManagement, Course
+from apps.core.utils import create_serializer_class
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -24,16 +25,12 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
     def get_documents(self, obj):
-        doc_mngt = DocumentManagement.objects.filter(
-            user=self.context['request'].user,
-            document__in=obj.documents.all()
-        )
-        return DocumentManagementSerializer(doc_mngt, many=True).data
+        documents = obj.documents.all()
+        serializer_class = create_serializer_class(Document, ["id", "name", "description", "price"])
+        return serializer_class(documents, many=True).data
 
     def get_courses(self, obj):
-        course_mngt = CourseManagement.objects.filter(
-            user=self.context['request'].user,
-            course__in=obj.courses.all()
-        )
-        return CourseManagementSerializer(course_mngt, many=True).data
+        courses = obj.courses.all()
+        serializer_class = create_serializer_class(Course, ["id", "name", "description", "price"])
+        return serializer_class(courses, many=True).data
 

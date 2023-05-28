@@ -3,7 +3,7 @@ FAILED = 'FAILED'
 SUCCESS = 'SUCCESS'
 
 STATUSES = (
-        (PENDING, PENDING),
-        (FAILED, FAILED),
-        (SUCCESS, SUCCESS)
-    )
+    (PENDING, PENDING),
+    (FAILED, FAILED),
+    (SUCCESS, SUCCESS),
+)
