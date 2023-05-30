@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from django.http import HttpResponse
 from reportlab.lib.units import mm, inch
 from reportlab.pdfbase.pdfmetrics import stringWidth
+import pypdf
 
 
 class ListQuizView(generics.ListAPIView):
@@ -62,6 +63,7 @@ class GenerateCertificate(APIView):
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
         response["Content-Disposition"] = "attachment;filename=certificate.pdf"
+
 
         pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
         my_canvas = canvas.Canvas(response, pagesize=pagesize)
