@@ -9,7 +9,7 @@ from apps.quiz.exceptions import CompletedQuizException
 from apps.courses.models import CourseManagement, Course
 
 from django.http import FileResponse
-from reportlab.lib.units import cm, toLength
+from reportlab.lib.units import inch, toLength
 from apps.quiz.services.certificate_services import insert_text_to_pdf
 
 
@@ -63,12 +63,14 @@ class GenerateCertificate(APIView):
         # response["Content-Disposition"] = "attachment;filename=certificate.pdf"
 
         output_stream = insert_text_to_pdf(
-            toLength("33.867 cm") / 2,
-            toLength("19.05 cm") / 2,
-            "templates/font/BungeeInline-Regular.ttf",
-            "abcd ABCD Diệp Hải Bình",
-            "templates/certificate/destination.pdf",
-            (33.867 * cm, 19.05 * cm),
+            x=toLength("17 in") / 2,
+            y=toLength("15 in") / 2,
+            font_path="templates/font/BungeeInline-Regular.ttf",
+            text="OF APPRECIATE",
+            size=25,
+            color=(0, 0, 0),
+            input_pdf="templates/certificate/certi.pdf",
+            pagesize=(17 * inch, 11 * inch),
         )
 
 

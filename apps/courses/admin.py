@@ -196,6 +196,12 @@ class CourseManagementAdmin(admin.ModelAdmin):
         qs = super(CourseManagementAdmin, self).get_queryset(request).select_related("user", "course")
         return qs.filter(course__course_of_class=False)
 
+    def get_fields(self, request, obj=None):
+        fields = super(CourseManagementAdmin, self).get_fields(request, obj)
+        for field in ["init_data", "is_favorite"]:
+            fields.remove(field)
+        return fields
+
 
 @admin.register(LessonManagement)
 class LessonManagementAdmin(admin.ModelAdmin):
