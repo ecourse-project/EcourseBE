@@ -8,13 +8,9 @@ from apps.quiz.api.serializers import QuizSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.courses.models import CourseManagement, Course
 
-import io
 from django.http import FileResponse
-from reportlab.pdfgen import canvas
-from django.http import HttpResponse
-from reportlab.lib.units import mm, inch
-from reportlab.pdfbase.pdfmetrics import stringWidth
-import pypdf
+from reportlab.lib.units import cm, toLength
+from apps.quiz.services.certificate_services import insert_text_to_pdf
 
 
 class ListQuizView(generics.ListAPIView):
@@ -60,26 +56,42 @@ class QuizResultView(APIView):
 
 
 class GenerateCertificate(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
-        response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
-        response["Content-Disposition"] = "attachment;filename=certificate.pdf"
+        # response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
+        # response["Content-Disposition"] = "attachment;filename=certificate.pdf"
+
+        output_stream = insert_text_to_pdf(
+            toLength("33.867 cm") / 2,
+            toLength("19.05 cm") / 2,
+            "templates/font/BungeeInline-Regular.ttf",
+            "abcd ABCD Diệp Hải Bình",
+            "templates/certificate/destination.pdf",
+            (33.867 * cm, 19.05 * cm),
+        )
 
 
-        pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
-        my_canvas = canvas.Canvas(response, pagesize=pagesize)
-        my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
+        # pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
+        # my_canvas = canvas.Canvas(response, pagesize=pagesize)
+        # my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
+        #
+        # course_id = self.request.query_params.get("course_id")
+        # # course_name = Course.objects.filter(id=course_id).first().name or "NONE"
+        # # user_name = self.request.user.full_name or "NONE"
+        # user_name = "DHB"
+        # course_name="HAHA"
+        #
+        # # text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
+        # # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
+        # # my_canvas.setFillColor()
+        # my_canvas.setFont("Helvetica", 35, leading=None)
+        # my_canvas.drawCentredString(458, 220, text=user_name)
+        # my_canvas.setFont("Helvetica", 12, leading=None)
+        # my_canvas.drawCentredString(458, 150, text=course_name)
+        # my_canvas.save()
 
-        course_id = self.request.query_params.get("course_id")
-        course_name = Course.objects.filter(id=course_id).first().name or "NONE"
-        user_name = self.request.user.full_name or "NONE"
-
-        # text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
-        # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
-        # my_canvas.setFillColor()
-        my_canvas.setFont("Helvetica", 35, leading=None)
-        my_canvas.drawCentredString(458, 220, text=user_name)
-        my_canvas.setFont("Helvetica", 12, leading=None)
-        my_canvas.drawCentredString(458, 150, text=course_name)
-        my_canvas.save()
+        response = FileResponse(output_stream, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="merged_output.pdf"'
 
         return response
