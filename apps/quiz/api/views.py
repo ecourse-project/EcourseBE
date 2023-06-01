@@ -62,14 +62,19 @@ class GenerateCertificate(APIView):
         # response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
         # response["Content-Disposition"] = "attachment;filename=certificate.pdf"
 
+        # 17 in = 1224, 11 in = 792
+        # presented to (size 23, 380, 450, left, color (0.4, 0.4, 0.4))
+        # name (size 35, 500, 450, left, color (0.2, 0.2, 0.2))
+        # has successfully completed (size 23, 380, 410, left, color(0.4, 0.4, 0.4))
+        # course (size 25, 615, 410, left, color(0.2, 0.2, 0.2)
         output_stream = insert_text_to_pdf(
-            x=toLength("17 in") / 2,
-            y=toLength("15 in") / 2,
-            font_path="templates/font/BungeeInline-Regular.ttf",
-            text="OF APPRECIATE",
+            x=615,
+            y=410,
+            font_path="templates/font/Charm-Bold.ttf",
+            text="Cơ Sở Dữ Liệu",
             size=25,
-            color=(0, 0, 0),
-            input_pdf="templates/certificate/certi.pdf",
+            color=(0.2, 0.2, 0.2),
+            input_pdf="templates/certificate/certi5.pdf",
             pagesize=(17 * inch, 11 * inch),
         )
 

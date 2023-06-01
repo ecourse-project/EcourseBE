@@ -17,7 +17,7 @@ def insert_text_to_pdf(x, y, font_path, text, size, color: Tuple, input_pdf, pag
     canvas.setFillColorRGB(color[0], color[1], color[2])
     canvas.setFont(font_name, size)
     # canvas.setFont("Helvetica", 35, leading=None)
-    canvas.drawCentredString(x, y, text)
+    canvas.drawString(x, y, text)
     canvas.save()
 
     # Merge text + template
