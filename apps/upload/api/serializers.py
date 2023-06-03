@@ -37,8 +37,8 @@ class UploadVideoSerializer(serializers.ModelSerializer):
         if obj.use_embedded_url and obj.video_embedded_url:
             representation.pop("file_path")
             representation.pop("file_type")
-        else:
-            representation.pop("video_embedded_url")
+        elif not obj.use_embedded_url:
+            representation.pop("file_embedded_url")
 
         return representation
 

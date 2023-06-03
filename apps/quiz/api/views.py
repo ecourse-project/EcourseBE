@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -8,12 +10,10 @@ from apps.quiz.api.serializers import QuizSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.courses.models import CourseManagement, Course
 
-import io
 from django.http import FileResponse
-from reportlab.pdfgen import canvas
-from django.http import HttpResponse
-from reportlab.lib.units import mm, inch
-from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.lib.units import inch, toLength
+from apps.quiz.services.certificate_services import insert_text_to_pdf
+from apps.quiz.certificate.templates import add_info_certificate, certificate_form
 
 
 class ListQuizView(generics.ListAPIView):
@@ -38,6 +38,8 @@ class QuizResultView(APIView):
 
         for count, answer in enumerate(answers, start=0):
             quiz = Quiz.objects.filter(id=answer.get('quiz_id'), course_id=course_id).first()
+            if not quiz:
+                continue
             if answer.get('answer_choice') == quiz.correct_answer.choice:
                 correct_answers += 1
             user_answers_list.append(Answer(choice=answer.get('answer_choice'), user=user, quiz=quiz))
@@ -45,7 +47,9 @@ class QuizResultView(APIView):
 
         Answer.objects.bulk_create(user_answers_list)
         mark = round(10 * correct_answers / len(answers), 1)
-        CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
+        CourseManagement.objects.filter(user=user, course_id=course_id).update(
+            mark=mark, is_done_quiz=True, date_done_quiz=datetime.datetime.now()
+        )
 
         return Response(
             data={
@@ -59,25 +63,34 @@ class QuizResultView(APIView):
 
 
 class GenerateCertificate(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
-        response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
-        response["Content-Disposition"] = "attachment;filename=certificate.pdf"
-
-        pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
-        my_canvas = canvas.Canvas(response, pagesize=pagesize)
-        my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
-
         course_id = self.request.query_params.get("course_id")
-        course_name = Course.objects.filter(id=course_id).first().name or "NONE"
-        user_name = self.request.user.full_name or "NONE"
+        course = Course.objects.filter(id=course_id).first()
+        course_mngt = CourseManagement.objects.filter(course_id=course_id, user=self.request.user).first()
 
-        # text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
-        # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
-        # my_canvas.setFillColor()
-        my_canvas.setFont("Helvetica", 35, leading=None)
-        my_canvas.drawCentredString(458, 220, text=user_name)
-        my_canvas.setFont("Helvetica", 12, leading=None)
-        my_canvas.drawCentredString(458, 150, text=course_name)
-        my_canvas.save()
+        username = self.request.user.full_name or ""
+        course_name = course.name if course else ""
+        date = ""
+        if course_mngt:
+            date_complete = course_mngt.date_done_quiz
+            date = str(date_complete.date()) if date_complete else date
+
+        output_stream = insert_text_to_pdf(
+            attrs=add_info_certificate(username, course_name, date),
+            input_pdf="templates/certificate/certificate_template.pdf",
+            pagesize=(17 * inch, 11 * inch),
+        )
+
+        # Init template
+        # output_stream = insert_text_to_pdf(
+        #     attrs=certificate_form,
+        #     input_pdf="templates/certificate/base.pdf",
+        #     pagesize=(17 * inch, 11 * inch),
+        # )
+
+        response = FileResponse(output_stream, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=certificate.pdf'
 
         return response
