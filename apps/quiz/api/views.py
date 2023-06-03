@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -11,6 +13,7 @@ from apps.courses.models import CourseManagement, Course
 from django.http import FileResponse
 from reportlab.lib.units import inch, toLength
 from apps.quiz.services.certificate_services import insert_text_to_pdf
+from apps.quiz.certificate.templates import add_info_certificate, certificate_form
 
 
 class ListQuizView(generics.ListAPIView):
@@ -35,6 +38,8 @@ class QuizResultView(APIView):
 
         for count, answer in enumerate(answers, start=0):
             quiz = Quiz.objects.filter(id=answer.get('quiz_id'), course_id=course_id).first()
+            if not quiz:
+                continue
             if answer.get('answer_choice') == quiz.correct_answer.choice:
                 correct_answers += 1
             user_answers_list.append(Answer(choice=answer.get('answer_choice'), user=user, quiz=quiz))
@@ -42,7 +47,9 @@ class QuizResultView(APIView):
 
         Answer.objects.bulk_create(user_answers_list)
         mark = round(10 * correct_answers / len(answers), 1)
-        CourseManagement.objects.filter(user=user, course_id=course_id).update(mark=mark, is_done_quiz=True)
+        CourseManagement.objects.filter(user=user, course_id=course_id).update(
+            mark=mark, is_done_quiz=True, date_done_quiz=datetime.datetime.now()
+        )
 
         return Response(
             data={
@@ -59,46 +66,31 @@ class GenerateCertificate(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        # response = HttpResponse(content_type="application/pdf", status=status.HTTP_201_CREATED)
-        # response["Content-Disposition"] = "attachment;filename=certificate.pdf"
+        course_id = self.request.query_params.get("course_id")
+        course = Course.objects.filter(id=course_id).first()
+        course_mngt = CourseManagement.objects.filter(course_id=course_id, user=self.request.user).first()
 
-        # 17 in = 1224, 11 in = 792
-        # presented to (size 23, 380, 450, left, color (0.4, 0.4, 0.4))
-        # name (size 35, 500, 450, left, color (0.2, 0.2, 0.2))
-        # has successfully completed (size 23, 380, 410, left, color(0.4, 0.4, 0.4))
-        # course (size 25, 615, 410, left, color(0.2, 0.2, 0.2)
+        username = self.request.user.full_name or ""
+        course_name = course.name if course else ""
+        date = ""
+        if course_mngt:
+            date_complete = course_mngt.date_done_quiz
+            date = str(date_complete.date()) if date_complete else date
+
         output_stream = insert_text_to_pdf(
-            x=615,
-            y=410,
-            font_path="templates/font/Charm-Bold.ttf",
-            text="Cơ Sở Dữ Liệu",
-            size=25,
-            color=(0.2, 0.2, 0.2),
-            input_pdf="templates/certificate/certi5.pdf",
+            attrs=add_info_certificate(username, course_name, date),
+            input_pdf="templates/certificate/certificate_template.pdf",
             pagesize=(17 * inch, 11 * inch),
         )
 
-
-        # pagesize = (266 * mm, 150 * mm)  # (1057.3228346456694, 595.2755905511812)
-        # my_canvas = canvas.Canvas(response, pagesize=pagesize)
-        # my_canvas.drawImage('templates/certificate/certificate.png', 0, 0, width=754, height=425)
-        #
-        # course_id = self.request.query_params.get("course_id")
-        # # course_name = Course.objects.filter(id=course_id).first().name or "NONE"
-        # # user_name = self.request.user.full_name or "NONE"
-        # user_name = "DHB"
-        # course_name="HAHA"
-        #
-        # # text_width = stringWidth(text, fontName="Helvetica", fontSize=30)
-        # # my_canvas.setFont("Helvetica-Bold", 40, leading=None)
-        # # my_canvas.setFillColor()
-        # my_canvas.setFont("Helvetica", 35, leading=None)
-        # my_canvas.drawCentredString(458, 220, text=user_name)
-        # my_canvas.setFont("Helvetica", 12, leading=None)
-        # my_canvas.drawCentredString(458, 150, text=course_name)
-        # my_canvas.save()
+        # Init template
+        # output_stream = insert_text_to_pdf(
+        #     attrs=certificate_form,
+        #     input_pdf="templates/certificate/base.pdf",
+        #     pagesize=(17 * inch, 11 * inch),
+        # )
 
         response = FileResponse(output_stream, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="merged_output.pdf"'
+        response['Content-Disposition'] = 'attachment; filename=certificate.pdf'
 
         return response

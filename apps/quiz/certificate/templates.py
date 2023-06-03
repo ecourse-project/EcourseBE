@@ -1,0 +1,88 @@
+certificate_form = [
+    {
+        "text": "CERTIFICATE",
+        "color": (0, 0, 0),
+        "font": "templates/font/BungeeInline-Regular.ttf",
+        "size": 45,
+        "x": 612,
+        "y": 560,
+        "draw_type": "center",
+    },
+    {
+        "text": "OF APPRECIATE",
+        "color": (0, 0, 0),
+        "font": "templates/font/BungeeInline-Regular.ttf",
+        "size": 25,
+        "x": 612,
+        "y": 520,
+        "draw_type": "center",
+    },
+    {
+        "text": "Presented to",
+        "color": (0.4, 0.4, 0.4),
+        "font": "templates/font/Charm-Regular.ttf",
+        "size": 23,
+        "x": 420,
+        "y": 435,
+        "draw_type": "left",
+    },
+    {
+        "text": "has successfully completed",
+        "color": (0.4, 0.4, 0.4),
+        "font": "templates/font/Charm-Regular.ttf",
+        "size": 23,
+        "x": 420,
+        "y": 395,
+        "draw_type": "left",
+    },
+    {
+        "text": "Date",
+        "color": (0.4, 0.4, 0.4),
+        "font": "templates/font/Charm-Regular.ttf",
+        "size": 23,
+        "x": 380,
+        "y": 300,
+        "draw_type": "center",
+    },
+    {
+        "text": "Signature",
+        "color": (0.4, 0.4, 0.4),
+        "font": "templates/font/Charm-Regular.ttf",
+        "size": 23,
+        "x": 844,
+        "y": 300,
+        "draw_type": "center",
+    },
+]
+
+
+def add_info_certificate(username, course_name, date_complete):
+    return [
+        {
+            "text": username,
+            "color": (0.2, 0.2, 0.2),
+            "font": "templates/font/Charm-Bold.ttf",
+            "size": 35,
+            "x": 535,
+            "y": 435,
+            "draw_type": "left",
+        },
+        {
+            "text": course_name,
+            "color": (0.2, 0.2, 0.2),
+            "font": "templates/font/Charm-Bold.ttf",
+            "size": 25,
+            "x": 655,
+            "y": 395,
+            "draw_type": "left",
+        },
+        {
+            "text": date_complete,
+            "color": (0.2, 0.2, 0.2),
+            "font": "templates/font/Charm-Bold.ttf",
+            "size": 23,
+            "x": 380,
+            "y": 260,
+            "draw_type": "center",
+        },
+    ]
