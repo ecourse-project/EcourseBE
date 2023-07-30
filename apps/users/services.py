@@ -27,5 +27,5 @@ def get_users_to_create_course_mngt(course):
 
 def get_users_to_create_doc_mngt(document):
     return get_active_users().exclude(
-        id__in=DocumentManagement.objects.filter(document=document)
-    ).values_list("user_id", flat=True)
+        id__in=DocumentManagement.objects.filter(document=document).values_list("user_id", flat=True)
+    )
