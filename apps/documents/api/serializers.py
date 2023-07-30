@@ -34,7 +34,10 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         representation = super().to_representation(obj)
-        user = self.context.get("request").user
+        request = self.context.get("request")
+        user = request.user if request else None
+        if not user:
+            return representation
         if user.is_anonymous or not user.is_authenticated:
             representation.pop("file", None)
         return representation
