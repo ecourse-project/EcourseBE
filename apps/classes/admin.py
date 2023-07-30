@@ -42,6 +42,17 @@ class ClassAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("is_selling", "price")
 
+    def get_fields(self, request, obj=None):
+        fields = super(ClassAdmin, self).get_fields(request, obj)
+        for field in ["price", "is_selling", "sold", "views", "rating", "num_of_rates"]:
+            fields.remove(field)
+        return fields
+
+    def save_model(self, request, obj, form, change):
+        if not Class.objects.filter(id=obj.id).first():
+            obj.course_of_class = True
+        obj.save()
+
     def get_queryset(self, request):
         qs = super(ClassAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
         return qs.filter(course_of_class=True)
