@@ -20,7 +20,7 @@ class CourseService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
                      )
-        ).select_related('topic', 'thumbnail').filter(course_of_class=False)
+        ).select_related('topic', 'thumbnail').filter(course_of_class=False, is_selling=True)
 
     def get_courses_by_topic(self, topic: str):
         if topic.strip():
