@@ -123,6 +123,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
+    list_filter = ("user", "course")
     search_fields = (
         "user__email",
         "course__name",
