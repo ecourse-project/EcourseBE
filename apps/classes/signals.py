@@ -28,7 +28,7 @@ def add_and_remove_user_in_class(sender, instance, **kwargs):
 
 @receiver(models.signals.post_save, sender=Class)
 def create_user_data(created, instance, **kwargs):
-    if not instance.course_of_class:
+    if instance.course_of_class:
         users = get_users_to_create_course_mngt(instance)
         if users.exists():
             init_course_mngt(instance, users)
