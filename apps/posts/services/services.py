@@ -20,7 +20,7 @@ class PostsService:
         return self.get_all_posts_queryset.filter(query)
 
     def get_posts_by_list_id(self, list_id, header=""):
-        if not (list_id and header):
+        if not list_id and not header:
             return Post.objects.none()
 
         query = Q()
