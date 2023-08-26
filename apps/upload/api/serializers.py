@@ -21,9 +21,7 @@ class UploadVideoSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_video_path(cls, obj):
-        if obj.video_path:
-            return settings.BASE_URL + obj.video_path.url
-        return ""
+        return (settings.BASE_URL + obj.video_path.url) if obj.video_path else ""
 
     def to_representation(self, obj):
         """Move fields from profile to user representation."""
@@ -60,7 +58,7 @@ class UploadFileSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_file_path(cls, obj):
-        return settings.BASE_URL + obj.file_path.url
+        return (settings.BASE_URL + obj.file_path.url) if obj.file_path else ""
 
     def to_representation(self, obj):
         """Move fields from profile to user representation."""

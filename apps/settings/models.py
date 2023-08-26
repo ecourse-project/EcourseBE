@@ -43,7 +43,8 @@ class HomePageDetail(models.Model):
     classes = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     posts = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
-        ordering = ['created']
+        ordering = ['order', "display_name"]
 

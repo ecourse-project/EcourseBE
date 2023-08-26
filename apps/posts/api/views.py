@@ -19,7 +19,7 @@ class PostListView(generics.ListAPIView):
 
     def get_queryset(self):
         topic = self.request.query_params.get("topic", "").strip()
-        list_id = self.request.query_params.getlist('course_id')
+        list_id = self.request.query_params.getlist('post_id')
         header = self.request.query_params.get("header", "").strip()
 
         if topic:

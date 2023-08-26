@@ -11,7 +11,7 @@ from apps.rating.models import DocumentRating
 class DocumentService(object):
     @property
     def get_all_documents_queryset(self):
-        return Document.objects.select_related('thumbnail', 'file', 'topic').all()
+        return Document.objects.select_related('thumbnail', 'file', 'topic').filter(is_selling=True)
 
     def get_documents_by_topic(self, topic: str):
         if topic.strip():

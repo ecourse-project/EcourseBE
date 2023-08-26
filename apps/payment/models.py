@@ -20,3 +20,6 @@ class Order(TimeStampedModel):
 
     def __str__(self):
         return self.user.__str__()
+
+    class Meta:
+        ordering = ["-created"]
