@@ -56,15 +56,16 @@ class CourseRetrieveView(generics.RetrieveAPIView):
     serializer_class = CourseManagementSerializer
 
     def get_object(self):
-        return CourseManagementService(
-            user=self.request.user
-        ).get_course_management_queryset.filter(
-            course_id=self.request.query_params.get('course_id')
-        ).first()
+        course_id = self.request.query_params.get('course_id')
+        user = self.request.user
+        return (
+                CourseManagementService(user=user).get_course_management_queryset.filter(course_id=course_id).first()
+                or ClassManagementService(user=user).get_class_management_queryset.filter(course_id=course_id).first()
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.sale_status != BOUGHT:
+        if instance and instance.sale_status != BOUGHT:
             course = instance.course
             course.views = F("views") + 1
             course.save(update_fields=['views'])
