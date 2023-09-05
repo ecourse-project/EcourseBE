@@ -133,7 +133,7 @@ AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourses"),
+    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourse-db"),
 }
 
 

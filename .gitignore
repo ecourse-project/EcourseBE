@@ -317,3 +317,6 @@ flow
 test
 static
 staticfiles
+
+# Database
+data
