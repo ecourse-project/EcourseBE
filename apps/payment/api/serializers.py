@@ -34,3 +34,12 @@ class OrderSerializer(serializers.ModelSerializer):
         serializer_class = create_serializer_class(Course, ["id", "name", "description", "price"])
         return serializer_class(courses, many=True).data
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        total_price = representation.get("total_price")
+        if total_price is not None:
+            representation["total_price"] = 0
+
+        return representation
+

@@ -23,8 +23,8 @@ class ClassSerializer(CourseSerializer):
 
     def to_representation(self, obj):
         representation = super().to_representation(obj)
-        representation.pop("sold")
-        representation.pop("price")
+        representation.pop("sold", None)
+        representation.pop("price", None)
         return representation
 
 
@@ -57,8 +57,8 @@ class ClassManagementSerializer(serializers.ModelSerializer):
         for key in course_representation:
             representation[key] = course_representation[key]
 
-        representation.pop("sold")
-        representation.pop("price")
+        representation.pop("sold", None)
+        representation.pop("price", None)
 
         return representation
 

@@ -63,6 +63,15 @@ class CourseSerializer(serializers.ModelSerializer):
             "thumbnail",
         )
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        price = representation.get("price")
+        if price is not None:
+            representation["price"] = 0
+
+        return representation
+
 
 class CourseManagementSerializer(serializers.ModelSerializer):
     course = CourseSerializer()

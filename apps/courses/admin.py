@@ -72,7 +72,6 @@ class LessonAdmin(admin.ModelAdmin):
             f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
             for item in courses
         ]
-
         return format_html("<br>".join([res for res in html_res]))
 
     def class_include(self, obj):
@@ -81,7 +80,6 @@ class LessonAdmin(admin.ModelAdmin):
             f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
             for item in classes
         ]
-
         return format_html("<br>".join([res for res in html_res]))
 
     def save_related(self, request, form, formsets, change):
