@@ -3,8 +3,10 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django_better_admin_arrayfield.models.fields import ArrayField
+from model_utils.models import TimeStampedModel
 
 from apps.core.utils import get_media_url
+
 
 
 class User(AbstractUser):
@@ -36,3 +38,13 @@ class UserResetPassword(models.Model):
     email = models.CharField(max_length=100)
     password_reset = models.CharField(max_length=1000, null=True, blank=True)
     is_changed = models.BooleanField(default=True)
+
+
+class UserTracking(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    method = models.CharField(max_length=10, null=True, blank=True)
+    ip_address = models.CharField(max_length=15, null=True, blank=True)
+    path = models.CharField(max_length=100, null=True, blank=True)
+    query_params = models.JSONField(null=True, blank=True)
+    data = models.JSONField(null=True, blank=True)

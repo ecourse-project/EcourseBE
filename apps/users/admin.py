@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
-from apps.users.models import User, UserResetPassword
+from apps.users.models import User, UserResetPassword, UserTracking
 from apps.core.utils import id_generator
 
 
@@ -40,6 +40,18 @@ class UserResetPasswordAdmin(admin.ModelAdmin):
             obj.password_reset = new_password
         obj.save()
         UserResetPassword.objects.filter(email=email).update(is_changed=False)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(UserTracking)
+class UserTrackingAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'path',
+        'created',
+    )
 
     def has_change_permission(self, request, obj=None):
         return False
