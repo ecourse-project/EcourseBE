@@ -9,6 +9,7 @@ class Configuration(models.Model):
     unlimited_document_time = models.BooleanField(default=False)
     ip_address_limit = models.PositiveSmallIntegerField(default=3)
     unlimited_ip_addresses = models.BooleanField(default=False)
+    user_tracking = models.BooleanField(default=False)
 
 
 class PersonalInfo(models.Model):

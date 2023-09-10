@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_DB=ecourse-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=haibinh232
+    container_name: ecourse_db
+
+  api:
+    build:
+      context: .
+      dockerfile: containers/django/Dockerfile
+    volumes:
+      - .:/api
+    ports:
+      - 4000:4000
+    image: ecourse:latest
+    container_name: ecourse
+    command: python manage.py runserver 0.0.0.0:4000
+    env_file:
+      - ./containers/.env/.django
+    depends_on:
+      - db

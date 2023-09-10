@@ -38,7 +38,8 @@ class CartService:
         )
         return dict(
             id=cart.id,
-            total_price=cart.total_price,
+            # total_price=cart.total_price,
+            total_price=0,
             documents=DocumentManagementSerializer(doc_mngt.order_by("-last_update"), many=True).data,
             courses=CourseManagementSerializer(course_mngt.order_by("-last_update"), many=True).data
         )

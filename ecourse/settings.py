@@ -88,8 +88,15 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_PERMISSION_CLASSES": ("apps.users_auth.authentication.CustomIsAuthenticated",)
-
+    "DEFAULT_PERMISSION_CLASSES": ("apps.users_auth.authentication.CustomIsAuthenticated",),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "300/hour",
+    }
 }
 
 MIDDLEWARE = [
@@ -104,6 +111,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ecourse.custom_middleware.TimezoneMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'ecourse.custom_middleware.TrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'ecourse.urls'
@@ -133,7 +141,7 @@ AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourses"),
+    "default": env.db("DATABASE_URL", default="postgres://postgres:haibinh232@localhost/ecourse-db"),
 }
 
 

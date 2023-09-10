@@ -19,4 +19,3 @@ def update_user_ip(user: User, ip_address):
             if ip_address in user_unverified_ip:
                 user_unverified_ip.remove(ip_address)
                 user.unverified_ip_addresses = user_unverified_ip or None
-
