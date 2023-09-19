@@ -41,6 +41,7 @@ class ClassAdmin(admin.ModelAdmin):
         "id",
     )
     readonly_fields = ("is_selling", "price")
+    filter_horizontal = ("lessons",)
 
     def get_fields(self, request, obj=None):
         fields = super(ClassAdmin, self).get_fields(request, obj)
