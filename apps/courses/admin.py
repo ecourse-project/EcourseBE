@@ -65,6 +65,13 @@ class LessonAdmin(admin.ModelAdmin):
         "name",
     )
     readonly_fields = ("total_documents", "total_videos")
+    filter_horizontal = ("videos", "documents")
+
+    def get_fields(self, request, obj=None):
+        fields = super(LessonAdmin, self).get_fields(request, obj)
+        for field in ["total_documents", "total_videos"]:
+            fields.remove(field)
+        return fields
 
     def course_include(self, obj):
         courses = obj.courses.filter(course_of_class=False).values_list(*["id", "name"])
@@ -134,6 +141,7 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = (
         "name",
     )
+    filter_horizontal = ("lessons",)
 
     def get_fields(self, request, obj=None):
         fields = super(CourseAdmin, self).get_fields(request, obj)

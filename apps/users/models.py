@@ -8,7 +8,6 @@ from model_utils.models import TimeStampedModel
 from apps.core.utils import get_media_url
 
 
-
 class User(AbstractUser):
     username = models.CharField(max_length=10, default="ecourse")
     first_name = None
@@ -24,6 +23,7 @@ class User(AbstractUser):
     phone = models.CharField(default="", blank=True, max_length=30)
     ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
     unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
+    is_testing_user = models.BooleanField(default=False)
 
     def __str__(self):
         return self.email
@@ -32,6 +32,13 @@ class User(AbstractUser):
         if self.avatar:
             return get_media_url(self.avatar)
         return None
+
+
+class TestUser(User):
+    class Meta:
+        proxy = True
+        verbose_name = "user"
+        verbose_name_plural = "Test Users"
 
 
 class UserResetPassword(models.Model):

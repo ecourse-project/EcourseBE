@@ -34,6 +34,7 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "video_size",
         "video_type",
         "duration",
+        "order",
         "created",
     )
     readonly_fields = ("video_size", "video_type", "duration", "created")
