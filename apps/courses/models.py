@@ -35,7 +35,7 @@ class CourseDocument(TimeStampedModel):
 
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    lesson_number = models.SmallIntegerField(default=1, null=True, blank=True)
+    lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     name = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
     videos = models.ManyToManyField(UploadVideo, blank=True)

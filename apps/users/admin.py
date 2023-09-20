@@ -30,14 +30,15 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
     search_fields = ("email", "full_name", "phone")
     list_display = (
-        'email',
-        'full_name',
-        'phone',
+        "email",
+        "full_name",
+        "phone",
+        "last_login"
     )
 
     def get_fields(self, request, obj=None):
         fields = super(UserAdmin, self).get_fields(request, obj)
-        for field in ["groups", "user_permissions"]:
+        for field in ["groups", "user_permissions", "username"]:
             fields.remove(field)
         return fields
 

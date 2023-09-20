@@ -245,6 +245,12 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
             "document", "lesson", "course", "user",
         )
 
+    def get_fields(self, request, obj=None):
+        fields = super(CourseDocumentManagementAdmin, self).get_fields(request, obj)
+        for field in ["is_available"]:
+            fields.remove(field)
+        return fields
+
 
 @admin.register(VideoManagement)
 class VideoManagementAdmin(admin.ModelAdmin):

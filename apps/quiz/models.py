@@ -15,6 +15,9 @@ class AnswerChoices(TimeStampedModel):
     def __str__(self):
         return self.choice
 
+    class Meta:
+        ordering = ["choice"]
+
 
 class Quiz(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -29,6 +32,9 @@ class Quiz(TimeStampedModel):
     def __str__(self):
         return self.question
 
+    class Meta:
+        verbose_name = "quiz"
+        verbose_name_plural = "quiz"
 
 class Answer(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

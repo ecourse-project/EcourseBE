@@ -10,7 +10,7 @@ from apps.courses.services.admin import init_course_mngt
 def calculate_course_progress(course_mngt):
     total = course_mngt.total_docs_videos
     progress = round(100 * course_mngt.total_docs_videos_completed / total) if total != 0 else 0
-    if progress == 100:
+    if progress >= 100:
         course_mngt.status = COMPLETED
     elif progress < 100:
         course_mngt.status = IN_PROGRESS

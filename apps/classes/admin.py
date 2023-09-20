@@ -99,7 +99,6 @@ class ClassAdmin(admin.ModelAdmin):
 class ClassRequestAdmin(admin.ModelAdmin):
     list_filter = (
         "class_request__name",
-        "user",
     )
     search_fields = (
         "user__email",
@@ -146,6 +145,6 @@ class ClassManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        for field in ["init_data", "is_favorite"]:
+        for field in ["init_data", "is_favorite", "last_update", "sale_status"]:
             fields.remove(field)
         return fields
