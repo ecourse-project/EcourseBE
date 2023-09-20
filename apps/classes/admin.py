@@ -99,19 +99,23 @@ class ClassAdmin(admin.ModelAdmin):
 class ClassRequestAdmin(admin.ModelAdmin):
     list_filter = (
         "class_request__name",
-        "user",
     )
     search_fields = (
         "user__email",
+        "user__full_name",
         "class_request__name",
     )
     list_display = (
         "user",
+        "name",
         "class_request",
         "date_request",
         "accepted",
     )
     actions = (accept, deny)
+
+    def name(self, obj):
+        return obj.user.full_name
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ClassRequestAdmin, self).get_form(request, obj, **kwargs)
@@ -146,6 +150,6 @@ class ClassManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        for field in ["init_data", "is_favorite"]:
+        for field in ["init_data", "is_favorite", "last_update", "sale_status"]:
             fields.remove(field)
         return fields

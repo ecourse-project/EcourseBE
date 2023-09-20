@@ -9,7 +9,7 @@ from apps.courses.models import (
     CourseDocumentManagement,
     VideoManagement,
 )
-from apps.courses.enums import BOUGHT, PENDING
+from apps.courses.enums import BOUGHT, PENDING, IN_PROGRESS, COMPLETED
 
 
 class CourseService:
@@ -69,7 +69,12 @@ class CourseManagementService:
             progress = round(
                 100 * (docs_completed.count() + videos_completed.count()) / (all_docs.count() + all_videos.count())
             )
-        CourseManagement.objects.filter(user=self.user, course_id=course_id).update(progress=progress)
+
+        if progress >= 100:
+            CourseManagement.objects.filter(user=self.user, course_id=course_id).update(progress=progress, status=COMPLETED)
+        elif progress < 100:
+            CourseManagement.objects.filter(user=self.user, course_id=course_id).update(progress=progress, status=IN_PROGRESS)
+
         return progress
 
     def init_courses_management(self):
