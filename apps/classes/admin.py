@@ -102,15 +102,20 @@ class ClassRequestAdmin(admin.ModelAdmin):
     )
     search_fields = (
         "user__email",
+        "user__full_name",
         "class_request__name",
     )
     list_display = (
         "user",
+        "name",
         "class_request",
         "date_request",
         "accepted",
     )
     actions = (accept, deny)
+
+    def name(self, obj):
+        return obj.user.full_name
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ClassRequestAdmin, self).get_form(request, obj, **kwargs)
