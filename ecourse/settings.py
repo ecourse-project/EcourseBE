@@ -37,8 +37,13 @@ SECRET_KEY = 'django-insecure-0vv6d-m@%vjw60h8jxd42nb&pwi3t=t2pys3erjo^dbu6n(!q%
 DEBUG = env("DEBUG", default=False)
 
 INTERNAL_IPS = [
-    '127.0.0.1'
+    '127.0.0.1',
+    'localhost',
 ]
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
+}
 
 # Application definition
 

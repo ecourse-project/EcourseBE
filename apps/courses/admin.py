@@ -208,6 +208,9 @@ class CourseManagementAdmin(admin.ModelAdmin):
             fields.remove(field)
         return fields
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(LessonManagement)
 class LessonManagementAdmin(admin.ModelAdmin):
@@ -222,6 +225,9 @@ class LessonManagementAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(LessonManagementAdmin, self).get_queryset(request).select_related("lesson", "course")
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(CourseDocumentManagement)
@@ -251,6 +257,9 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
             fields.remove(field)
         return fields
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(VideoManagement)
 class VideoManagementAdmin(admin.ModelAdmin):
@@ -272,6 +281,9 @@ class VideoManagementAdmin(admin.ModelAdmin):
         return super(VideoManagementAdmin, self).get_queryset(request).select_related(
             "video", "lesson", "course", "user",
         )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 
