@@ -48,7 +48,7 @@ class ClassRequest(models.Model):
     accepted = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["class_request__name"]
+        ordering = ["user__full_name"]
 
 
 class ClassManagement(CourseManagement):

@@ -33,6 +33,9 @@ class User(AbstractUser):
             return get_media_url(self.avatar)
         return None
 
+    class Meta:
+        ordering = ["full_name", "email"]
+
 
 class TestUser(User):
     class Meta:

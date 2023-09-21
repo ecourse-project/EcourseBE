@@ -153,3 +153,6 @@ class ClassManagementAdmin(admin.ModelAdmin):
         for field in ["init_data", "is_favorite", "last_update", "sale_status"]:
             fields.remove(field)
         return fields
+
+    def has_delete_permission(self, request, obj=None):
+        return False
