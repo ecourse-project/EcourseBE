@@ -25,9 +25,10 @@ class CourseDocument(TimeStampedModel):
     description = models.TextField(null=True, blank=True)
     topic = models.ForeignKey(CourseTopic, related_name="course_docs", on_delete=models.SET_NULL, null=True, blank=True)
     file = models.ForeignKey(UploadFile, on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["order"]
 
     def __str__(self):
         return self.name
@@ -35,11 +36,11 @@ class CourseDocument(TimeStampedModel):
 
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     name = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
     videos = models.ManyToManyField(UploadVideo, blank=True)
     documents = models.ManyToManyField(CourseDocument, blank=True)
+    lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
 
