@@ -27,7 +27,7 @@ class Comment(TimeStampedModel):
     reply_comments = models.ManyToManyField(ReplyComment, blank=True)
 
     def __str__(self):
-        return f"{self.user.full_name} - {self.course.name}" if self.user else str(self.id)
+        return f"{self.user.full_name} - {self.course.name if self.course else ''}" if self.user else str(self.id)
 
 
 
