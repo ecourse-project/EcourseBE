@@ -115,7 +115,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
     actions = (accept, deny)
 
     def name(self, obj):
-        return obj.user.full_name
+        return obj.user.full_name if obj.user else ""
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ClassRequestAdmin, self).get_form(request, obj, **kwargs)

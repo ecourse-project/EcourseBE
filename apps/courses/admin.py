@@ -76,7 +76,7 @@ class LessonAdmin(admin.ModelAdmin):
     def course_include(self, obj):
         courses = obj.courses.filter(course_of_class=False).values_list(*["id", "name"])
         html_res = [
-            f'<a href="{settings.BASE_URL}/admin/classes/class/{item[0]}/change/">{item[1]}</a>'
+            f'<a href="{settings.BASE_URL}/admin/courses/course/{item[0]}/change/">{item[1]}</a>'
             for item in courses
         ]
         return format_html("<br>".join([res for res in html_res]))
