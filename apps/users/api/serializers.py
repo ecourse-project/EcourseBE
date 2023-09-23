@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "avatar",
             "phone",
+            "role",
         )
 
     @classmethod
