@@ -128,7 +128,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
-    list_filter = ("user", "course")
+    list_filter = ("course",)
     search_fields = (
         "user__email",
         "course__name",

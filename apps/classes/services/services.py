@@ -6,6 +6,7 @@ from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.enums import ACCEPTED, REQUESTED, AVAILABLE
 from apps.courses.models import Lesson, CourseDocument, Course
 from apps.users.models import User
+from apps.users.choices import MANAGER
 
 
 class ClassesService:
@@ -48,16 +49,21 @@ class ClassRequestService:
         return ClassRequest.objects.filter(Q(**{class_param: class_objs}) & Q(user=user))
 
     def add_request_status(self, data, field, user, class_objs):
+        is_dict_data = isinstance(data, dict)
+        if is_dict_data:
+            data = [data]
+
+        if user and user.is_authenticated and user.role == MANAGER:
+            for index, obj in enumerate(data):
+                data[index][field] = ACCEPTED
+            return data[0] if is_dict_data else data
+
         request_objs_ids = self.get_request_status_from_multiple_classes(user, class_objs).values_list("class_request_id", flat=True)
         request_obj_accepted_ids = request_objs_ids.filter(accepted=True).values_list("class_request_id", flat=True)
         request_obj_requested_ids = request_objs_ids.difference(request_obj_accepted_ids)
 
         request_obj_accepted_ids = [str(obj_id) for obj_id in request_obj_accepted_ids]
         request_obj_requested_ids = [str(obj_id) for obj_id in request_obj_requested_ids]
-
-        is_dict_data = isinstance(data, dict)
-        if is_dict_data:
-            data = [data]
 
         for index, obj in enumerate(data):
             if obj["id"] in request_obj_accepted_ids:

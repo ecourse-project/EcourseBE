@@ -112,7 +112,8 @@ export interface OFileUpload {
 }
 
 export interface IImageUpload {
-  file: string;
+  image: string;
+  is_avatar?: boolean;
 }
 
 export interface OImageUpload {
@@ -120,6 +121,7 @@ export interface OImageUpload {
   image_size: number;
   image_path: string;
   image_type: string;
+  is_avatar: boolean;
 }
 
 // ===========================================Documents===========================================

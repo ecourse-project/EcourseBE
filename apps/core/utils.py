@@ -68,6 +68,10 @@ def generate_file_name_by_id(obj_id):
     return ''.join(random.sample(obj_id, len(obj_id)))
 
 
+def generate_random_character(n=10):
+    return ''.join(random.choices(ascii_letters, k=n))
+
+
 def create_serializer_class(model_class, fields: Union[List, Tuple, Text]):
     meta_class = type('Meta', (object,), {'model': model_class, 'fields': fields})
     return type(f'{meta_class}Serializer', (ModelSerializer,), {'Meta': meta_class})

@@ -83,6 +83,7 @@ class UploadImageSerializer(serializers.ModelSerializer):
             "image_size",
             "image_path",
             "image_type",
+            "is_avatar",
         )
 
     @classmethod
