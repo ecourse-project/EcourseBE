@@ -6,6 +6,7 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 from model_utils.models import TimeStampedModel
 
 from apps.core.utils import get_media_url
+from apps.users.choices import ROLE_CHOICES, STUDENT
 
 
 class User(AbstractUser):
@@ -21,6 +22,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     avatar = models.CharField(null=True, blank=True, max_length=1000)
     phone = models.CharField(default="", blank=True, max_length=30)
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default=STUDENT)
     ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
     unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
     is_testing_user = models.BooleanField(default=False)

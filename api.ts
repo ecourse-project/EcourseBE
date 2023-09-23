@@ -58,12 +58,19 @@ export interface OVerifyToken {
 }
 
 // ===========================================Users===========================================
+
+export enum RoleEnum {
+  MANAGER='MANAGER',
+  STUDENT='STUDENT',
+}
+
 export interface User {
   id: string;
   email: string;
   full_name: string;
   avatar: string;
   phone: string;
+  role: RoleEnum;
 }
 
 export interface OIsExist {
