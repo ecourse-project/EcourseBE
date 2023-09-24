@@ -120,6 +120,7 @@ export interface OImageUpload {
   id: string;
   image_size: number;
   image_path: string;
+  image_short_path: string;
   image_type: string;
   is_avatar: boolean;
 }

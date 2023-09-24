@@ -8,10 +8,11 @@ from apps.users.exceptions import (
     PasswordNotMatchException,
 )
 from apps.carts.models import Cart, FavoriteList
+from apps.core.utils import get_media_url
+from apps.upload.models import UploadImage
 
 
 class UserSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
     email = serializers.EmailField(read_only=True)
 
     class Meta:
@@ -25,17 +26,15 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
         )
 
-    @classmethod
-    def get_avatar(cls, obj):
-        return obj.get_avatar()
+    def to_representation(self, obj):
+        representation = super(UserSerializer, self).to_representation(obj)
+        representation["avatar"] = get_media_url(obj.avatar) if obj.avatar else ""
+        return representation
 
-    # def update(self, instance, validated_data):
-    #     print(instance.avatar)
-    #     print(validated_data)
-    #     validated_data['first_name'] = self.initial_data.get('first_name', "")
-    #     # last_name = self.initial_data.get('last_name', "")
-    #     print(self.initial_data)
-    #     return instance
+    def update(self, instance, validated_data):
+        if validated_data.get("avatar") == "":
+            UploadImage.objects.filter(image_path=instance.avatar).delete() if instance.avatar is not None else ""
+        return super(UserSerializer, self).update(instance, validated_data)
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):

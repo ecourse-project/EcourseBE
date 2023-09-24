@@ -3,8 +3,6 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-from apps.users.models import User
-
 
 class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -22,12 +20,12 @@ class UploadFile(TimeStampedModel):
     def __str__(self):
         return str(self.file_name)
 
-    # def delete_file(self):
-    #     self.file_path.delete()
-    #
-    # def delete(self, *args, **kwargs):
-    #     self.delete_file()
-    #     super().delete(*args, **kwargs)
+    def delete_file(self):
+        self.file_path.delete()
+
+    def delete(self, *args, **kwargs):
+        self.delete_file()
+        super().delete(*args, **kwargs)
 
 
 class UploadImage(TimeStampedModel):
@@ -45,12 +43,12 @@ class UploadImage(TimeStampedModel):
     def __str__(self):
         return str(self.image_name)
 
-    # def delete_image(self):
-    #     self.image_path.delete()
-    #
-    # def delete(self, *args, **kwargs):
-    #     self.delete_image()
-    #     super().delete(*args, **kwargs)
+    def delete_image(self):
+        self.image_path.delete()
+
+    def delete(self, *args, **kwargs):
+        self.delete_image()
+        super().delete(*args, **kwargs)
 
 
 class UploadAvatar(UploadImage):
@@ -77,12 +75,12 @@ class UploadVideo(TimeStampedModel):
     def __str__(self):
         return str(self.video_name)
 
-    # def delete_video(self):
-    #     self.video_path.delete()
-    #
-    # def delete(self, *args, **kwargs):
-    #     self.delete_video()
-    #     super().delete(*args, **kwargs)
+    def delete_video(self):
+        self.video_path.delete()
+
+    def delete(self, *args, **kwargs):
+        self.delete_video()
+        super().delete(*args, **kwargs)
 
 
 class UploadCourse(models.Model):

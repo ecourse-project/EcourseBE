@@ -38,7 +38,7 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "created",
     )
     readonly_fields = ("video_size", "video_type", "duration", "created")
-    actions = (delete_data,)
+    # actions = (delete_data,)
 
     # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     # def Delete_All_Videos(self, request):
@@ -67,6 +67,10 @@ class UploadVideoAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         fields.remove("ip_address")
         return fields
 
+    def delete_queryset(self, request, queryset):
+        for data in queryset:
+            data.delete()
+
 
 @admin.register(UploadFile)
 class UploadFileAdmin(admin.ModelAdmin):
@@ -82,7 +86,7 @@ class UploadFileAdmin(admin.ModelAdmin):
         "created",
     )
     readonly_fields = ("file_size", "file_type", "created")
-    actions = (delete_data,)
+    # actions = (delete_data,)
 
     # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     # def Delete_All_Files(self, request):
@@ -95,6 +99,10 @@ class UploadFileAdmin(admin.ModelAdmin):
         return super(UploadFileAdmin, self).get_queryset(request).filter(
             ~Q(file_type__in=get_default_hidden_file_type())
         )
+
+    def delete_queryset(self, request, queryset):
+        for data in queryset:
+            data.delete()
 
     def get_fields(self, request, obj=None):
         fields = super(UploadFileAdmin, self).get_fields(request, obj)
@@ -138,7 +146,7 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         "created",
     )
     readonly_fields = ("image_size", "image_type", "created")
-    actions = (delete_data,)
+    # actions = (delete_data,)
 
     def image_url(self, obj):
         return settings.BASE_URL + obj.image_path.url
@@ -146,6 +154,9 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     def get_queryset(self, request):
         return super(UploadImageAdmin, self).get_queryset(request).filter(is_avatar=False)
 
+    def delete_queryset(self, request, queryset):
+        for data in queryset:
+            data.delete()
     # @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     # def Delete_All_Images(self, request):
     #     qs = self.get_queryset(request)
@@ -201,6 +212,10 @@ class UploadAvatarAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(UploadAvatarAdmin, self).get_queryset(request).filter(is_avatar=True)
+
+    def delete_queryset(self, request, queryset):
+        for data in queryset:
+            data.delete()
 
     def get_fields(self, request, obj=None):
         fields = super(UploadAvatarAdmin, self).get_fields(request, obj)
