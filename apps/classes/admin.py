@@ -128,7 +128,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
-    list_filter = ("user", "course")
+    list_filter = ("course",)
     search_fields = (
         "user__email",
         "course__name",
@@ -155,4 +155,7 @@ class ClassManagementAdmin(admin.ModelAdmin):
         return fields
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        if obj and ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True):
+            return False
+        # if ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True)
+        return True

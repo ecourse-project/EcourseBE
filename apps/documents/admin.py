@@ -76,3 +76,6 @@ class DocumentManagementAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(DocumentManagementAdmin, self).get_queryset(request).select_related("user", "document")
+
+    def has_delete_permission(self, request, obj=None):
+        return False

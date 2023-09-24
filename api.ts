@@ -58,12 +58,19 @@ export interface OVerifyToken {
 }
 
 // ===========================================Users===========================================
+
+export enum RoleEnum {
+  MANAGER='MANAGER',
+  STUDENT='STUDENT',
+}
+
 export interface User {
   id: string;
   email: string;
   full_name: string;
   avatar: string;
   phone: string;
+  role: RoleEnum;
 }
 
 export interface OIsExist {
@@ -105,14 +112,17 @@ export interface OFileUpload {
 }
 
 export interface IImageUpload {
-  file: string;
+  image: string;
+  is_avatar?: boolean;
 }
 
 export interface OImageUpload {
   id: string;
   image_size: number;
   image_path: string;
+  image_short_path: string;
   image_type: string;
+  is_avatar: boolean;
 }
 
 // ===========================================Documents===========================================

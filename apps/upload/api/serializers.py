@@ -75,6 +75,7 @@ class UploadFileSerializer(serializers.ModelSerializer):
 
 class UploadImageSerializer(serializers.ModelSerializer):
     image_path = serializers.SerializerMethodField()
+    image_short_path = serializers.SerializerMethodField()
 
     class Meta:
         model = UploadImage
@@ -82,9 +83,15 @@ class UploadImageSerializer(serializers.ModelSerializer):
             "id",
             "image_size",
             "image_path",
+            "image_short_path",
             "image_type",
+            "is_avatar",
         )
 
     @classmethod
     def get_image_path(cls, obj):
-        return settings.BASE_URL + obj.image_path.url
+        return (settings.BASE_URL + obj.image_path.url) if obj.image_path else ""
+
+    @classmethod
+    def get_image_short_path(cls, obj):
+        return obj.image_path.name if obj.image_path else ""

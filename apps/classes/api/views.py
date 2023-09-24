@@ -11,6 +11,7 @@ from apps.classes.enums import ACCEPTED
 from apps.courses.models import Course
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
+from apps.users.choices import MANAGER
 
 
 class JoinRequestView(APIView):
@@ -74,7 +75,9 @@ class ClassDetailView(generics.RetrieveAPIView):
 
     @staticmethod
     def is_accepted(user, class_obj):
-        return ClassRequestService().get_user_request_status(user=user, class_obj=class_obj) == ACCEPTED
+        if not user.is_anonymous:
+            return True if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=class_obj) == ACCEPTED
+        return False
 
     def get_serializer_class(self):
         class_obj = ClassesService().get_all_classes_queryset.filter(id=self.request.query_params.get("class_id")).first()

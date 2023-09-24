@@ -3,15 +3,7 @@ from django.conf import settings
 from django.utils.html import format_html
 
 from apps.comments.models import ReplyComment, Comment
-
-
-def display_content(content):
-    if content:
-        max_element = 10
-        content_elements = content.split(" ")
-        summary_content = " ".join(content_elements[:max_element])
-        return summary_content + "..." if len(content_elements) > 10 else summary_content
-    return ""
+from apps.core.utils import get_summary_content
 
 
 @admin.register(Comment)
@@ -26,7 +18,7 @@ class CommentAdmin(admin.ModelAdmin):
     )
 
     def summary_content(self, obj):
-        return display_content(obj.content)
+        return get_summary_content(obj.content)
 
     def name(self, obj):
         return obj.user.full_name if obj.user else ""
@@ -52,7 +44,7 @@ class ReplyCommentAdmin(admin.ModelAdmin):
     )
 
     def summary_content(self, obj):
-        return display_content(obj.content)
+        return get_summary_content(obj.content)
 
     def name(self, obj):
         return obj.user.full_name if obj.user else ""

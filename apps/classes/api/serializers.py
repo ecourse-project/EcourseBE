@@ -3,7 +3,9 @@ from rest_framework import serializers
 from apps.courses.api.serializers import LessonSerializer, TopicSerializer, CourseSerializer, CourseManagementSerializer
 from apps.classes.models import Class, ClassManagement
 from apps.classes.services.services import ClassRequestService
+from apps.classes.enums import ACCEPTED
 from apps.upload.api.serializers import UploadImageSerializer
+from apps.users.choices import MANAGER
 
 
 class ClassSerializer(CourseSerializer):
@@ -18,7 +20,7 @@ class ClassSerializer(CourseSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+            return ACCEPTED if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=obj)
         return None
 
     def to_representation(self, obj):
@@ -46,7 +48,7 @@ class ClassManagementSerializer(serializers.ModelSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
+            return ACCEPTED if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
         return None
 
     def to_representation(self, obj):

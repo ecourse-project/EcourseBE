@@ -3,8 +3,6 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
-from apps.users.models import User
-
 
 class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -37,6 +35,7 @@ class UploadImage(TimeStampedModel):
     image_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     image_type = models.CharField(max_length=10, null=True, blank=True)
     ip_address = models.CharField(max_length=128, null=True, blank=True)
+    is_avatar = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["image_name"]
@@ -50,6 +49,12 @@ class UploadImage(TimeStampedModel):
     def delete(self, *args, **kwargs):
         self.delete_image()
         super().delete(*args, **kwargs)
+
+
+class UploadAvatar(UploadImage):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "User Avatar"
 
 
 class UploadVideo(TimeStampedModel):
