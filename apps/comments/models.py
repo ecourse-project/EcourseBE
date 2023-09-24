@@ -13,7 +13,7 @@ class ReplyComment(TimeStampedModel):
     content = models.TextField(null=True, blank=True)
 
     class Meta:
-        ordering = ['-created']
+        ordering = ['created']
 
     def __str__(self):
         return f"{self.user.full_name} - {self.user.email}" if self.user else str(self.id)
