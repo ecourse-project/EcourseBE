@@ -125,6 +125,16 @@ export interface OImageUpload {
   is_avatar: boolean;
 }
 
+export interface UploadImageSuccess {
+  id: string;
+  image_path: string;
+  image_short_path: string;
+  image_size: number;
+  image_type: string;
+  is_avatar: boolean;
+}
+}
+
 // ===========================================Documents===========================================
 export interface DocumentTopic {
   id: string;
@@ -385,45 +395,67 @@ export interface RatingStats {
 }
 
 // ===========================================Quiz===========================================
-export enum AnswerChoiceEnum {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  NO_CHOICE = '-1',
+export enum QuestionTypeEnum {
+  CHOICES = 'CHOICES',
+  MATCH = 'MATCH',
+  FILL = 'FILL',
+}
+
+export enum ContentTypeEnum {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+}
+
+export interface MatchQuestion {
+  content: string;
+  first_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
+  second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
+}
+
+export interface ChoicesQuestion {
+  content: string;
+  content_type: ContentTypeEnum;
+  choices: Array<{choice: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
 }
 
 export interface Quiz {
   id: string;
-  course: string;
-  question: string;
-  A: string;
-  B: string;
-  C: string;
-  D: string;
+  order: number;
+  question_type: QuestionTypeEnum;
+  choices_question?: ChoicesQuestion;
+  match_question?: MatchQuestion;
+
 }
 
 export interface UserAnswersArgs {
   quiz_id: string;
-  answer_choice: AnswerChoiceEnum;
-  correct_answer?: AnswerChoiceEnum;
+  question_type: QuestionTypeEnum;
+  answer: string | Array<Array<string>>;
 }
 
 export interface QuizResultArgs {
   course_id: string;
-  answers: UserAnswersArgs[];
+  user_answers: UserAnswersArgs[];
 }
 
-export interface CorrectAnswer {
-  id: string;
-  correct_answer: AnswerChoiceEnum;
+export interface ChoicesQuizAnswer {
+  correct: number;
+  total: number;
+  result: Array<{quiz_id: string, user_answer: string, correct_answer: string}>;
+}
+
+export interface MatchQuizAnswer {
+  quiz_id: string;
+  correct: number;
+  total: number;
+  user_answer: Array<Array<string>>;
+  correct_answer: Array<Array<string>>;
 }
 
 export interface QuizResult {
-  mark?: number;
-  correct_answers: number;
-  total_quiz: number;
-  quiz_answers: UserAnswersArgs[];
+  mark: number;
+  choices_quiz: ChoicesQuizAnswer;
+  match_quiz: MatchQuizAnswer[];
 }
 
 // ===========================================Setting===========================================
@@ -595,6 +627,8 @@ export const apiURL = {
   listPostTopics: () =>  `api/posts/topics/`,
 
   getPaymentInfo: () => `api/configuration/payment-info/`,
+
+  uploadImage: () => 'api/upload/upload-images/',
 };
 
 class CourseService {
@@ -823,5 +857,8 @@ class CourseService {
     return apiClient.get(apiURL.getPaymentInfo());
   }
 
+  static uploadImage(data: any): Promise<any> {
+    return apiClient.post(apiURL.uploadImage(), data);
+  }
 }
 export default CourseService;
