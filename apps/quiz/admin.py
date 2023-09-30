@@ -44,7 +44,6 @@ class ChoicesQuizQuestionAdmin(admin.ModelAdmin):
         'content_image',
         'content_type',
         'correct_answer',
-        'course',
     )
 
     def get_queryset(self, request):

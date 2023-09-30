@@ -9,19 +9,20 @@ from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
 
 from apps.documents.models import Document
 from apps.courses.models import LessonManagement, VideoManagement, CourseDocumentManagement, Course
-from apps.classes.models import Class
+# from apps.classes.models import Class
 from apps.posts.models import Post
 
-from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-from apps.courses.api.serializers import ListCourseSerializer, ListCourseManagementSerializer
-from apps.classes.api.serializers import ListClassSerializer
-from apps.posts.api.serializers import PostSerializer
-
-from apps.documents.services.services import DocumentService
-from apps.courses.services.services import CourseService
-from apps.classes.services.services import ClassesService
-from apps.posts.services.services import PostsService
+# from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
+# from apps.courses.api.serializers import ListCourseSerializer, ListCourseManagementSerializer
+# from apps.classes.api.serializers import ListClassSerializer
+# from apps.posts.api.serializers import PostSerializer
+#
+# from apps.documents.services.services import DocumentService
+# from apps.courses.services.services import CourseService
+# from apps.classes.services.services import ClassesService
+# from apps.posts.services.services import PostsService
 from apps.classes.services.services import ClassRequestService
+from apps.quiz.services.services import quiz_statistic
 
 
 class CustomListDataServices:
@@ -98,25 +99,7 @@ class CustomDictDataServices:
         return data
 
     def add_quiz_detail(self, data: dict, field: str):
-        # quiz_detail = {}
-        # quiz_answers = []
-        # correct_answers = 0
-        # total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
-        #
-        # for answer in total_answers:
-        #     quiz_answers.append({
-        #         "quiz_id": answer.quiz_id,
-        #         "answer_choice": answer.choice,
-        #         "correct_answer": answer.quiz.correct_answer.choice
-        #     })
-        #     if answer.choice == answer.quiz.correct_answer.choice:
-        #         correct_answers += 1
-        #
-        # quiz_detail["correct_answers"] = correct_answers
-        # quiz_detail["total_quiz"] = len(total_answers)
-        # quiz_detail["quiz_answers"] = quiz_answers
-        # data[field] = quiz_detail
-
+        data[field] = quiz_statistic(user=self.user, course_id=data['id'])
         return data
 
     def add_rating(self, data: dict, field: str):

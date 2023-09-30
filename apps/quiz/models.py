@@ -50,7 +50,6 @@ class ChoicesQuizQuestion(TimeStampedModel):
     content_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
     choices = models.ManyToManyField(ChoicesQuizAnswer, blank=True)
     correct_answer = models.ForeignKey(ChoicesQuizChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         content = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.content_text or 'None', 9)}"
