@@ -110,7 +110,7 @@ def user_correct_quiz_match(user, course_id) -> List[Dict]:
         )
     )
     if not match_quiz:
-        return {}
+        return []
 
     user_match_answers = MatchColumnUserAnswer.objects.filter(
         Q(
