@@ -21,7 +21,7 @@ def store_user_answers(user, user_answers):
     choice_answer_objs = [
         ChoicesQuizUserAnswer(
             user=user,
-            quiz_id=choice_obj.get("question_id"),
+            quiz_id=choice_obj.get("quiz_id"),
             choice_id=choice_obj.get("answer")
         )
         for choice_obj in choice_type_objs
@@ -30,7 +30,7 @@ def store_user_answers(user, user_answers):
     match_answer_obj = [
         MatchColumnUserAnswer(
             user=user,
-            quiz_id=match_obj.get("question_id"),
+            quiz_id=match_obj.get("quiz_id"),
             first_content_id=answer[0],
             second_content_id=answer[1]
         )
