@@ -84,3 +84,7 @@ def get_summary_content(content, max_word=10):
         return summary + "..." if len(content_elements) > max_word else summary
     return ""
 
+
+def remove_punctuation(input_string):
+    return re.sub(r'[^\w\s]', '', input_string)
+

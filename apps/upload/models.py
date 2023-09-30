@@ -65,7 +65,7 @@ class UploadVideo(TimeStampedModel):
     video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     video_type = models.CharField(max_length=10, null=True, blank=True)
     video_embedded_url = models.TextField(null=True, blank=True)
-    duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
+    duration = models.PositiveIntegerField(null=True, blank=True, help_text="Seconds")
     use_embedded_url = models.BooleanField(default=False)
     ip_address = models.CharField(max_length=128, null=True, blank=True)
 

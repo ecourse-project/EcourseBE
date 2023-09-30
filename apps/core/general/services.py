@@ -3,7 +3,7 @@ from django.db.models import QuerySet, Q
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
 from apps.users.models import User
-from apps.quiz.models import Answer
+# from apps.quiz.models import Answer
 from apps.core.general import enums
 from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
 
@@ -98,24 +98,24 @@ class CustomDictDataServices:
         return data
 
     def add_quiz_detail(self, data: dict, field: str):
-        quiz_detail = {}
-        quiz_answers = []
-        correct_answers = 0
-        total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
-
-        for answer in total_answers:
-            quiz_answers.append({
-                "quiz_id": answer.quiz_id,
-                "answer_choice": answer.choice,
-                "correct_answer": answer.quiz.correct_answer.choice
-            })
-            if answer.choice == answer.quiz.correct_answer.choice:
-                correct_answers += 1
-
-        quiz_detail["correct_answers"] = correct_answers
-        quiz_detail["total_quiz"] = len(total_answers)
-        quiz_detail["quiz_answers"] = quiz_answers
-        data[field] = quiz_detail
+        # quiz_detail = {}
+        # quiz_answers = []
+        # correct_answers = 0
+        # total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
+        #
+        # for answer in total_answers:
+        #     quiz_answers.append({
+        #         "quiz_id": answer.quiz_id,
+        #         "answer_choice": answer.choice,
+        #         "correct_answer": answer.quiz.correct_answer.choice
+        #     })
+        #     if answer.choice == answer.quiz.correct_answer.choice:
+        #         correct_answers += 1
+        #
+        # quiz_detail["correct_answers"] = correct_answers
+        # quiz_detail["total_quiz"] = len(total_answers)
+        # quiz_detail["quiz_answers"] = quiz_answers
+        # data[field] = quiz_detail
 
         return data
 

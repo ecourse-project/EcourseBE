@@ -117,7 +117,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'ecourse.custom_middleware.TimezoneMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'ecourse.custom_middleware.TrackingMiddleware',
+    # 'ecourse.custom_middleware.TrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'ecourse.urls'
