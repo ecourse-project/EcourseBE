@@ -47,7 +47,6 @@ class ChoicesQuizQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChoicesQuizQuestion
         fields = (
-            "course",
             "content_text",
             "content_image",
             "content_type",

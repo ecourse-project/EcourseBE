@@ -1,3 +1,5 @@
+import datetime
+
 from django.db.models import Prefetch
 from django.http import FileResponse
 
@@ -62,8 +64,14 @@ class QuizResultView(APIView):
         if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
             raise CompletedQuizException
         store_user_answers(user=user, user_answers=answers)
+
+        user_quiz_info = quiz_statistic(user=user, course_id=course_id)
+        CourseManagement.objects.filter(user=user, course_id=course_id).update(
+            mark=user_quiz_info["mark"], is_done_quiz=True, date_done_quiz=datetime.datetime.now()
+        )
+
         return Response(
-            data=quiz_statistic(user=user, course_id=course_id),
+            data=user_quiz_info,
             status=status.HTTP_200_OK,
         )
 
