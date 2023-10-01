@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from apps.quiz.enums import (
     QUESTION_TYPE_CHOICES,
@@ -11,7 +11,40 @@ from apps.quiz.models import (
     MatchColumnUserAnswer,
     QuizManagement,
     MatchColumnMatchAnswer,
+    MatchColumnContent,
+    ChoicesQuizAnswer,
 )
+from apps.configuration.models import Configuration
+
+
+def get_quiz_queryset():
+    return QuizManagement.objects.select_related(
+            "course",
+            "choices_question",
+            "match_question",
+        ).prefetch_related(
+            Prefetch(
+                "match_question__first_column",
+                queryset=MatchColumnContent.objects.select_related("content_image")
+            ),
+            Prefetch(
+                "match_question__second_column",
+                queryset=MatchColumnContent.objects.select_related("content_image")
+            ),
+            Prefetch(
+                "choices_question__choices",
+                queryset=ChoicesQuizAnswer.objects.select_related("answer_image", "choice_name")
+            ),
+        )
+
+
+def get_user_choice_answer_queryset(qs=None):
+    res = qs if qs else ChoicesQuizUserAnswer.objects.all()
+    return res.select_related(
+            "user", "quiz", "choice",
+        ).prefetch_related(
+            Prefetch("quiz", queryset=get_quiz_queryset())
+        )
 
 
 def store_user_answers(user, user_answers):
@@ -46,28 +79,27 @@ def store_user_answers(user, user_answers):
     return choice_answer_objs, match_answer_obj
 
 
-def user_correct_quiz_choices(user, course_id) -> Dict:
-    total = QuizManagement.objects.filter(
+def user_correct_quiz_choices(user, course_id, lesson_id) -> Dict:
+    total_quiz = QuizManagement.objects.filter(
         Q(
             question_type=QUESTION_TYPE_CHOICES,
             choices_question__isnull=False,
             course_id=course_id,
+            lesson_id=lesson_id,
         )
-    ).count()
-    user_choice_answers = ChoicesQuizUserAnswer.objects.filter(
+    )
+    if not total_quiz:
+        return {"result": [], "correct": 0, "total": 0}
+
+    user_choice_answers = get_user_choice_answer_queryset().filter(
         Q(
             user=user,
-            quiz__course_id=course_id,
-            quiz__question_type=QUESTION_TYPE_CHOICES,
+            quiz__in=total_quiz,
         )
-    ).exclude(
-        Q(quiz__choices_question__isnull=True)
     )
 
-
-    correct = 0
-    res = {"result": [], "correct": correct, "total": total}
-    if not user_choice_answers or not total:
+    res = {"result": [], "correct": 0, "total": total_quiz.count()}
+    if not user_choice_answers or not res["total"]:
         return res
 
     for answer in user_choice_answers:
@@ -101,12 +133,13 @@ def get_total_correct_match(first_column, second_column) -> List[List[str]]:
     return res
 
 
-def user_correct_quiz_match(user, course_id) -> List[Dict]:
+def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
     match_quiz = QuizManagement.objects.filter(
         Q(
             question_type=QUESTION_TYPE_MATCH,
             match_question__isnull=False,
             course_id=course_id,
+            lesson_id=lesson_id,
         )
     )
     if not match_quiz:
@@ -115,12 +148,7 @@ def user_correct_quiz_match(user, course_id) -> List[Dict]:
     user_match_answers = MatchColumnUserAnswer.objects.filter(
         Q(
             user=user,
-            quiz__course_id=course_id,
-            quiz__question_type=QUESTION_TYPE_MATCH,
-        )
-    ).exclude(
-        Q(
-            quiz__match_question__isnull=True,
+            quiz__in=match_quiz,
         )
     )
 
@@ -136,20 +164,17 @@ def user_correct_quiz_match(user, course_id) -> List[Dict]:
         for answer in user_match_answers.filter(quiz_id=quiz.id):
             first = str(answer.first_content_id)
             second = str(answer.second_content_id)
-            if [first, second] in correct_match:
+            if [first, second] in correct_match or [second, first] in correct_match:
                 quiz_info["user_answer"].append([first, second])
-                quiz_info["correct"] += 1
-            elif [second, first] in correct_match:
-                quiz_info["user_answer"].append([second, first])
                 quiz_info["correct"] += 1
         res.append(quiz_info)
 
     return res
 
 
-def quiz_statistic(user, course_id):
-    choices_quiz = user_correct_quiz_choices(user, course_id)
-    match_quiz = user_correct_quiz_match(user, course_id)
+def quiz_statistic(user, course_id, lesson_id):
+    choices_quiz = user_correct_quiz_choices(user, course_id, lesson_id)
+    match_quiz = user_correct_quiz_match(user, course_id, lesson_id)
     valid_match_quiz = [quiz for quiz in match_quiz if quiz["total"]]
 
     res = {
@@ -166,6 +191,26 @@ def quiz_statistic(user, course_id):
     res["mark"] = round(total_mark * mark_per_quiz, 2)
 
     return res
+
+
+def response_quiz_statistic(quiz_statistic):
+    config = Configuration.objects.first()
+
+    if config and (not config.display_correct_answer or not config.display_mark):
+        choices_quiz = quiz_statistic["choices_quiz"]
+        match_quiz = quiz_statistic["match_quiz"]
+        if not config.display_correct_answer:
+            [result.pop("correct_answer", None) for result in choices_quiz["result"]]
+            [obj.pop("correct_answer", None) for obj in match_quiz]
+        if not config.display_mark:
+            quiz_statistic.pop("mark", None)
+            choices_quiz.pop("correct", None)
+            [obj.pop("correct", None) for obj in match_quiz]
+
+        quiz_statistic["choices_quiz"] = choices_quiz
+        quiz_statistic["match_quiz"] = match_quiz
+
+    return quiz_statistic
 
 
 def quiz_data_processing(obj: Dict):

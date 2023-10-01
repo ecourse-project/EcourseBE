@@ -1,9 +1,6 @@
-from django.db.models import QuerySet, Q
-
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
 from apps.users.models import User
-# from apps.quiz.models import Answer
 from apps.core.general import enums
 from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
 
@@ -11,18 +8,8 @@ from apps.documents.models import Document
 from apps.courses.models import LessonManagement, VideoManagement, CourseDocumentManagement, Course
 # from apps.classes.models import Class
 from apps.posts.models import Post
-
-# from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-# from apps.courses.api.serializers import ListCourseSerializer, ListCourseManagementSerializer
-# from apps.classes.api.serializers import ListClassSerializer
-# from apps.posts.api.serializers import PostSerializer
-#
-# from apps.documents.services.services import DocumentService
-# from apps.courses.services.services import CourseService
-# from apps.classes.services.services import ClassesService
-# from apps.posts.services.services import PostsService
 from apps.classes.services.services import ClassRequestService
-from apps.quiz.services.services import quiz_statistic
+from apps.quiz.services.services import quiz_statistic, response_quiz_statistic
 
 
 class CustomListDataServices:
@@ -99,7 +86,10 @@ class CustomDictDataServices:
         return data
 
     def add_quiz_detail(self, data: dict, field: str):
-        data[field] = quiz_statistic(user=self.user, course_id=data['id'])
+        for index, lesson in enumerate(data["lessons"], start=0):
+            data["lessons"][index][field] = response_quiz_statistic(
+                quiz_statistic(user=self.user, course_id=data['id'], lesson_id=lesson["id"])
+            )
         return data
 
     def add_rating(self, data: dict, field: str):
@@ -141,56 +131,6 @@ def search_item(item_name: str, search_type: str, user: User) -> dict:
 
     elif search_type.upper() == POST:
         response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
-
-    # if search_type.upper() == ALL:
-    #     documents = DocumentService().get_all_documents_queryset.filter(name__icontains=item_name)
-    #     courses = CourseService().get_all_courses_queryset.filter(name__icontains=item_name)
-    #     classes = ClassesService().get_all_classes_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["documents"] = DocumentSerializer(documents, many=True).data
-    #         response["courses"] = ListCourseSerializer(courses, many=True).data
-    #         response["classes"] = ListClassSerializer(classes, many=True).data
-    #     else:
-    #         response["documents"] = DocumentManagementSerializer(documents, many=True).data
-    #         response["courses"] = ListCourseManagementSerializer(courses, many=True).data
-    #         response["classes"] = CustomListDataServices(user=user).custom_response_list_data(
-    #             data=ListClassSerializer(classes, many=True).data,
-    #             fields=[enums.REQUEST_STATUS],
-    #             user=user,
-    #             class_objs=classes,
-    #         )
-    #     response["posts"] = PostSerializer(PostsService().get_all_posts_queryset.filter(name__icontains=item_name), many=True).data
-    #
-    # elif search_type.upper() == DOCUMENT:
-    #     documents = DocumentService().get_all_documents_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["documents"] = DocumentSerializer(documents, many=True).data
-    #     else:
-    #         response["documents"] = DocumentManagementSerializer(documents, many=True).data
-    #
-    # elif search_type.upper() == COURSE:
-    #     courses = CourseService().get_all_courses_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["courses"] = ListCourseSerializer(courses, many=True).data
-    #     else:
-    #         response["courses"] = ListCourseManagementSerializer(courses, many=True).data
-    #
-    # elif search_type.upper() == CLASS:
-    #     classes = ClassesService().get_all_classes_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["classes"] = ListClassSerializer(classes, many=True).data
-    #     else:
-    #         response["classes"] = CustomListDataServices(user=user).custom_response_list_data(
-    #             data=ListClassSerializer(classes, many=True).data,
-    #             fields=[enums.REQUEST_STATUS],
-    #             user=user,
-    #             class_objs=classes,
-    #         )
-    #
-    # elif search_type.upper() == POST:
-    #     response["posts"] = PostSerializer(
-    #         PostsService().get_all_posts_queryset.filter(name__icontains=item_name), many=True
-    #     ).data
 
     return response
 
