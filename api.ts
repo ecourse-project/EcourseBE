@@ -435,6 +435,7 @@ export interface UserAnswersArgs {
 
 export interface QuizResultArgs {
   course_id: string;
+  lesson_id: string;
   user_answers: UserAnswersArgs[];
 }
 
@@ -590,7 +591,7 @@ export const apiURL = {
   documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
-  listQuiz: (id) => `api/quiz/?course_id=${id}`,
+  listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
 
@@ -797,8 +798,8 @@ class CourseService {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
   }
 
-  static listQuiz(id: string): Promise<Quiz[]> {
-    return apiClient.get(apiURL.listQuiz(id));
+  static listQuiz(course_id: string, lesson_id: string): Promise<Quiz[]> {
+    return apiClient.get(apiURL.listQuiz(course_id, lesson_id));
   }
 
   static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {

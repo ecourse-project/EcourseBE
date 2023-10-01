@@ -1,7 +1,7 @@
 from django import forms
 
 from apps.core.utils import remove_punctuation
-from apps.quiz.models import FillBlankQuestion
+from apps.quiz.models import FillBlankQuestion, QuizManagement
 from apps.quiz.services.fill_blank_services import get_final_content
 
 
@@ -37,3 +37,17 @@ class FillBlankQuestionForm(forms.ModelForm):
             )
 
             self.fields["display_content"].initial = get_final_content(self.instance.hidden_words, res_default=self.instance.content)
+
+
+class QuizManagementForm(forms.ModelForm):
+    class Meta:
+        model = QuizManagement
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        course = cleaned_data.get('course')
+        lesson = cleaned_data.get('lesson')
+
+        if course and lesson and lesson not in course.lessons.all():
+            raise forms.ValidationError("Lesson do not belong to the course.")
