@@ -5,11 +5,21 @@ from apps.core.general import enums
 from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
 
 from apps.documents.models import Document
-from apps.courses.models import LessonManagement, VideoManagement, CourseDocumentManagement, Course
+from apps.courses.models import (
+    LessonManagement,
+    VideoManagement,
+    CourseDocumentManagement,
+    Course,
+)
 # from apps.classes.models import Class
 from apps.posts.models import Post
 from apps.classes.services.services import ClassRequestService
-from apps.quiz.services.services import quiz_statistic, response_quiz_statistic
+from apps.quiz.services.services import (
+    quiz_statistic,
+    response_quiz_statistic,
+    get_quiz_queryset,
+)
+from apps.quiz.api.serializers import QuizManagementSerializer
 
 
 class CustomListDataServices:
@@ -26,6 +36,8 @@ class CustomListDataServices:
                 data = self.class_request_service.add_request_status(data, field, self.user, kwargs.get("class_objs"))
             if field == enums.QUIZ_DETAIL:
                 data = self.add_quiz_detail(data, field)
+            if field == enums.LIST_QUIZ:
+                data = self.add_list_quiz(data, field)
         return data
 
     def add_docs_videos_completed(self, data: list, doc_field: str, video_field: str):
@@ -36,6 +48,11 @@ class CustomListDataServices:
     def add_quiz_detail(self, data: list, field: str):
         for index, dt in enumerate(data):
             data[index] = self.dict_data_service.add_quiz_detail(dt, field)
+        return data
+
+    def add_list_quiz(self, data: list, field: str):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.add_list_quiz(dt, field)
         return data
 
 
@@ -54,6 +71,8 @@ class CustomDictDataServices:
                 data = self.class_request_service.add_request_status(data, field, self.user, kwargs.get("class_objs"))
             if field == enums.QUIZ_DETAIL:
                 data = self.add_quiz_detail(data, field)
+            if field == enums.LIST_QUIZ:
+                data = self.add_list_quiz(data, field)
         return data
 
     def add_docs_videos_completed(self, data: dict, doc_field: str, video_field: str):
@@ -89,6 +108,16 @@ class CustomDictDataServices:
         for index, lesson in enumerate(data["lessons"], start=0):
             data["lessons"][index][field] = response_quiz_statistic(
                 quiz_statistic(user=self.user, course_id=data['id'], lesson_id=lesson["id"])
+            )
+        return data
+
+    def add_list_quiz(self, data: dict, field: str):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            data["lessons"][index][field] = (
+                QuizManagementSerializer(
+                    get_quiz_queryset().filter(course_id=data['id'], lesson_id=lesson["id"]),
+                    many=True,
+                ).data
             )
         return data
 

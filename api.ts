@@ -237,6 +237,7 @@ export interface Lesson {
   docs_completed?: string[];
   videos_completed?: string[];
   quiz_detail?: QuizResult;
+  list_quiz: Quiz[];
 }
 
 export interface Course {
