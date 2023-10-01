@@ -16,6 +16,7 @@ from apps.quiz.models import (
 )
 from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
+from apps.quiz.services.services import get_user_choice_answer_queryset
 
 
 @admin.register(ChoicesQuizChoiceName)
@@ -64,7 +65,7 @@ class QuizManagementAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChoicesQuizUserAnswer)
-class UserAnswerAdmin(admin.ModelAdmin):
+class ChoicesQuizUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'quiz',
@@ -72,7 +73,7 @@ class UserAnswerAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(UserAnswerAdmin, self).get_queryset(request).select_related("user", "quiz")
+        return get_user_choice_answer_queryset(super(ChoicesQuizUserAnswerAdmin, self).get_queryset(request))
 
 
 @admin.register(MatchColumnContent)
@@ -83,6 +84,9 @@ class MatchColumnContentAdmin(admin.ModelAdmin):
         'content_type',
     )
 
+    def get_queryset(self, request):
+        return super(MatchColumnContentAdmin, self).get_queryset(request).select_related("content_image")
+
 
 @admin.register(MatchColumnMatchAnswer)
 class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
@@ -91,12 +95,18 @@ class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
         'second_content',
     )
 
+    def get_queryset(self, request):
+        return super(MatchColumnMatchAnswerAdmin, self).get_queryset(request).select_related("first_content", "second_content")
+
 
 @admin.register(MatchColumnQuestion)
 class MatchColumnQuestionAdmin(admin.ModelAdmin):
     list_display = (
         'content',
     )
+
+    def get_queryset(self, request):
+        return super(MatchColumnQuestionAdmin, self).get_queryset(request)
 
 
 @admin.register(FillBlankQuestion)

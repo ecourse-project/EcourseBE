@@ -2,7 +2,6 @@ from rest_framework.permissions import BasePermission
 
 from apps.users_auth.services import update_user_ip
 from apps.users_auth.choices import LIMIT_IP_PATH
-from apps.configuration.models import Configuration
 
 from ipware import get_client_ip
 
