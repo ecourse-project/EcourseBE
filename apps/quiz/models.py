@@ -4,7 +4,7 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 
 from apps.users.models import User
-from apps.courses.models import Course
+from apps.courses.models import Course, Lesson
 from apps.quiz import enums
 from apps.upload.models import UploadImage
 from apps.core.utils import get_summary_content
@@ -149,6 +149,7 @@ class QuizManagement(TimeStampedModel):
     match_question = models.ForeignKey(MatchColumnQuestion, on_delete=models.SET_NULL, null=True, blank=True)
     fill_blank_question = models.ForeignKey(FillBlankQuestion, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.order} - {self.course.name if self.course else 'None'}"
