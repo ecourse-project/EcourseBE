@@ -14,7 +14,7 @@ from apps.quiz.models import (
     ChoicesQuizUserAnswer,
     QuizManagement,
 )
-from apps.quiz.forms import FillBlankQuestionForm
+from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
 
 
@@ -57,6 +57,7 @@ class QuizManagementAdmin(admin.ModelAdmin):
         'choices_question',
         'course',
     )
+    form = QuizManagementForm
 
     def get_queryset(self, request):
         return super(QuizManagementAdmin, self).get_queryset(request).select_related("choices_question", "course")

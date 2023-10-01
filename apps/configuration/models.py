@@ -10,6 +10,8 @@ class Configuration(models.Model):
     ip_address_limit = models.PositiveSmallIntegerField(default=3)
     unlimited_ip_addresses = models.BooleanField(default=False)
     user_tracking = models.BooleanField(default=False)
+    display_mark = models.BooleanField(default=True)
+    display_correct_answer = models.BooleanField(default=True)
 
 
 class PersonalInfo(models.Model):
