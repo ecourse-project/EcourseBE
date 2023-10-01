@@ -133,7 +133,6 @@ export interface UploadImageSuccess {
   image_type: string;
   is_avatar: boolean;
 }
-}
 
 // ===========================================Documents===========================================
 export interface DocumentTopic {
