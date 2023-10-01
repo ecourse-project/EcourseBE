@@ -237,6 +237,7 @@ export interface Lesson {
   documents: CourseDocument[];
   docs_completed?: string[];
   videos_completed?: string[];
+  quiz_detail?: QuizResult;
 }
 
 export interface Course {
@@ -260,7 +261,6 @@ export interface Course {
   is_favorite?: boolean;
   // rating_detail?: Rating[];
   // my_rating?: Rating;
-  quiz_detail?: QuizResult;
   // rating_stats?: RatingStats;
   request_status?: RequestStatus;
   course_of_class?: boolean;
@@ -442,7 +442,7 @@ export interface QuizResultArgs {
 export interface ChoicesQuizAnswer {
   correct: number;
   total: number;
-  result: Array<{quiz_id: string, user_answer: string, correct_answer: string}>;
+  result: Array<{quiz_id: string, user_answer: string, correct_answer?: string}>;
 }
 
 export interface MatchQuizAnswer {
@@ -450,11 +450,11 @@ export interface MatchQuizAnswer {
   correct: number;
   total: number;
   user_answer: Array<Array<string>>;
-  correct_answer: Array<Array<string>>;
+  correct_answer?: Array<Array<string>>;
 }
 
 export interface QuizResult {
-  mark: number;
+  mark?: number;
   choices_quiz: ChoicesQuizAnswer;
   match_quiz: MatchQuizAnswer[];
 }

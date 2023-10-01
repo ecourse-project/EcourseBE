@@ -12,6 +12,8 @@ class ConfigurationAdmin(admin.ModelAdmin):
         "unlimited_document_time",
         "ip_address_limit",
         "unlimited_ip_addresses",
+        "display_mark",
+        "display_correct_answer",
     )
 
     list_editable = (
@@ -19,6 +21,8 @@ class ConfigurationAdmin(admin.ModelAdmin):
         "unlimited_document_time",
         "ip_address_limit",
         "unlimited_ip_addresses",
+        "display_mark",
+        "display_correct_answer",
     )
 
     def has_delete_permission(self, request, obj=None):

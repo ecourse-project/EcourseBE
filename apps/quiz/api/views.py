@@ -1,6 +1,5 @@
 import datetime
 
-from django.db.models import Prefetch
 from django.http import FileResponse
 
 from rest_framework import generics, status
@@ -8,16 +7,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.quiz.models import (
-    ChoicesQuizAnswer,
-    QuizManagement,
-    MatchColumnContent,
-)
 from apps.quiz.api.serializers import QuizManagementSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.quiz.services.services import (
     store_user_answers,
     quiz_statistic,
+    response_quiz_statistic,
+    get_quiz_queryset,
 )
 from apps.courses.models import CourseManagement, Course
 from apps.courses.exceptions import NoItemException
@@ -29,49 +25,34 @@ from apps.quiz.certificate.templates import add_info_certificate, certificate_fo
 
 class ListQuizView(generics.ListAPIView):
     serializer_class = QuizManagementSerializer
-    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         course_id = self.request.query_params.get("course_id")
+        lesson_id = self.request.query_params.get("lesson_id")
         if not course_id:
             raise NoItemException("Missing course ID")
-        return QuizManagement.objects.select_related(
-            "course",
-            "choices_question",
-            "match_question",
-        ).prefetch_related(
-            Prefetch(
-                "match_question__first_column",
-                queryset=MatchColumnContent.objects.select_related("content_image")
-            ),
-            Prefetch(
-                "match_question__second_column",
-                queryset=MatchColumnContent.objects.select_related("content_image")
-            ),
-            Prefetch(
-                "choices_question__choices",
-                queryset=ChoicesQuizAnswer.objects.select_related("answer_image", "choice_name")
-            ),
-        ).filter(course_id=course_id)
+        if not lesson_id:
+            raise NoItemException("Missing lesson ID")
+        return get_quiz_queryset().filter(course_id=course_id, lesson_id=lesson_id)
 
 
 class QuizResultView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         course_id = data.get('course_id')
+        lesson_id = data.get('lesson_id')
         user = self.request.user
         answers = data.get('user_answers')
-        if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
-            raise CompletedQuizException
+        # if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
+        #     raise CompletedQuizException
         store_user_answers(user=user, user_answers=answers)
-
-        user_quiz_info = quiz_statistic(user=user, course_id=course_id)
-        CourseManagement.objects.filter(user=user, course_id=course_id).update(
-            mark=user_quiz_info["mark"], is_done_quiz=True, date_done_quiz=datetime.datetime.now()
-        )
+        user_quiz_info = quiz_statistic(user=user, course_id=course_id, lesson_id=lesson_id)
+        # CourseManagement.objects.filter(user=user, course_id=course_id).update(
+        #     mark=user_quiz_info["mark"], is_done_quiz=True, date_done_quiz=datetime.datetime.now()
+        # )
 
         return Response(
-            data=user_quiz_info,
+            data=response_quiz_statistic(user_quiz_info),
             status=status.HTTP_200_OK,
         )
 
