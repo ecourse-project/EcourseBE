@@ -48,7 +48,7 @@ class ChoicesQuizQuestionAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(ChoicesQuizQuestionAdmin, self).get_queryset(request).select_related("course", "correct_answer")
+        return super(ChoicesQuizQuestionAdmin, self).get_queryset(request).select_related("content_image", "correct_answer")
 
 
 @admin.register(QuizManagement)
