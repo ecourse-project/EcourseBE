@@ -88,3 +88,10 @@ def get_summary_content(content, max_word=10):
 def remove_punctuation(input_string):
     return re.sub(r'[^\w\s]', '', input_string)
 
+
+def remove_extra_substring(sentence, substring):
+    # Use regular expressions to remove extra occurrences of the substring
+    pattern = re.compile(f'({re.escape(substring)})+')
+    result = pattern.sub(substring, sentence)
+    return result
+

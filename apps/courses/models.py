@@ -102,8 +102,20 @@ class CourseManagement(TimeStampedModel):
         return f"{self.course.name} - {self.user.__str__()}"
 
 
+class LessonQuizManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course_mngt = models.ForeignKey(CourseManagement, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    is_done_quiz = models.BooleanField(default=False)
+    date_done_quiz = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
+
+
 class LessonManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_mngt", null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
 

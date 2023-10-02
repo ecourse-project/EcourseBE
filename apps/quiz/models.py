@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
+from django_better_admin_arrayfield.models.fields import ArrayField
+
 from apps.users.models import User
 from apps.courses.models import Course, Lesson
 from apps.quiz import enums
@@ -150,6 +152,7 @@ class QuizManagement(TimeStampedModel):
     fill_blank_question = models.ForeignKey(FillBlankQuestion, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True)
+    time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(minutes)")
 
     def __str__(self):
         return f"{self.order} - {self.course.name if self.course else 'None'}"
@@ -191,4 +194,20 @@ class ChoicesQuizUserAnswer(TimeStampedModel):
     class Meta:
         ordering = ["created"]
         verbose_name_plural = "Choices quiz - User answers"
+        verbose_name = "Answer"
+
+
+class FillBlankUserAnswer(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(QuizManagement, on_delete=models.CASCADE)
+    words = ArrayField(models.CharField(max_length=100), null=True, blank=True)
+
+    def __str__(self):
+        course_name = self.quiz.course.name if self.quiz and self.quiz.course else "None"
+        return f"{self.user.full_name} - {get_summary_content(course_name)}"
+
+    class Meta:
+        ordering = ["created"]
+        verbose_name_plural = "Fill blank - User answers"
         verbose_name = "Answer"
