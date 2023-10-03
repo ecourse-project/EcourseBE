@@ -270,11 +270,15 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-EMAIL_USE_TLS = env("EMAIL_USE_TLS", default="EMAIL_USE_TLS")
-EMAIL_HOST = env("EMAIL_HOST", default="EMAIL_HOST")
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
-EMAIL_PORT = env("EMAIL_PORT", default="EMAIL_PORT")
+
+# SEND EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default="EMAIL_USE_TLS")
+EMAIL_HOST = env.str("EMAIL_HOST", default="EMAIL_HOST")
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
+EMAIL_PORT = env.int("EMAIL_PORT", default="EMAIL_PORT")
+
 
 # CKEDITOR
 CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'

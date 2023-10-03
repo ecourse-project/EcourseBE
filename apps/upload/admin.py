@@ -5,6 +5,7 @@ from django.contrib import admin
 from django import forms
 from django.conf import settings
 from django.db.models import Q
+from django.utils.html import format_html
 
 from apps.core.utils import get_default_hidden_file_type
 from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument, UploadAvatar
@@ -149,7 +150,8 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     # actions = (delete_data,)
 
     def image_url(self, obj):
-        return settings.BASE_URL + obj.image_path.url
+        url = settings.BASE_URL + obj.image_path.url
+        return format_html(f'<a href="{url}">{url}</a>')
 
     def get_queryset(self, request):
         return super(UploadImageAdmin, self).get_queryset(request).filter(is_avatar=False)
@@ -208,7 +210,8 @@ class UploadAvatarAdmin(admin.ModelAdmin):
     readonly_fields = ("image_size", "image_type", "created")
 
     def image_url(self, obj):
-        return settings.BASE_URL + obj.image_path.url
+        url = settings.BASE_URL + obj.image_path.url
+        return format_html(f'<a href="{url}">{url}</a>')
 
     def get_queryset(self, request):
         return super(UploadAvatarAdmin, self).get_queryset(request).filter(is_avatar=True)

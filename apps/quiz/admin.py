@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
+from django.utils.html import format_html
+from django.conf import settings
 
 from apps.core.utils import get_summary_content
 from apps.quiz.models import (
@@ -18,6 +20,7 @@ from apps.quiz.models import (
 from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
 from apps.quiz.services.services import get_user_choice_answer_queryset
+from apps.quiz.enums import ANSWER_TYPE_TEXT, ANSWER_TYPE_IMAGE
 
 
 @admin.register(ChoicesQuizChoiceName)
@@ -43,7 +46,7 @@ class ChoicesQuizAnswerAdmin(admin.ModelAdmin):
 class ChoicesQuizQuestionAdmin(admin.ModelAdmin):
     list_display = (
         'content_text',
-        'content_image',
+        'content_image_url',
         'content_type',
         'correct_answer',
     )
@@ -51,42 +54,56 @@ class ChoicesQuizQuestionAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super(ChoicesQuizQuestionAdmin, self).get_queryset(request).select_related("content_image", "correct_answer")
 
-
-@admin.register(QuizManagement)
-class QuizManagementAdmin(admin.ModelAdmin):
-    list_display = (
-        'order',
-        'choices_question',
-        'question_type',
-        'course',
-    )
-    form = QuizManagementForm
-
-    def get_queryset(self, request):
-        return super(QuizManagementAdmin, self).get_queryset(request).select_related("choices_question", "course")
+    def content_image_url(self, obj):
+        if obj.content_image and obj.content_image.image_path:
+            url = settings.BASE_URL + obj.content_image.image_path.url
+            return format_html(f'<a href="{url}">{url}</a>')
+        return ""
 
 
 @admin.register(MatchColumnContent)
 class MatchColumnContentAdmin(admin.ModelAdmin):
     list_display = (
         'content_text',
-        'content_image',
+        'content_image_url',
         'content_type',
     )
 
     def get_queryset(self, request):
         return super(MatchColumnContentAdmin, self).get_queryset(request).select_related("content_image")
 
+    def content_image_url(self, obj):
+        if obj.content_image and obj.content_image.image_path:
+            url = settings.BASE_URL + obj.content_image.image_path.url
+            return format_html(f'<a href="{url}">{url}</a>')
+        return ""
+
 
 @admin.register(MatchColumnMatchAnswer)
 class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
     list_display = (
-        'first_content',
-        'second_content',
+        'first',
+        'second',
     )
 
     def get_queryset(self, request):
         return super(MatchColumnMatchAnswerAdmin, self).get_queryset(request).select_related("first_content", "second_content")
+
+    @staticmethod
+    def display_content(input_content):
+        if input_content and input_content.content_type == ANSWER_TYPE_TEXT:
+            return get_summary_content(input_content.content_text)
+        elif input_content and input_content.content_type == ANSWER_TYPE_IMAGE:
+            if input_content.content_image and input_content.content_image.image_path:
+                url = settings.BASE_URL + input_content.content_image.image_path.url
+                return format_html(f'<a href="{url}">{url}</a>')
+        return ""
+
+    def first(self, obj):
+        return self.display_content(obj.first_content)
+
+    def second(self, obj):
+        return self.display_content(obj.second_content)
 
 
 @admin.register(MatchColumnQuestion)
@@ -161,5 +178,22 @@ class FillBlankUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'quiz',
+        'words',
     )
     readonly_fields = ('created',)
+
+
+@admin.register(QuizManagement)
+class QuizManagementAdmin(admin.ModelAdmin):
+    list_display = (
+        'order',
+        'course',
+        'question_type',
+        'choices_question',
+        'match_question',
+        'fill_blank_question',
+    )
+    form = QuizManagementForm
+
+    def get_queryset(self, request):
+        return super(QuizManagementAdmin, self).get_queryset(request).select_related("choices_question", "course")
