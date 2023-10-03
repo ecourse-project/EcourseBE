@@ -15,15 +15,13 @@ from apps.quiz.services.services import (
     quiz_statistic,
     response_quiz_statistic,
     get_quiz_queryset,
+    validate_lesson_of_course,
 )
 from apps.quiz.services.certificate_services import insert_text_to_pdf
 from apps.quiz.certificate.templates import add_info_certificate, certificate_form
 from apps.courses.models import CourseManagement, LessonManagement, LessonQuizManagement, Course
 from apps.courses.exceptions import NoItemException
 from apps.core.utils import get_now
-
-
-
 
 
 class ListQuizView(generics.ListAPIView):
@@ -77,21 +75,20 @@ class QuizStartTimeView(APIView):
         is_start = self.request.query_params.get('is_start', '').lower() == "true"
         res = None
 
-        lesson_quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(
-            course_mngt__course_id=course_id,
-            lesson_id=lesson_id,
-        )
-        lesson_mngt = LessonManagement.objects.filter(course_id=course_id, lesson_id=lesson_id)
-        if lesson_quiz_mngt and lesson_mngt:
-            if is_start:
-                if lesson_quiz_mngt.start_time:
-                    res = lesson_quiz_mngt.start_time
-                else:
-                    res = get_now()
-                    lesson_quiz_mngt.start_time = res
-                    lesson_quiz_mngt.save(update_fields=["start_time"])
+        course_mngt = validate_lesson_of_course(self.request.user, lesson_id, course_id)
+        if not course_mngt:
+            raise NoItemException("Lesson does not exist or Lesson does not belong to the course")
+
+        lesson_quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(course_mngt=course_mngt, lesson_id=lesson_id)
+        if is_start:
+            if lesson_quiz_mngt.start_time:
+                res = lesson_quiz_mngt.start_time
             else:
-                res = lesson_quiz_mngt.start_time if lesson_quiz_mngt.start_time else res
+                res = get_now()
+                lesson_quiz_mngt.start_time = res
+                lesson_quiz_mngt.save(update_fields=["start_time"])
+        else:
+            res = lesson_quiz_mngt.start_time if lesson_quiz_mngt.start_time else res
 
         return Response(data={"start_time": res.isoformat() if isinstance(res, datetime.datetime) else None})
 
