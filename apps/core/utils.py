@@ -1,7 +1,9 @@
+import pytz
 import re
 import functools
 import random
 import time
+import datetime
 from typing import Union, List, Tuple, Text
 from string import ascii_letters, digits
 
@@ -94,4 +96,8 @@ def remove_extra_substring(sentence, substring):
     pattern = re.compile(f'({re.escape(substring)})+')
     result = pattern.sub(substring, sentence)
     return result
+
+
+def get_now(tz=pytz.timezone("Asia/Ho_Chi_Minh")):
+    return datetime.datetime.now(tz)
 

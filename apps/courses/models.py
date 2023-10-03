@@ -108,6 +108,7 @@ class LessonQuizManagement(TimeStampedModel):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     is_done_quiz = models.BooleanField(default=False)
     date_done_quiz = models.DateTimeField(null=True, blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
