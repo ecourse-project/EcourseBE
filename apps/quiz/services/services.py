@@ -18,6 +18,7 @@ from apps.quiz.models import (
 )
 from apps.quiz.services.fill_blank_services import get_list_hidden, check_correct
 from apps.configuration.models import Configuration
+from apps.courses.models import LessonManagement, CourseManagement
 
 
 def get_quiz_queryset():
@@ -302,3 +303,9 @@ def quiz_data_processing(obj: Dict):
         obj_clone.pop("match_question")
 
     return obj_clone
+
+
+def validate_lesson_of_course(user, lesson_id, course_id):
+    course_mngt = CourseManagement.objects.filter(course_id=course_id, user=user).first()
+    lesson_quiz_mngt = LessonManagement.objects.filter(course_id=course_id, lesson_id=lesson_id).first()
+    return course_mngt if course_mngt and lesson_quiz_mngt else CourseManagement.objects.none()
