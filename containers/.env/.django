@@ -5,9 +5,9 @@ PORT=4000
 DATABASE_URL=postgres://postgres:haibinh232@db/ecourse-db
 
 EMAIL_USE_TLS=True
-EMAIL_HOST=smtp-mail.outlook.com
-EMAIL_HOST_USER=ecourse.site@outlook.com
-EMAIL_HOST_PASSWORD=ecourse2022
+EMAIL_HOST=smtp.gmail.com
+EMAIL_HOST_USER=haibinh232@gmail.com
+EMAIL_HOST_PASSWORD=jnwc hufd qcbw zyvl
 EMAIL_PORT=587
 
 ACCESS_TOKEN_LIFETIME_MINUTES=1440
