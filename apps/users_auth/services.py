@@ -5,7 +5,7 @@ from apps.users_auth.exceptions import PermissionException
 
 def update_user_ip(user: User, ip_address):
     config = Configuration.objects.first()
-    user_ip = user.ip_addresses or []
+    user_ip = user.ip_addresses if user.is_authenticated and not user.is_anonymous else []
     if ip_address in user_ip:
         return
     else:
