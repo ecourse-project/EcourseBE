@@ -1,6 +1,6 @@
 from string import punctuation
 
-from quiz.enums import ADMIN_DISPLAY_SUBSTRING
+from apps.quiz.enums import ADMIN_DISPLAY_SUBSTRING
 
 from apps.core.utils import remove_punctuation
 
