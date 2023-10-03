@@ -653,10 +653,11 @@ class CourseService {
     return apiClient.get(apiURL.me());
   }
 
-  static updateInfo(phone?: string, full_name?: string): Promise<User> {
+  static updateInfo(phone?: string, full_name?: string, avatar?: string): Promise<User> {
     return apiClient.patch(apiURL.me(), {
         phone: phone,
         full_name: full_name,
+        avatar: avatar,
     });
   }
 
