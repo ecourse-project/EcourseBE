@@ -180,8 +180,8 @@ def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
         for answer in user_match_answers.filter(quiz_id=quiz.id):
             first = str(answer.first_content_id)
             second = str(answer.second_content_id)
+            quiz_info["user_answer"].append([first, second])
             if [first, second] in correct_match or [second, first] in correct_match:
-                quiz_info["user_answer"].append([first, second])
                 quiz_info["correct"] += 1
         res.append(quiz_info)
 
