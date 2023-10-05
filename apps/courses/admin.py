@@ -12,6 +12,7 @@ from apps.courses.models import (
     CourseManagement,
     CourseDocumentManagement,
     VideoManagement,
+    LessonQuizManagement,
 )
 from apps.courses.services.admin import (
     insert_remove_docs_videos,
@@ -275,3 +276,11 @@ class VideoManagementAdmin(admin.ModelAdmin):
         return super(VideoManagementAdmin, self).get_queryset(request).select_related(
             "video", "lesson", "course", "user",
         )
+
+
+@admin.register(LessonQuizManagement)
+class LessonQuizManagementAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+    )
+
