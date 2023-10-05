@@ -285,6 +285,7 @@ CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'
 
 CKEDITOR_CONFIGS = {
     'default': {
+        # "skin": "bootstrapck",
         "skin": "moono-lisa",
         "toolbar_Basic": [["Source", "-", "Bold", "Italic"]],
         "toolbar_Full": [

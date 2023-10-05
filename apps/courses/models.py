@@ -97,6 +97,7 @@ class CourseManagement(TimeStampedModel):
     class Meta:
         ordering = ["course__name"]
         verbose_name_plural = "Management - Courses"
+        unique_together = ('user', 'course')
 
     def __str__(self):
         return f"{self.course.name} - {self.user.__str__()}"

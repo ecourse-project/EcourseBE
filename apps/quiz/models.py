@@ -152,7 +152,7 @@ class QuizManagement(TimeStampedModel):
     fill_blank_question = models.ForeignKey(FillBlankQuestion, on_delete=models.SET_NULL, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True)
-    time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(minutes)")
+    time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(seconds)")
 
     def __str__(self):
         return f"{self.order} - {self.course.name if self.course else 'None'}"
