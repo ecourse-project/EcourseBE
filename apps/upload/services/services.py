@@ -1,11 +1,16 @@
+import datetime
 import json
 import os
+import pytz
+
+from django.conf import settings
 
 from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic, LessonManagement, CourseManagement
 from apps.courses.services.admin import prepare_course_mngt_to_create
 from apps.documents.models import Document, DocumentTopic, DocumentManagement
 from apps.documents.services.admin import prepare_doc_to_create
 from apps.users.services import get_active_users
+from apps.upload.enums import DIR
 
 
 class UploadCourseServices:
@@ -138,3 +143,31 @@ class UploadDocumentServices:
                 DocumentTopic.objects.create(name=document_topic)
             )
         return Document(**document, topic=document_topic)
+
+
+def file_dir_by_created(created: datetime.datetime):
+    tz = pytz.timezone(settings.TIME_ZONE)
+    created_tz = created.astimezone(tz)
+
+    directory_path = "/".join([
+        settings.MEDIA_ROOT.rstrip("/"),
+        created.strftime("%Y"),
+        created.strftime("%m"),
+        created.strftime("%d"),
+        DIR,
+    ])
+
+    if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+        return ""
+
+    created_timestamp = created_tz.timestamp()
+    for item in os.listdir(directory_path):
+        item_path = f"{directory_path}/{item}"
+        dir_created = os.path.getctime(item_path)
+        is_dir = os.path.isdir(item_path)
+        if is_dir and created_timestamp - 2 <= dir_created <= created_timestamp + 2:
+            return item_path
+
+    return ""
+
+
