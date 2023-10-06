@@ -13,8 +13,12 @@ from apps.upload.models import (
     UploadAvatar,
     UploadFolder,
 )
-from apps.upload.services.storage.base import store_file_upload
+from apps.upload.services.storage.base import (
+    store_file_upload,
+    upload_and_unzip_folder,
+)
 from apps.upload.enums import VIDEO, IMAGE, FILE
+from apps.upload.forms import UploadFolderForm
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from ipware.ip import get_client_ip
@@ -229,6 +233,7 @@ class UploadFolderAdmin(admin.ModelAdmin):
         "created",
     )
 
+
 # class DocumentUploadForm(forms.ModelForm):
 #     # Define your custom form field here
 #     document_to_generate = forms.ChoiceField(choices=[])
@@ -303,4 +308,75 @@ class UploadFolderAdmin(admin.ModelAdmin):
 #         obj.save()
 
 
-
+# class DocumentUploadForm(forms.ModelForm):
+#     # Define your custom form field here
+#     document_to_generate = forms.ChoiceField(choices=[])
+#
+#     class Meta:
+#         model = UploadDocument
+#         fields = '__all__'
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#
+#         # Define your custom field data retrieval logic here
+#         if self.instance:
+#             self.fields["document_to_generate"].choices = [("1", "1"), ("2", "2")]
+#
+#
+# class CourseUploadForm(forms.ModelForm):
+#     ROOT_DIR = "templates/data/courses/"
+#     course_to_generate = forms.ChoiceField(choices=[])
+#
+#     class Meta:
+#         model = UploadCourse
+#         fields = '__all__'
+#
+#     def get_course_title(self):
+#         return [name.replace("_", " ").title() for name in os.listdir(self.ROOT_DIR)]
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#
+#         # Define your custom field data retrieval logic here
+#         if self.instance:
+#             self.fields["course_to_generate"].choices = [("None", "None")] + [(name, name) for name in self.get_course_title()]
+#
+#
+# @admin.register(UploadCourse)
+# class UploadCourseAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "name",
+#         "is_class",
+#     )
+#     form = CourseUploadForm
+#
+#     def save_model(self, request, obj, form, change):
+#         if not change:
+#             data = obj.data
+#             if not data:
+#                 course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
+#                 if course_to_generate:
+#                     course_to_generate = course_to_generate.replace(" ", "_").lower()
+#                     data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
+#                     data["course_of_class"] = obj.is_class
+#             if data:
+#                 obj.name = data.get("name")
+#                 UploadCourseServices().create_course_data([data])
+#
+#         obj.save()
+#
+#
+# @admin.register(UploadDocument)
+# class UploadDocumentAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "name",
+#     )
+#     form = DocumentUploadForm
+#
+#     def save_model(self, request, obj, form, change):
+#         if obj.data and not change:
+#             obj.name = obj.data.get("name")
+#             UploadDocumentServices().create_document_data(obj.data)
+#
+#         obj.save()
