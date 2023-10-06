@@ -1,5 +1,7 @@
 from apps.documents.models import DocumentManagement, Document
+from apps.documents.enums import BOUGHT
 from django.utils.timezone import localtime
+from apps.users.choices import MANAGER
 
 
 class DocumentAdminService:
@@ -13,7 +15,12 @@ class DocumentAdminService:
 
 
 def prepare_doc_to_create(document: Document, users):
-    return [DocumentManagement(document=document, user=user) for user in users]
+    return [
+        DocumentManagement(document=document, user=user, sale_status=BOUGHT)
+        if user.role == MANAGER
+        else DocumentManagement(document=document, user=user)
+        for user in users
+    ]
 
 
 def init_doc_mngt(document: Document, users):

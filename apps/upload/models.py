@@ -83,6 +83,15 @@ class UploadVideo(TimeStampedModel):
         super().delete(*args, **kwargs)
 
 
+class UploadFolder(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    folder_path = models.FileField(max_length=255, null=True, blank=True, help_text="(.zip file)")
+
+    def __str__(self):
+        return str(self.name)
+
+
 class UploadCourse(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)

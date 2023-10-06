@@ -2,7 +2,7 @@ import os
 import uuid
 from math import ceil
 from datetime import datetime
-
+import zipfile
 
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -37,6 +37,7 @@ def store_file_upload(upload_obj, upload_path, upload_type):
         new_file_name=generate_file_name_by_id(str(upload_obj.id)),
         upload_type=upload_type,
     )
+
     default_storage.save(save_path, upload_path)
 
     if upload_type.lower() == IMAGE:

@@ -3,6 +3,7 @@ from django.utils.timezone import localtime
 from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement, CourseManagement, Course
 from apps.courses.enums import BOUGHT
 from apps.users.models import User
+from apps.users.choices import MANAGER
 from apps.courses.services.services import CourseManagementService
 
 
@@ -52,7 +53,12 @@ def get_users_by_joined_class(course_id):
 
 
 def prepare_course_mngt_to_create(course: Course, users):
-    return [CourseManagement(course=course, user=user) for user in users]
+    return [
+        CourseManagement(course=course, user=user, sale_status=BOUGHT, user_in_class=True)
+        if user.role == MANAGER
+        else CourseManagement(course=course, user=user)
+        for user in users
+    ]
 
 
 def init_course_mngt(course, users):

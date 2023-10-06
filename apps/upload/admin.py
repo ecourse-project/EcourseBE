@@ -1,16 +1,19 @@
 import os
-import json
 
 from django.contrib import admin
-from django import forms
 from django.conf import settings
 from django.db.models import Q
 from django.utils.html import format_html
 
 from apps.core.utils import get_default_hidden_file_type
-from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument, UploadAvatar
+from apps.upload.models import (
+    UploadImage,
+    UploadFile,
+    UploadVideo,
+    UploadAvatar,
+    UploadFolder,
+)
 from apps.upload.services.storage.base import store_file_upload
-from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
 from apps.upload.enums import VIDEO, IMAGE, FILE
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
@@ -110,6 +113,12 @@ class UploadFileAdmin(admin.ModelAdmin):
         fields.remove("ip_address")
         return fields
 
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
     def save_model(self, request, obj, form, change):
         if change:
             if obj.file_path and str(form.initial.get("file_path")) != str(obj.file_path):
@@ -125,12 +134,6 @@ class UploadFileAdmin(admin.ModelAdmin):
 
         obj.ip_address = get_client_ip(request)
         obj.save()
-
-    # def has_change_permission(self, request, obj=None):
-    #     return False
-
-    # def has_delete_permission(self, request, obj=None):
-    #     return False
 
 
 @admin.register(UploadImage)
@@ -188,13 +191,6 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         obj.save()
 
 
-    # def has_change_permission(self, request, obj=None):
-    #     return False
-
-    # def has_delete_permission(self, request, obj=None):
-    #     return False
-
-
 @admin.register(UploadAvatar)
 class UploadAvatarAdmin(admin.ModelAdmin):
     search_fields = (
@@ -225,6 +221,13 @@ class UploadAvatarAdmin(admin.ModelAdmin):
         fields.remove("ip_address")
         return fields
 
+
+@admin.register(UploadFolder)
+class UploadFolderAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "created",
+    )
 
 # class DocumentUploadForm(forms.ModelForm):
 #     # Define your custom form field here
