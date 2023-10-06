@@ -15,7 +15,6 @@ from apps.upload.models import (
 )
 from apps.upload.services.storage.base import (
     store_file_upload,
-    upload_and_unzip_folder,
 )
 from apps.upload.enums import VIDEO, IMAGE, FILE
 from apps.upload.forms import UploadFolderForm
@@ -232,7 +231,11 @@ class UploadFolderAdmin(admin.ModelAdmin):
         "name",
         "created",
     )
+    form = UploadFolderForm
 
+    def save_model(self, request, obj, form, change):
+        obj.folder_path = None
+        obj.save()
 
 # class DocumentUploadForm(forms.ModelForm):
 #     # Define your custom form field here
