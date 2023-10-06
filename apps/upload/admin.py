@@ -1,16 +1,25 @@
 import os
-import json
 
 from django.contrib import admin
-from django import forms
 from django.conf import settings
 from django.db.models import Q
+from django.utils.html import format_html
+from django import forms
 
 from apps.core.utils import get_default_hidden_file_type
-from apps.upload.models import UploadImage, UploadFile, UploadVideo, UploadCourse, UploadDocument, UploadAvatar
-from apps.upload.services.storage.base import store_file_upload
-from apps.upload.services.services import UploadCourseServices, UploadDocumentServices
+from apps.upload.models import (
+    UploadImage,
+    UploadFile,
+    UploadVideo,
+    UploadAvatar,
+    UploadFolder,
+)
+from apps.upload.services.storage.base import (
+    store_file_upload,
+    upload_and_unzip_folder,
+)
 from apps.upload.enums import VIDEO, IMAGE, FILE
+from apps.upload.forms import UploadFolderForm
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from ipware.ip import get_client_ip
@@ -109,6 +118,12 @@ class UploadFileAdmin(admin.ModelAdmin):
         fields.remove("ip_address")
         return fields
 
+    def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
+        context.update({
+            'show_save_and_continue': False,
+        })
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
     def save_model(self, request, obj, form, change):
         if change:
             if obj.file_path and str(form.initial.get("file_path")) != str(obj.file_path):
@@ -124,12 +139,6 @@ class UploadFileAdmin(admin.ModelAdmin):
 
         obj.ip_address = get_client_ip(request)
         obj.save()
-
-    # def has_change_permission(self, request, obj=None):
-    #     return False
-
-    # def has_delete_permission(self, request, obj=None):
-    #     return False
 
 
 @admin.register(UploadImage)
@@ -149,7 +158,8 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     # actions = (delete_data,)
 
     def image_url(self, obj):
-        return settings.BASE_URL + obj.image_path.url
+        url = settings.BASE_URL + obj.image_path.url
+        return format_html(f'<a href="{url}">{url}</a>')
 
     def get_queryset(self, request):
         return super(UploadImageAdmin, self).get_queryset(request).filter(is_avatar=False)
@@ -186,13 +196,6 @@ class UploadImageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         obj.save()
 
 
-    # def has_change_permission(self, request, obj=None):
-    #     return False
-
-    # def has_delete_permission(self, request, obj=None):
-    #     return False
-
-
 @admin.register(UploadAvatar)
 class UploadAvatarAdmin(admin.ModelAdmin):
     search_fields = (
@@ -208,7 +211,8 @@ class UploadAvatarAdmin(admin.ModelAdmin):
     readonly_fields = ("image_size", "image_type", "created")
 
     def image_url(self, obj):
-        return settings.BASE_URL + obj.image_path.url
+        url = settings.BASE_URL + obj.image_path.url
+        return format_html(f'<a href="{url}">{url}</a>')
 
     def get_queryset(self, request):
         return super(UploadAvatarAdmin, self).get_queryset(request).filter(is_avatar=True)
@@ -223,78 +227,90 @@ class UploadAvatarAdmin(admin.ModelAdmin):
         return fields
 
 
-class DocumentUploadForm(forms.ModelForm):
-    # Define your custom form field here
-    document_to_generate = forms.ChoiceField(choices=[])
-
-    class Meta:
-        model = UploadDocument
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Define your custom field data retrieval logic here
-        if self.instance:
-            self.fields["document_to_generate"].choices = [("1", "1"), ("2", "2")]
-
-
-class CourseUploadForm(forms.ModelForm):
-    ROOT_DIR = "templates/data/courses/"
-    course_to_generate = forms.ChoiceField(choices=[])
-
-    class Meta:
-        model = UploadCourse
-        fields = '__all__'
-
-    def get_course_title(self):
-        return [name.replace("_", " ").title() for name in os.listdir(self.ROOT_DIR)]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Define your custom field data retrieval logic here
-        if self.instance:
-            self.fields["course_to_generate"].choices = [("None", "None")] + [(name, name) for name in self.get_course_title()]
-
-
-@admin.register(UploadCourse)
-class UploadCourseAdmin(admin.ModelAdmin):
+@admin.register(UploadFolder)
+class UploadFolderAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "is_class",
+        "created",
     )
-    form = CourseUploadForm
+    form = UploadFolderForm
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            data = obj.data
-            if not data:
-                course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
-                if course_to_generate:
-                    course_to_generate = course_to_generate.replace(" ", "_").lower()
-                    data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
-                    data["course_of_class"] = obj.is_class
-            if data:
-                obj.name = data.get("name")
-                UploadCourseServices().create_course_data([data])
-
-        obj.save()
-
-
-@admin.register(UploadDocument)
-class UploadDocumentAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-    )
-    form = DocumentUploadForm
-
-    def save_model(self, request, obj, form, change):
-        if obj.data and not change:
-            obj.name = obj.data.get("name")
-            UploadDocumentServices().create_document_data(obj.data)
-
+        obj.folder_path = None
         obj.save()
 
 
 
+
+# class DocumentUploadForm(forms.ModelForm):
+#     # Define your custom form field here
+#     document_to_generate = forms.ChoiceField(choices=[])
+#
+#     class Meta:
+#         model = UploadDocument
+#         fields = '__all__'
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#
+#         # Define your custom field data retrieval logic here
+#         if self.instance:
+#             self.fields["document_to_generate"].choices = [("1", "1"), ("2", "2")]
+#
+#
+# class CourseUploadForm(forms.ModelForm):
+#     ROOT_DIR = "templates/data/courses/"
+#     course_to_generate = forms.ChoiceField(choices=[])
+#
+#     class Meta:
+#         model = UploadCourse
+#         fields = '__all__'
+#
+#     def get_course_title(self):
+#         return [name.replace("_", " ").title() for name in os.listdir(self.ROOT_DIR)]
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#
+#         # Define your custom field data retrieval logic here
+#         if self.instance:
+#             self.fields["course_to_generate"].choices = [("None", "None")] + [(name, name) for name in self.get_course_title()]
+#
+#
+# @admin.register(UploadCourse)
+# class UploadCourseAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "name",
+#         "is_class",
+#     )
+#     form = CourseUploadForm
+#
+#     def save_model(self, request, obj, form, change):
+#         if not change:
+#             data = obj.data
+#             if not data:
+#                 course_to_generate = str(form.cleaned_data.get("course_to_generate")) if str(form.cleaned_data.get("course_to_generate")) != "None" else None
+#                 if course_to_generate:
+#                     course_to_generate = course_to_generate.replace(" ", "_").lower()
+#                     data = json.load(open(form.ROOT_DIR + course_to_generate + "/info.json", encoding="utf-8"))
+#                     data["course_of_class"] = obj.is_class
+#             if data:
+#                 obj.name = data.get("name")
+#                 UploadCourseServices().create_course_data([data])
+#
+#         obj.save()
+#
+#
+# @admin.register(UploadDocument)
+# class UploadDocumentAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "name",
+#     )
+#     form = DocumentUploadForm
+#
+#     def save_model(self, request, obj, form, change):
+#         if obj.data and not change:
+#             obj.name = obj.data.get("name")
+#             UploadDocumentServices().create_document_data(obj.data)
+#
+#         obj.save()
