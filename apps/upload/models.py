@@ -65,7 +65,7 @@ class UploadVideo(TimeStampedModel):
     video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     video_type = models.CharField(max_length=10, null=True, blank=True)
     video_embedded_url = models.TextField(null=True, blank=True)
-    duration = models.PositiveIntegerField(null=True, blank=True, help_text=("Seconds"))
+    duration = models.PositiveIntegerField(null=True, blank=True, help_text="Seconds")
     use_embedded_url = models.BooleanField(default=False)
     ip_address = models.CharField(max_length=128, null=True, blank=True)
 
@@ -83,21 +83,10 @@ class UploadVideo(TimeStampedModel):
         super().delete(*args, **kwargs)
 
 
-class UploadCourse(models.Model):
+class UploadFolder(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    is_class = models.BooleanField(default=False)
-    data = models.JSONField(null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    folder_path = models.FileField(max_length=255, null=True, blank=True, help_text="(.zip file)")
 
-
-class UploadDocument(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, null=True, blank=True)
-    data = models.JSONField(null=True, blank=True)
-
-
-# class GenerateTestData(models.Model):
-#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     data_type = models.CharField(max_length=10, choices)
-
-
+    def __str__(self):
+        return str(self.name)

@@ -1,7 +1,11 @@
+import pytz
+import os
 import re
 import functools
 import random
 import time
+import datetime
+import shutil
 from typing import Union, List, Tuple, Text
 from string import ascii_letters, digits
 
@@ -18,7 +22,7 @@ def is_absolute_url(url: str) -> bool:
     return False
 
 
-def get_absolute_url(url: str) -> str:
+def get_absolute_url(url: str, ) -> str:
     if is_absolute_url(url):
         return url
 
@@ -26,11 +30,17 @@ def get_absolute_url(url: str) -> str:
     return f'{base_url}/{url.lstrip("/")}'
 
 
-def get_media_url(file_path) -> str:
+def get_media_url(file_path, from_root=False) -> str:
     if is_absolute_url(file_path):
         return file_path
-    url = default_storage.url(file_path.lstrip("/"))
+    url = file_path.replace(str(settings.BASE_DIR), "") if from_root else default_storage.url(file_path.lstrip("/"))
     return get_absolute_url(url)
+
+
+def get_media_url_from_root_path(file_path):
+    if is_absolute_url(file_path):
+        return file_path
+    base_url = str(settings.BASE_URL).rstrip("/")
 
 
 def id_generator(size=8, chars=ascii_letters + digits):
@@ -84,3 +94,38 @@ def get_summary_content(content, max_word=10):
         return summary + "..." if len(content_elements) > max_word else summary
     return ""
 
+
+def remove_punctuation(input_string):
+    return re.sub(r'[^\w\s]', '', input_string)
+
+
+def remove_extra_substring(sentence, substring):
+    # Use regular expressions to remove extra occurrences of the substring
+    pattern = re.compile(f'({re.escape(substring)})+')
+    result = pattern.sub(substring, sentence)
+    return result
+
+
+def get_now(tz=pytz.timezone("Asia/Ho_Chi_Minh")):
+    return datetime.datetime.now(tz)
+
+
+def get_file_name_or_ext(filename, get_name=True):
+    full_filename = os.path.basename(filename)
+    name, ext = os.path.splitext(full_filename)
+    return (name if get_name else ext) or ""
+
+
+def get_file_from_nested_folder(dir_path):
+    file_paths = []
+    for folder, _, files in os.walk(dir_path):
+        for file in files:
+            file_path = os.path.join(folder, file)
+            file_paths.append(file_path)
+
+    return file_paths
+
+
+def delete_directory(dir_path):
+    if os.path.exists(dir_path) and os.path.isdir(dir_path):
+        shutil.rmtree(dir_path)

@@ -2,7 +2,7 @@ import os
 import uuid
 from math import ceil
 from datetime import datetime
-
+import zipfile
 
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -10,24 +10,24 @@ from django.core.files.storage import default_storage
 from ckeditor_uploader.utils import storage
 from moviepy.editor import VideoFileClip
 
-from apps.core.utils import get_default_hidden_file_type, generate_file_name_by_id
-from apps.upload.enums import FILE, IMAGE, VIDEO, video_ext_list
+from apps.core.utils import get_default_hidden_file_type, generate_file_name_by_id, get_file_name_or_ext
+from apps.upload.enums import FILE, IMAGE, VIDEO, DIR, video_ext_list
+
+
+def get_folder_name(folder_name, upload_type):
+    date_now = datetime.now()
+    if not folder_name:
+        return "/".join([str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
+    else:
+        return "/".join([folder_name, str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
 
 
 def get_file_path(file_name, new_file_name="default", folder_name=None, upload_type=FILE):
-    file_name_split = os.path.splitext(file_name)
-    file_ext = file_name_split[1] or ""
-
+    file_ext = get_file_name_or_ext(filename=file_name, get_name=False)
     if file_ext.replace(".", "").lower() in get_default_hidden_file_type():
         return f"hidden/{file_name}", file_ext.replace(".", "").lower()
 
-    upload_type += "s"
-    date_now = datetime.now()
-    if not folder_name:
-        folder = "/".join([str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
-    else:
-        folder = "/".join([folder_name, str(date_now.year), f"{date_now:%m}", f"{date_now:%d}", upload_type])
-
+    folder = get_folder_name(folder_name, f"{upload_type}s")
     return f"{folder}/{new_file_name}{file_ext}", file_ext.replace(".", "").lower()
 
 
@@ -37,6 +37,7 @@ def store_file_upload(upload_obj, upload_path, upload_type):
         new_file_name=generate_file_name_by_id(str(upload_obj.id)),
         upload_type=upload_type,
     )
+
     default_storage.save(save_path, upload_path)
 
     if upload_type.lower() == IMAGE:
@@ -96,3 +97,9 @@ def custom_get_upload_filename(upload_name, request):
         storage.get_available_name(os.path.join(upload_path, f"{IMAGE}s", f"{str(image_id)}{file_ext}")),
         file_ext.replace(".", "").lower(),
     )
+
+
+def upload_and_unzip_folder(upload_path, object_id):
+    storage_folder = f"{get_folder_name(None, DIR)}/{str(object_id)}"
+    with zipfile.ZipFile(upload_path, 'r') as zip_ref:
+        zip_ref.extractall(f"{settings.MEDIA_ROOT}/{storage_folder}")
