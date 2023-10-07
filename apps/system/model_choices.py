@@ -46,8 +46,6 @@ models = {
     "UploadFile": UploadFile,
     "UploadImage": UploadImage,
     "UploadVideo": UploadVideo,
-    "UploadCourse": UploadCourse,
-    "UploadDocument": UploadDocument,
     "User": User,
     "UserResetPassword": UserResetPassword,
 }

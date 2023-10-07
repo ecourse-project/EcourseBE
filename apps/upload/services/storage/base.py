@@ -99,7 +99,7 @@ def custom_get_upload_filename(upload_name, request):
     )
 
 
-def upload_and_unzip_folder(upload_path):
-    storage_folder = f"{get_folder_name(None, DIR)}/{get_file_name_or_ext(str(upload_path), True)}"
+def upload_and_unzip_folder(upload_path, object_id):
+    storage_folder = f"{get_folder_name(None, DIR)}/{str(object_id)}"
     with zipfile.ZipFile(upload_path, 'r') as zip_ref:
         zip_ref.extractall(f"{settings.MEDIA_ROOT}/{storage_folder}")

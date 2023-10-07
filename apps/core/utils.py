@@ -5,6 +5,7 @@ import functools
 import random
 import time
 import datetime
+import shutil
 from typing import Union, List, Tuple, Text
 from string import ascii_letters, digits
 
@@ -123,3 +124,8 @@ def get_file_from_nested_folder(dir_path):
             file_paths.append(file_path)
 
     return file_paths
+
+
+def delete_directory(dir_path):
+    if os.path.exists(dir_path) and os.path.isdir(dir_path):
+        shutil.rmtree(dir_path)
