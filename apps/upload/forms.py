@@ -3,13 +3,14 @@ from django import forms
 from apps.upload.models import UploadFolder
 from apps.upload.services.storage.base import upload_and_unzip_folder
 from apps.upload.services.services import find_dir_by_instance
+
 from apps.core.utils import get_media_url, get_file_from_nested_folder
 
 
 class UploadFolderForm(forms.ModelForm):
     all_files = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"rows": 10, "cols": 100, "readonly": True})
+        widget=forms.Textarea(attrs={"rows": 20, "cols": 140, "readonly": True})
     )
 
     class Meta:

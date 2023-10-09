@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils.html import format_html
 
-from apps.core.utils import get_default_hidden_file_type
+from apps.core.utils import get_default_hidden_file_type, delete_directory
 from apps.upload.models import (
     UploadImage,
     UploadFile,
@@ -18,6 +18,7 @@ from apps.upload.services.storage.base import (
 )
 from apps.upload.enums import VIDEO, IMAGE, FILE
 from apps.upload.forms import UploadFolderForm
+from apps.upload.services.services import find_dir_by_instance
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from ipware.ip import get_client_ip
@@ -236,3 +237,13 @@ class UploadFolderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.folder_path = None
         obj.save()
+
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            delete_directory(find_dir_by_instance(obj))
+        queryset.delete()
+
+    def delete_model(self, request, obj):
+        directory_path = find_dir_by_instance(obj)
+        delete_directory(directory_path)
+        obj.delete()
