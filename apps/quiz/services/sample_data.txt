@@ -1,0 +1,74 @@
+=======================> Quiz
+
+[
+    {
+        "id": "55e00023-0999-4467-8871-0a25844fc63e",
+        "course": "b1db5580-2ad8-42e2-a213-b43667c32cb5",
+        "content": "Dân quân thường trực là ai?",
+        "choices": [
+            {
+                "id": "bee46592-ef29-477e-91d4-65446b1c170e",
+                "answer_type": "TEXT",
+                "answer_text": "Diep Hai Binh",
+                "answer_image": {
+                    "id": "77c23abb-9656-40b2-989d-11124b291752",
+                    "image_size": 23,
+                    "image_path": "http://localhost:4000/media/2023/04/05/77c23abb-9656-40b2-989d-11124b291752.png",
+                    "image_short_path": "2023/04/05/77c23abb-9656-40b2-989d-11124b291752.png",
+                    "image_type": "png",
+                    "is_avatar": false
+                },
+                "choice_name": {
+                    "name": "A"
+                }
+            },
+            {
+                "id": "d0f754ee-4371-4939-a38f-b93fa496a1e0",
+                "answer_type": "TEXT",
+                "answer_text": "Nguyen Hoang Tuan Cuong",
+                "answer_image": null,
+                "choice_name": {
+                    "name": "B"
+                }
+            },
+            {
+                "id": "fa6537bb-e9cc-4718-b268-94d32c528226",
+                "answer_type": "TEXT",
+                "answer_text": "Hoang Gia Bao",
+                "answer_image": null,
+                "choice_name": {
+                    "name": "C"
+                }
+            },
+            {
+                "id": "688f06b6-0486-48d8-9466-712821ab2edb",
+                "answer_type": "TEXT",
+                "answer_text": "Nguyen Thanh Binh",
+                "answer_image": null,
+                "choice_name": {
+                    "name": "D"
+                }
+            }
+        ]
+    }
+]
+
+
+
+{
+    "course_id": "7f3f9a9e-a03d-4736-9900-3a49cc6e72e3",
+    "answers": [
+        {
+            "quiz_id": "defbc6ca-cc30-4414-94b3-e439aa276033",
+            "quiz_type": "CHOICES",
+            "first": "id....",
+            "second": ""
+        },
+        {
+            "quiz_id": "d2b8ef10-2e29-4430-870c-9411a4b27e72",
+            "quiz_type": "MATCH",
+            "first": "id....",
+            "second": "id........"
+            }
+    ]
+}
