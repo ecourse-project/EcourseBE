@@ -282,6 +282,7 @@ EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env.int("EMAIL_PORT", default="EMAIL_PORT")
 
+
 # CKEDITOR
 CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'
 

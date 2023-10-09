@@ -120,7 +120,7 @@ class MatchColumnQuestion(TimeStampedModel):
     second_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_second_col")
 
     def __str__(self):
-        return get_summary_content(self.content or 'None', 15)
+        return get_summary_content(self.content or 'None', 10)
 
     class Meta:
         ordering = ["created"]
@@ -135,7 +135,7 @@ class FillBlankQuestion(models.Model):
     hidden_words = models.JSONField(null=True, blank=True)
 
     def __str__(self):
-        return get_summary_content(self.content or 'None', 15)
+        return get_summary_content(self.content or 'None', 10)
 
     class Meta:
         verbose_name_plural = "Fill blank - Questions"
