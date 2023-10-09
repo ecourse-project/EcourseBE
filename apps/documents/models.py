@@ -54,6 +54,7 @@ class DocumentManagement(TimeStampedModel):
 
     class Meta:
         ordering = ["document__name"]
+        unique_together = ('user', 'document')
 
     def __str__(self):
         return f"{self.document.name} - {self.user.__str__()}"

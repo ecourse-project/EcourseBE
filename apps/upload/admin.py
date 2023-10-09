@@ -224,26 +224,3 @@ class UploadAvatarAdmin(admin.ModelAdmin):
         fields = super(UploadAvatarAdmin, self).get_fields(request, obj)
         fields.remove("ip_address")
         return fields
-
-
-@admin.register(UploadFolder)
-class UploadFolderAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "created",
-    )
-    form = UploadFolderForm
-
-    def save_model(self, request, obj, form, change):
-        obj.folder_path = None
-        obj.save()
-
-    def delete_queryset(self, request, queryset):
-        for obj in queryset:
-            delete_directory(find_dir_by_instance(obj))
-        queryset.delete()
-
-    def delete_model(self, request, obj):
-        directory_path = find_dir_by_instance(obj)
-        delete_directory(directory_path)
-        obj.delete()
