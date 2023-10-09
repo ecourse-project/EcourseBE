@@ -1,10 +1,10 @@
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from apps.courses.models import Course
 from apps.courses.enums import IN_PROGRESS, COMPLETED
 from apps.users.services import get_users_to_create_course_mngt
-from apps.courses.services.admin import init_course_mngt
+from apps.core.general.init_data import InitCourseServices
 
 
 def calculate_course_progress(course_mngt):
@@ -26,12 +26,7 @@ def calculate_lesson_progress(lesson_mngt):
 
 @receiver(post_save, sender=Course)
 def create_user_data(created, instance, **kwargs):
-    # if created:
-    #     # CourseRating.objects.create(course=instance)
-    #     if not instance.course_of_class and users.exists() > 0:
-    #         init_course_mngt(instance, users)
-
     if not instance.course_of_class:
         users = get_users_to_create_course_mngt(instance)
         if users.exists():
-            init_course_mngt(instance, users)
+            InitCourseServices().init_course_mngt(instance, users)

@@ -1,9 +1,6 @@
-from django.utils.timezone import localtime
-
 from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement, CourseManagement, Course
 from apps.courses.enums import BOUGHT
 from apps.users.models import User
-from apps.users.choices import MANAGER
 from apps.courses.services.services import CourseManagementService
 
 
@@ -14,7 +11,7 @@ class CourseAdminService:
     def update_course_sale_status(self, courses, sale_status):
         CourseManagement.objects.filter(
             user=self.user, course__in=courses
-        ).update(sale_status=sale_status, last_update=localtime())
+        ).update(sale_status=sale_status)
 
     def init_courses_data(self, courses):
         for course in courses:
@@ -52,19 +49,6 @@ def get_users_by_joined_class(course_id):
     ).values_list("user_id", flat=True)
 
 
-def prepare_course_mngt_to_create(course: Course, users):
-    return [
-        CourseManagement(course=course, user=user, sale_status=BOUGHT, user_in_class=True)
-        if user.role == MANAGER
-        else CourseManagement(course=course, user=user)
-        for user in users
-    ]
-
-
-def init_course_mngt(course, users):
-    return CourseManagement.objects.bulk_create(prepare_course_mngt_to_create(course, users))
-
-
 def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, docs_add, videos_add):
     courses_include_lesson = [course_id] if course_id else []
     if not courses_include_lesson:
@@ -89,6 +73,7 @@ def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, 
                 CourseDocumentManagement.objects.filter(
                     course_id=course_id, lesson_id=lesson_id, document__in=docs_remove, is_completed=True,
                 ).update(is_available=False)
+
             if videos_remove:
                 is_update_mark = True
                 VideoManagement.objects.filter(
@@ -97,26 +82,32 @@ def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, 
                 VideoManagement.objects.filter(
                     course_id=course_id, lesson_id=lesson_id, video__in=videos_remove, is_completed=True,
                 ).update(is_available=False)
+
             if docs_add:
                 is_update_mark = True
+                docs_to_update = []
                 for doc in docs_add:
                     for user_id in user_ids:
                         doc_obj, _ = CourseDocumentManagement.objects.get_or_create(
                             course_id=course_id, lesson_id=lesson_id, user_id=user_id, document=doc
                         )
-                        if doc_obj:
-                            doc_obj.is_available = True
-                            doc_obj.save(update_fields=["is_available"])
+                        doc_obj.is_available = True
+                        docs_to_update.append(doc_obj)
+                if docs_to_update:
+                    CourseDocumentManagement.objects.bulk_update(docs_to_update, fields=["is_available"])
+
             if videos_add:
                 is_update_mark = True
+                videos_to_update = []
                 for video in videos_add:
                     for user_id in user_ids:
                         video_obj, _ = VideoManagement.objects.get_or_create(
                             course_id=course_id, lesson_id=lesson_id, user_id=user_id, video=video
                         )
-                        if video_obj:
-                            video_obj.is_available = True
-                            video_obj.save(update_fields=["is_available"])
+                        video_obj.is_available = True
+                        videos_to_update.append(video_obj)
+                if videos_to_update:
+                    VideoManagement.objects.bulk_update(videos_to_update, fields=["is_available"])
 
             if is_update_mark:
                 for user_id in user_ids:

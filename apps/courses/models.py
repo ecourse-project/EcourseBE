@@ -83,7 +83,6 @@ class CourseManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    last_update = models.DateTimeField(null=True, blank=True)
     progress = models.SmallIntegerField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=PROGRESS_STATUS, default=IN_PROGRESS)
     mark = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
@@ -117,12 +116,11 @@ class LessonQuizManagement(TimeStampedModel):
 
 class LessonManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_mngt", null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return str(id)
+        return str(self.id)
 
     class Meta:
         unique_together = ('lesson', 'course')
