@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
-from apps.courses.services.admin import CourseAdminService, insert_remove_docs_videos
+from apps.classes.services.admin import join_class_request
+from apps.courses.services.admin import insert_remove_docs_videos
 from apps.courses.models import LessonManagement
 
 
@@ -9,24 +10,14 @@ from apps.courses.models import LessonManagement
 def accept(modeladmin, request, queryset):
     queryset.update(accepted=True)
     for obj in queryset:
-        class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request).first()
-        if class_mngt:
-            class_mngt.user_in_class = True
-            class_mngt.save(update_fields=["user_in_class"])
-        else:
-            ClassManagement.objects.create(user=obj.user, course=obj.class_request, user_in_class=True)
-            course_service = CourseAdminService(obj.user)
-            course_service.init_courses_data([obj.class_request])
+        join_class_request(obj)
 
 
 @admin.action(description='Deny selected users')
 def deny(modeladmin, request, queryset):
     queryset.update(accepted=False)
     for obj in queryset:
-        class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request, user_in_class=True).first()
-        if class_mngt:
-            class_mngt.user_in_class = False
-            class_mngt.save(update_fields=["user_in_class"])
+        join_class_request(obj)
 
 
 @admin.register(Class)
@@ -125,6 +116,10 @@ class ClassRequestAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super(ClassRequestAdmin, self).get_queryset(request).select_related("user", "class_request")
 
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        join_class_request(obj)
+
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
@@ -150,7 +145,7 @@ class ClassManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        for field in ["init_data", "is_favorite", "last_update", "sale_status"]:
+        for field in ["init_data", "is_favorite", "sale_status"]:
             fields.remove(field)
         return fields
 

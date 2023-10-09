@@ -1,5 +1,4 @@
 from django.db.models import Sum
-from django.utils.timezone import localtime
 
 from apps.courses.exceptions import NoItemException
 from apps.documents.exceptions import NoDocumentException, CheckSaleStatusException
@@ -40,8 +39,8 @@ class CartService:
             id=cart.id,
             # total_price=cart.total_price,
             total_price=0,
-            documents=DocumentManagementSerializer(doc_mngt.order_by("-last_update"), many=True).data,
-            courses=CourseManagementSerializer(course_mngt.order_by("-last_update"), many=True).data
+            documents=DocumentManagementSerializer(doc_mngt, many=True).data,
+            courses=CourseManagementSerializer(course_mngt, many=True).data
         )
 
     def calculate_total_price(self):
@@ -72,8 +71,8 @@ class FavoriteListService:
         )
         return dict(
             id=favorite_list.id,
-            documents=DocumentManagementSerializer(doc_mngt.order_by("-last_update"), many=True).data,
-            courses=CourseManagementSerializer(course_mngt.order_by("-last_update"), many=True).data
+            documents=DocumentManagementSerializer(doc_mngt, many=True).data,
+            courses=CourseManagementSerializer(course_mngt, many=True).data
         )
 
 
@@ -142,8 +141,7 @@ class MoveItems:
             cart.documents.remove(doc)
             doc_mngt.sale_status = doc_enums.AVAILABLE
 
-        doc_mngt.last_update = localtime()
-        doc_mngt.save(update_fields=['sale_status', 'is_favorite', 'last_update'])
+        doc_mngt.save(update_fields=['sale_status', 'is_favorite'])
         return doc_mngt
 
     @staticmethod
@@ -207,6 +205,5 @@ class MoveItems:
             cart.courses.remove(course)
             course_mngt.sale_status = course_enums.AVAILABLE
 
-        course_mngt.last_update = localtime()
-        course_mngt.save(update_fields=['sale_status', 'is_favorite', 'last_update'])
+        course_mngt.save(update_fields=['sale_status', 'is_favorite'])
         return course_mngt

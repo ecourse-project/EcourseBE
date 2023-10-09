@@ -1,13 +1,10 @@
 from django.contrib import admin
 from django.db.models import F
-from django.utils.timezone import localtime
 
 from apps.payment.models import Order
 from apps.payment.enums import SUCCESS, FAILED
-from apps.documents.models import DocumentManagement
 from apps.documents import enums as doc_enums
 from apps.documents.services.admin import DocumentAdminService
-from apps.courses.models import CourseManagement
 from apps.courses import enums as course_enums
 from apps.courses.services.admin import CourseAdminService
 

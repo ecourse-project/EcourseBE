@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.utils.timezone import localtime
 from django.db.models import Sum
 
 from apps.documents import enums as doc_enums
@@ -22,7 +21,7 @@ class OrderService:
             DocumentManagement.objects.filter(
                 user=user,
                 document__in=documents
-            ).update(sale_status=doc_enums.PENDING, last_update=localtime())
+            ).update(sale_status=doc_enums.PENDING)
 
     def add_courses(self, courses, user):
         if courses:
@@ -30,17 +29,17 @@ class OrderService:
             CourseManagement.objects.filter(
                 user=user,
                 course__in=courses
-            ).update(sale_status=course_enums.PENDING, last_update=localtime())
+            ).update(sale_status=course_enums.PENDING)
 
     def cancel_order(self):
         DocumentManagement.objects.filter(
             user=self.order.user,
             document__in=self.order.documents.all()
-        ).update(sale_status=doc_enums.AVAILABLE, last_update=localtime())
+        ).update(sale_status=doc_enums.AVAILABLE)
         CourseManagement.objects.filter(
             user=self.order.user,
             course__in=self.order.courses.all()
-        ).update(sale_status=course_enums.AVAILABLE, last_update=localtime())
+        ).update(sale_status=course_enums.AVAILABLE)
 
         self.order.status = FAILED
         self.order.save(update_fields=['status'])

@@ -1,4 +1,3 @@
-from django.utils.timezone import localtime
 from django.db.models import Prefetch, Q
 
 from apps.documents.models import DocumentManagement, Document
@@ -49,9 +48,8 @@ class DocumentManagementService:
     def init_documents_management(self):
         if not DocumentManagement.objects.filter(user=self.user).first():
             DocumentManagement.objects.bulk_create([
-                DocumentManagement(
-                    user=self.user, last_update=localtime(), document=doc
-                ) for doc in DocumentService().get_all_documents_queryset
+                DocumentManagement(user=self.user, document=doc)
+                for doc in DocumentService().get_all_documents_queryset
             ])
 
     @property
