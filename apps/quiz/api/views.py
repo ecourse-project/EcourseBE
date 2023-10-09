@@ -15,7 +15,7 @@ from apps.quiz.services.services import (
     response_quiz_statistic,
     get_quiz_queryset,
 )
-from apps.courses.models import CourseManagement, Course
+from apps.courses.models import CourseManagement, LessonManagement, LessonQuizManagement, Course
 from apps.courses.exceptions import NoItemException
 
 from reportlab.lib.units import inch, toLength
@@ -43,13 +43,23 @@ class QuizResultView(APIView):
         lesson_id = data.get('lesson_id')
         user = self.request.user
         answers = data.get('user_answers')
-        # if CourseManagement.objects.filter(user=user, course_id=course_id, is_done_quiz=True).first():
+        if not course_id or not lesson_id:
+            raise NoItemException("Missing lesson ID or course ID")
+        course_mngt = CourseManagement.objects.filter(user=user, course_id=course_id).first()
+        if (
+            not course_mngt or not LessonManagement.objects.filter(course_id=course_id, lesson_id=lesson_id)
+        ):
+            raise NoItemException("Lesson does not exist or Lesson does not belong to the course")
+        # if LessonQuizManagement.objects.filter(course_mngt=course_mngt, lesson_id=lesson_id, is_done_quiz=True):
         #     raise CompletedQuizException
+
         store_user_answers(user=user, user_answers=answers)
         user_quiz_info = quiz_statistic(user=user, course_id=course_id, lesson_id=lesson_id)
-        # CourseManagement.objects.filter(user=user, course_id=course_id).update(
-        #     mark=user_quiz_info["mark"], is_done_quiz=True, date_done_quiz=datetime.datetime.now()
-        # )
+
+        quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(course_mngt=course_mngt, lesson_id=lesson_id)
+        quiz_mngt.is_done_quiz = True
+        quiz_mngt.date_done_quiz = datetime.datetime.now()
+        quiz_mngt.save(update_fields=["is_done_quiz", "date_done_quiz"])
 
         return Response(
             data=response_quiz_statistic(user_quiz_info),

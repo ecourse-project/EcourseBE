@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.html import format_html
 
 from apps.core.utils import remove_punctuation
 from apps.quiz.models import FillBlankQuestion, QuizManagement
@@ -35,8 +36,7 @@ class FillBlankQuestionForm(forms.ModelForm):
                 if self.instance.hidden_words
                 else []
             )
-
-            self.fields["display_content"].initial = get_final_content(self.instance.hidden_words, res_default=self.instance.content)
+            self.initial["display_content"] = get_final_content(self.instance.hidden_words, res_default=self.instance.content)
 
 
 class QuizManagementForm(forms.ModelForm):

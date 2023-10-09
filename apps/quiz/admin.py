@@ -12,6 +12,7 @@ from apps.quiz.models import (
     FillBlankQuestion,
     MatchColumnUserAnswer,
     ChoicesQuizUserAnswer,
+    FillBlankUserAnswer,
     QuizManagement,
 )
 from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
@@ -56,24 +57,13 @@ class QuizManagementAdmin(admin.ModelAdmin):
     list_display = (
         'order',
         'choices_question',
+        'question_type',
         'course',
     )
     form = QuizManagementForm
 
     def get_queryset(self, request):
         return super(QuizManagementAdmin, self).get_queryset(request).select_related("choices_question", "course")
-
-
-@admin.register(ChoicesQuizUserAnswer)
-class ChoicesQuizUserAnswerAdmin(admin.ModelAdmin):
-    list_display = (
-        'user',
-        'quiz',
-        'choice',
-    )
-
-    def get_queryset(self, request):
-        return get_user_choice_answer_queryset(super(ChoicesQuizUserAnswerAdmin, self).get_queryset(request))
 
 
 @admin.register(MatchColumnContent)
@@ -138,6 +128,19 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
         obj.save()
 
 
+@admin.register(ChoicesQuizUserAnswer)
+class ChoicesQuizUserAnswerAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'quiz',
+        'choice',
+    )
+    readonly_fields = ('created',)
+
+    def get_queryset(self, request):
+        return get_user_choice_answer_queryset(super(ChoicesQuizUserAnswerAdmin, self).get_queryset(request))
+
+
 @admin.register(MatchColumnUserAnswer)
 class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
@@ -145,8 +148,18 @@ class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
         'quiz',
         'answer',
     )
+    readonly_fields = ('created',)
 
     def answer(self, obj):
         return (
             f"{get_summary_content(obj.first_content.content_text)} - {get_summary_content(obj.second_content.content_text)}"
         )
+
+
+@admin.register(FillBlankUserAnswer)
+class FillBlankUserAnswerAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'quiz',
+    )
+    readonly_fields = ('created',)

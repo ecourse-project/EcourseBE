@@ -5,15 +5,18 @@ from django.db.models import Q, Prefetch
 from apps.quiz.enums import (
     QUESTION_TYPE_CHOICES,
     QUESTION_TYPE_MATCH,
+    QUESTION_TYPE_FILL,
 )
 from apps.quiz.models import (
     ChoicesQuizUserAnswer,
     MatchColumnUserAnswer,
+    FillBlankUserAnswer,
     QuizManagement,
     MatchColumnMatchAnswer,
     MatchColumnContent,
     ChoicesQuizAnswer,
 )
+from apps.quiz.services.fill_blank_services import get_list_hidden, check_correct
 from apps.configuration.models import Configuration
 
 
@@ -50,33 +53,45 @@ def get_user_choice_answer_queryset(qs=None):
 def store_user_answers(user, user_answers):
     choice_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_CHOICES]
     match_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_MATCH]
+    fill_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_FILL]
 
     choice_answer_objs = [
         ChoicesQuizUserAnswer(
             user=user,
             quiz_id=choice_obj.get("quiz_id"),
-            choice_id=choice_obj.get("answer")
+            choice_id=choice_obj.get("answer"),
         )
         for choice_obj in choice_type_objs
     ]
 
-    match_answer_obj = [
+    match_answer_objs = [
         MatchColumnUserAnswer(
             user=user,
             quiz_id=match_obj.get("quiz_id"),
             first_content_id=answer[0],
-            second_content_id=answer[1]
+            second_content_id=answer[1],
         )
         for match_obj in match_type_objs
         for answer in match_obj.get("answer")
     ]
 
+    fill_answer_objs = [
+        FillBlankUserAnswer(
+            user=user,
+            quiz_id=fill_obj.get("quiz_id"),
+            words=fill_obj.get("answer") or [],
+        )
+        for fill_obj in fill_type_objs
+    ]
+
     if choice_answer_objs:
         ChoicesQuizUserAnswer.objects.bulk_create(choice_answer_objs)
-    if match_answer_obj:
-        MatchColumnUserAnswer.objects.bulk_create(match_answer_obj)
+    if match_answer_objs:
+        MatchColumnUserAnswer.objects.bulk_create(match_answer_objs)
+    if fill_answer_objs:
+        FillBlankUserAnswer.objects.bulk_create(fill_answer_objs)
 
-    return choice_answer_objs, match_answer_obj
+    return choice_answer_objs, match_answer_objs, fill_answer_objs
 
 
 def user_correct_quiz_choices(user, course_id, lesson_id) -> Dict:
@@ -99,7 +114,7 @@ def user_correct_quiz_choices(user, course_id, lesson_id) -> Dict:
     )
 
     res = {"result": [], "correct": 0, "total": total_quiz.count()}
-    if not user_choice_answers or not res["total"]:
+    if not user_choice_answers:
         return res
 
     for answer in user_choice_answers:
@@ -172,23 +187,79 @@ def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
     return res
 
 
+def user_correct_quiz_fill(user, course_id, lesson_id) -> List:
+    fill_quiz = QuizManagement.objects.filter(
+        Q(
+            question_type=QUESTION_TYPE_FILL,
+            fill_blank_question__isnull=False,
+            course_id=course_id,
+            lesson_id=lesson_id,
+        )
+        & ~Q(fill_blank_question__hidden_words=[])
+        & ~Q(fill_blank_question__hidden_words__isnull=True)
+    )
+    if not fill_quiz:
+        return []
+
+    user_fill_answers = FillBlankUserAnswer.objects.filter(
+        Q(
+            user=user,
+            quiz__in=fill_quiz,
+        )
+    )
+
+    res = []
+    for answer in user_fill_answers:
+        fill_question = answer.quiz.fill_blank_question
+        correct = 0
+        user_answer = answer.words or []
+        hidden_words = get_list_hidden(fill_question.hidden_words)
+        for word in hidden_words:
+            if not user_answer:
+                break
+            if check_correct(word["word"], user_answer[0]):
+                correct += 1
+            user_answer.pop(0)
+
+        res.append(
+            {
+                "quiz_id": str(answer.quiz_id),
+                "user_answer": user_answer,
+                "correct_answer": fill_question.content or "",
+                "correct": correct,
+                "total": len(hidden_words),
+            }
+        )
+
+    return res
+
+
 def quiz_statistic(user, course_id, lesson_id):
     choices_quiz = user_correct_quiz_choices(user, course_id, lesson_id)
     match_quiz = user_correct_quiz_match(user, course_id, lesson_id)
+    fill_quiz = user_correct_quiz_fill(user, course_id, lesson_id)
     valid_match_quiz = [quiz for quiz in match_quiz if quiz["total"]]
+    valid_fill_quiz = [quiz for quiz in fill_quiz if quiz["total"]]
 
     res = {
         "mark": 0,
         "choices_quiz": choices_quiz,
         "match_quiz": match_quiz,
+        "fill_quiz": fill_quiz,
     }
 
-    if not choices_quiz["total"] and not len(valid_match_quiz):
+    if not choices_quiz["total"] and not len(valid_match_quiz) and not len(valid_fill_quiz):
         return res
 
-    mark_per_quiz = 10 / (choices_quiz["total"] + len(valid_match_quiz))
-    total_mark = choices_quiz["correct"] + sum([quiz["correct"] / quiz["total"] for quiz in valid_match_quiz])
-    res["mark"] = round(total_mark * mark_per_quiz, 2)
+    # mark_per_quiz = 10 / (choices_quiz["total"] + len(valid_match_quiz) + len(valid_fill_quiz))
+    total_quiz = choices_quiz["total"] + len(valid_match_quiz) + len(valid_fill_quiz)
+    total_correct = (
+        choices_quiz["correct"]
+        + len([1 for quiz in valid_match_quiz if quiz["correct"] == quiz["total"]])
+        + len([1 for quiz in valid_fill_quiz if quiz["correct"] == quiz["total"]])
+    )
+
+    res["mark"] = round(100 * total_correct / total_quiz, 0)
 
     return res
 
@@ -199,16 +270,20 @@ def response_quiz_statistic(quiz_statistic):
     if config and (not config.display_correct_answer or not config.display_mark):
         choices_quiz = quiz_statistic["choices_quiz"]
         match_quiz = quiz_statistic["match_quiz"]
+        fill_quiz = quiz_statistic["fill_quiz"]
         if not config.display_correct_answer:
             [result.pop("correct_answer", None) for result in choices_quiz["result"]]
             [obj.pop("correct_answer", None) for obj in match_quiz]
+            [obj.pop("correct_answer", None) for obj in fill_quiz]
         if not config.display_mark:
             quiz_statistic.pop("mark", None)
             choices_quiz.pop("correct", None)
             [obj.pop("correct", None) for obj in match_quiz]
+            [obj.pop("correct", None) for obj in fill_quiz]
 
         quiz_statistic["choices_quiz"] = choices_quiz
         quiz_statistic["match_quiz"] = match_quiz
+        quiz_statistic["fill_quiz"] = fill_quiz
 
     return quiz_statistic
 
@@ -218,7 +293,12 @@ def quiz_data_processing(obj: Dict):
 
     if obj_clone.get("question_type") == QUESTION_TYPE_CHOICES:
         obj_clone.pop("match_question")
+        obj_clone.pop("fill_blank_question")
     elif obj_clone.get("question_type") == QUESTION_TYPE_MATCH:
         obj_clone.pop("choices_question")
+        obj_clone.pop("fill_blank_question")
+    elif obj_clone.get("question_type") == QUESTION_TYPE_FILL:
+        obj_clone.pop("choices_question")
+        obj_clone.pop("match_question")
 
     return obj_clone
