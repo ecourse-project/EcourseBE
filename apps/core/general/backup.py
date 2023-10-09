@@ -67,6 +67,7 @@ def update_manager_course_mngt(user):
 
 def backup_document_mngt(user, docs: dict):
     document_mngt = DocumentManagement.objects.filter(user=user)
+    document_mngt.update(sale_status=doc_enums.AVAILABLE)
 
     if not docs or not isinstance(docs, dict):
         return
@@ -82,6 +83,7 @@ def backup_document_mngt(user, docs: dict):
 
 def backup_course_mngt(user, courses: dict):
     course_mngt = CourseManagement.objects.filter(user=user)
+    course_mngt.update(sale_status=course_enums.AVAILABLE, user_in_class=False)
 
     if not courses or not isinstance(courses, dict):
         return

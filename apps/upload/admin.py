@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils.html import format_html
 
-from apps.core.utils import get_default_hidden_file_type, delete_directory
+from apps.core.utils import get_default_hidden_file_type
 from apps.upload.models import (
     UploadImage,
     UploadFile,
@@ -13,12 +13,8 @@ from apps.upload.models import (
     UploadAvatar,
     UploadFolder,
 )
-from apps.upload.services.storage.base import (
-    store_file_upload,
-)
+from apps.upload.services.storage.base import store_file_upload
 from apps.upload.enums import VIDEO, IMAGE, FILE
-from apps.upload.forms import UploadFolderForm
-from apps.upload.services.services import find_dir_by_instance
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from ipware.ip import get_client_ip
@@ -224,3 +220,11 @@ class UploadAvatarAdmin(admin.ModelAdmin):
         fields = super(UploadAvatarAdmin, self).get_fields(request, obj)
         fields.remove("ip_address")
         return fields
+
+
+@admin.register(UploadFolder)
+class UploadFolderAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "created",
+    )
