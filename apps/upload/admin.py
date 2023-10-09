@@ -232,3 +232,8 @@ class UploadFolderAdmin(admin.ModelAdmin):
         "name",
         "created",
     )
+    form = UploadFolderForm
+
+    def save_model(self, request, obj, form, change):
+        obj.folder_path = None
+        obj.save()
