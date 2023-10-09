@@ -7,12 +7,14 @@ from apps.quiz.models import (
     ChoicesQuizQuestion,
     MatchColumnContent,
     MatchColumnQuestion,
+    FillBlankQuestion,
     QuizManagement,
-    ChoicesQuizUserAnswer,
 )
 from apps.quiz.services.choices_question_services import choices_quiz_data_processing
 from apps.quiz.services.match_column_services import match_column_quiz_data_processing
+from apps.quiz.services.fill_blank_services import get_final_content
 from apps.quiz.services.services import quiz_data_processing
+from apps.quiz.enums import RESPONSE_SUBSTRING
 
 
 class ChoicesQuizChoiceNameSerializer(serializers.ModelSerializer):
@@ -88,34 +90,36 @@ class MatchColumnQuestionSerializer(serializers.ModelSerializer):
         )
 
 
+class FillBlankQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FillBlankQuestion
+        fields = (
+            "content",
+        )
+
+    def to_representation(self, instance):
+        representation = super(FillBlankQuestionSerializer, self).to_representation(instance)
+        representation["content"] = get_final_content(instance.hidden_words, RESPONSE_SUBSTRING)
+        return quiz_data_processing(representation)
+
+
 class QuizManagementSerializer(serializers.ModelSerializer):
     choices_question = ChoicesQuizQuestionSerializer()
     match_question = MatchColumnQuestionSerializer()
+    fill_blank_question = FillBlankQuestionSerializer()
 
     class Meta:
         model = QuizManagement
         fields = (
             "id",
             "order",
+            "time_limit",
             "question_type",
             "choices_question",
             "match_question",
+            "fill_blank_question",
         )
 
     def to_representation(self, instance):
         representation = super(QuizManagementSerializer, self).to_representation(instance)
         return quiz_data_processing(representation)
-
-
-
-
-# class QuizResultResponseSerializer(serializers.ModelSerializer):
-#     correct_answer = serializers.CharField(required=False, source="correct_answer.choice")
-#
-#     class Meta:
-#         model = Quiz
-#         fields = (
-#             "id",
-#             "correct_answer",
-#         )
-#

@@ -10,6 +10,7 @@ from apps.courses.models import (
     VideoManagement,
     CourseDocumentManagement,
     Course,
+    LessonQuizManagement,
 )
 # from apps.classes.models import Class
 from apps.posts.models import Post
@@ -38,11 +39,18 @@ class CustomListDataServices:
                 data = self.add_quiz_detail(data, field)
             if field == enums.LIST_QUIZ:
                 data = self.add_list_quiz(data, field)
+            if field == enums.IS_DONE_QUIZ:
+                data = self.add_is_done_quiz(data, field)
         return data
 
     def add_docs_videos_completed(self, data: list, doc_field: str, video_field: str):
         for index, dt in enumerate(data):
             data[index] = self.dict_data_service.add_docs_videos_completed(dt, doc_field, video_field)
+        return data
+
+    def add_is_done_quiz(self, data: dict, field: str):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.add_is_done_quiz(dt, field)
         return data
 
     def add_quiz_detail(self, data: list, field: str):
@@ -73,6 +81,9 @@ class CustomDictDataServices:
                 data = self.add_quiz_detail(data, field)
             if field == enums.LIST_QUIZ:
                 data = self.add_list_quiz(data, field)
+            if field == enums.IS_DONE_QUIZ:
+                data = self.add_is_done_quiz(data, field)
+
         return data
 
     def add_docs_videos_completed(self, data: dict, doc_field: str, video_field: str):
@@ -101,6 +112,18 @@ class CustomDictDataServices:
             else:
                 data["lessons"][index][doc_field] = []
                 data["lessons"][index][video_field] = []
+
+        return data
+
+    # TODO: Optimize by query
+    def add_is_done_quiz(self, data: dict, field: str):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_quiz = LessonQuizManagement.objects.filter(
+                course_mngt__user=self.user,
+                course_mngt__course_id=data['id'],
+                lesson_id=lesson['id']
+            ).first()
+            data["lessons"][index][field] = lesson_quiz.is_done_quiz if lesson_quiz else False
 
         return data
 

@@ -238,6 +238,7 @@ export interface Lesson {
   videos_completed?: string[];
   quiz_detail?: QuizResult;
   list_quiz: Quiz[];
+  is_done_quiz: boolean;
 }
 
 export interface Course {
@@ -412,6 +413,10 @@ export interface MatchQuestion {
   second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
 }
 
+export interface FillBlankQuestion {
+  content: string;
+}
+
 export interface ChoicesQuestion {
   content: string;
   content_type: ContentTypeEnum;
@@ -421,16 +426,18 @@ export interface ChoicesQuestion {
 export interface Quiz {
   id: string;
   order: number;
+  time_limit?: number;
   question_type: QuestionTypeEnum;
   choices_question?: ChoicesQuestion;
   match_question?: MatchQuestion;
+  fill_blank_question?: FillBlankQuestion;
 
 }
 
 export interface UserAnswersArgs {
   quiz_id: string;
   question_type: QuestionTypeEnum;
-  answer: string | Array<Array<string>>;
+  answer: string | Array<string> | Array<Array<string>>;
 }
 
 export interface QuizResultArgs {
@@ -453,10 +460,19 @@ export interface MatchQuizAnswer {
   correct_answer?: Array<Array<string>>;
 }
 
+export interface FillQuizAnswer {
+  quiz_id: string;
+  correct: number;
+  total: number;
+  user_answer: Array<string>;
+  correct_answer?: string;
+}
+
 export interface QuizResult {
   mark?: number;
   choices_quiz: ChoicesQuizAnswer;
   match_quiz: MatchQuizAnswer[];
+  fill_quiz: FillQuizAnswer[];
 }
 
 // ===========================================Setting===========================================
