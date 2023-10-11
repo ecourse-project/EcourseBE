@@ -31,6 +31,8 @@ class CustomListDataServices:
 
     def custom_response_list_data(self, data: list, **kwargs):
         fields = kwargs.get("fields", [])
+        data = self.filter_available_course_document(data)
+        data = self.filter_available_video(data)
 
         for field in fields:
             if field == enums.REQUEST_STATUS and kwargs.get("class_objs"):
@@ -41,6 +43,16 @@ class CustomListDataServices:
                 data = self.add_list_quiz(data, field)
             if field == enums.IS_DONE_QUIZ:
                 data = self.add_is_done_quiz(data, field)
+        return data
+
+    def filter_available_course_document(self, data: list):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.filter_available_course_document(dt)
+        return data
+
+    def filter_available_video(self, data: list):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.filter_available_video(dt)
         return data
 
     def add_docs_videos_completed(self, data: list, doc_field: str, video_field: str):
@@ -71,6 +83,9 @@ class CustomDictDataServices:
 
     def custom_response_dict_data(self, data: dict, **kwargs):
         fields = kwargs.get("fields", [])
+        data = self.filter_available_course_document(data)
+        data = self.filter_available_video(data)
+
         if enums.DOCS_COMPLETED in fields and enums.VIDEOS_COMPLETED in fields:
             data = self.add_docs_videos_completed(data, enums.DOCS_COMPLETED, enums.VIDEOS_COMPLETED)
 
@@ -86,6 +101,44 @@ class CustomDictDataServices:
 
         return data
 
+    def filter_available_course_document(self, data: dict):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_docs = [doc.get("id") for doc in lesson.get("documents", [])]
+            if not lesson_docs:
+                continue
+            available_docs = CourseDocumentManagement.objects.filter(
+                user=self.user,
+                course_id=data['id'],
+                lesson_id=lesson['id'],
+                document_id__in=lesson_docs,
+                is_available=True,
+            ).values_list("document_id", flat=True)
+            available_docs = [str(doc_id) for doc_id in available_docs]
+            data["lessons"][index]["documents"] = [
+                doc for doc in data["lessons"][index]["documents"] if doc.get("id") in available_docs
+            ]
+
+        return data
+
+    def filter_available_video(self, data: dict):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_videos = [video.get("id") for video in lesson.get("videos", [])]
+            if not lesson_videos:
+                continue
+            available_videos = VideoManagement.objects.filter(
+                user=self.user,
+                course_id=data['id'],
+                lesson_id=lesson['id'],
+                video_id__in=lesson_videos,
+                is_available=True,
+            ).values_list("video_id", flat=True)
+            available_videos = [str(video_id) for video_id in available_videos]
+            data["lessons"][index]["videos"] = [
+                video for video in data["lessons"][index]["videos"] if video.get("id") in available_videos
+            ]
+
+        return data
+
     def add_docs_videos_completed(self, data: dict, doc_field: str, video_field: str):
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
@@ -95,6 +148,7 @@ class CustomDictDataServices:
                     CourseDocumentManagement.objects.filter(
                         user=self.user,
                         course_id=data['id'],
+                        lesson_id=lesson['id'],
                         document__in=lesson_obj.documents.all(),
                         is_completed=True,
                         is_available=True,
@@ -104,6 +158,7 @@ class CustomDictDataServices:
                     VideoManagement.objects.filter(
                         user=self.user,
                         course_id=data["id"],
+                        lesson_id=lesson['id'],
                         video__in=lesson_obj.videos.all(),
                         is_completed=True,
                         is_available=True,
@@ -185,6 +240,5 @@ def search_item(item_name: str, search_type: str, user: User) -> dict:
         response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
 
     return response
-
 
 
