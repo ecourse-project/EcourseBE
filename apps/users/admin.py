@@ -69,6 +69,10 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
         obj.save()
         change_user_role(obj, form.initial["role"], obj.role)
 
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        change_user_role(obj, form.initial["role"], obj.role)
+
 
 @admin.register(UserResetPassword)
 class UserResetPasswordAdmin(admin.ModelAdmin):
