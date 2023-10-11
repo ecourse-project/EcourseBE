@@ -91,7 +91,6 @@ class CourseManagement(TimeStampedModel):
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
     user_in_class = models.BooleanField(null=True)
-    init_data = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["course__name"]

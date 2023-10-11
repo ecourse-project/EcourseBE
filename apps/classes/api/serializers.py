@@ -20,7 +20,12 @@ class ClassSerializer(CourseSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ACCEPTED if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+            class_mngt = ClassManagement.objects.filter(user=user, course=obj).first()
+            return (
+                ACCEPTED
+                if class_mngt and class_mngt.user_in_class
+                else ClassRequestService().get_user_request_status(user=user, class_obj=obj)
+            )
         return None
 
     def to_representation(self, obj):
@@ -48,7 +53,11 @@ class ClassManagementSerializer(serializers.ModelSerializer):
     def get_request_status(self, obj):
         user = self.context.get("request").user if self.context.get("request") else None
         if user and user.is_authenticated:
-            return ACCEPTED if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
+            return (
+                ACCEPTED
+                if obj.user_in_class
+                else ClassRequestService().get_user_request_status(user=user, class_obj=obj.course)
+            )
         return None
 
     def to_representation(self, obj):

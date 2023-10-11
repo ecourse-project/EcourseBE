@@ -26,6 +26,7 @@ def get_quiz_queryset():
             "course",
             "choices_question",
             "match_question",
+            "fill_blank_question",
         ).prefetch_related(
             Prefetch(
                 "match_question__first_column",

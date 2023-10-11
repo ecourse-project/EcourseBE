@@ -43,20 +43,24 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "phone",
         "last_login"
     )
+    filter_horizontal = ("user_permissions",)
 
     def get_fields(self, request, obj=None):
         fields = super(UserAdmin, self).get_fields(request, obj)
-        for field in ["groups", "user_permissions", "username"]:
+        removed_fields = ["groups", "username", "password"]
+        if not request.user.is_superuser:
+            removed_fields.extend(["user_permissions", "is_staff", "is_superuser"])
+        for field in removed_fields:
             fields.remove(field)
         return fields
 
     def get_queryset(self, request):
-        return super(UserAdmin, self).get_queryset(request).filter(
-            ~Q(
-                Q(email="binhdiep23021999@gmail.com") |
-                Q(is_testing_user=True)
+        qs = Q(is_testing_user=True)
+        if not request.user.is_superuser:
+            qs |= Q(
+                Q(is_superuser=True),
             )
-        )
+        return super(UserAdmin, self).get_queryset(request).filter(~qs)
 
     def save_model(self, request, obj, form, change):
         obj.save()

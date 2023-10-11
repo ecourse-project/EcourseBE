@@ -1,9 +1,11 @@
 from django.contrib import admin
+from django.db.models import Q
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.services.admin import join_class_request
 from apps.courses.services.admin import insert_remove_docs_videos
 from apps.courses.models import LessonManagement
+from apps.core.general.init_data import InitCourseServices
 
 
 @admin.action(description='Accept selected users')
@@ -120,6 +122,20 @@ class ClassRequestAdmin(admin.ModelAdmin):
         obj.save()
         join_class_request(obj)
 
+    def delete_model(self, request, obj):
+        class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request).first()
+        if class_mngt:
+            class_mngt.user_in_class = False
+            class_mngt.save(update_fields=["user_in_class"])
+        obj.delete()
+
+    def delete_queryset(self, request, queryset):
+        qs = Q()
+        for obj in queryset:
+            qs |= Q(user=obj.user, course=obj.class_request) if obj.user and obj.class_request and obj.accepted else Q()
+        ClassManagement.objects.filter(qs).update(user_in_class=False)
+        queryset.delete()
+
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
@@ -137,7 +153,7 @@ class ClassManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "user_in_class",
     )
-    readonly_fields = ("progress", "user_in_class", "status", "sale_status")
+    readonly_fields = ("progress", "status", "sale_status")
 
     def get_queryset(self, request):
         qs = super(ClassManagementAdmin, self).get_queryset(request).select_related("user", "course")
@@ -145,12 +161,20 @@ class ClassManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        for field in ["init_data", "is_favorite", "sale_status"]:
+        for field in ["is_favorite", "sale_status"]:
             fields.remove(field)
         return fields
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            if obj.user_in_class and obj.course and obj.user:
+                InitCourseServices().init_course_data(obj.course, obj.user)
+        obj.save()
 
     def has_delete_permission(self, request, obj=None):
         if obj and ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True):
             return False
         # if ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True)
         return True
+
+
