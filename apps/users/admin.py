@@ -2,16 +2,8 @@ from django.contrib import admin
 from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
-from apps.users.models import User, TestUser, UserResetPassword, UserTracking, UserDataBackUp
+from apps.users.models import User, TestUser, UserResetPassword, UserTracking
 from apps.core.utils import id_generator
-from apps.core.general.backup import change_user_role
-
-
-@admin.register(UserDataBackUp)
-class UserDataBackUpAdmin(admin.ModelAdmin, DynamicArrayMixin):
-    list_display = (
-        'user',
-    )
 
 
 @admin.register(TestUser)
@@ -64,7 +56,6 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
     def save_model(self, request, obj, form, change):
         obj.save()
-        change_user_role(obj, form.initial["role"], obj.role)
 
 
 @admin.register(UserResetPassword)
