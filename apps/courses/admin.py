@@ -208,7 +208,7 @@ class CourseManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(CourseManagementAdmin, self).get_fields(request, obj)
-        for field in ["init_data", "is_favorite"]:
+        for field in ["is_favorite"]:
             fields.remove(field)
         return fields
 
@@ -248,12 +248,6 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
         return super(CourseDocumentManagementAdmin, self).get_queryset(request).select_related(
             "document", "lesson", "course", "user",
         )
-
-    def get_fields(self, request, obj=None):
-        fields = super(CourseDocumentManagementAdmin, self).get_fields(request, obj)
-        for field in ["is_available"]:
-            fields.remove(field)
-        return fields
 
 
 @admin.register(VideoManagement)

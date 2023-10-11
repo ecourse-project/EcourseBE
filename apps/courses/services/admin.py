@@ -16,7 +16,7 @@ class CourseAdminService:
     def init_courses_data(self, courses):
         for course in courses:
             course_mngt = CourseManagement.objects.filter(course=course, user=self.user).first()
-            if not course_mngt or (course_mngt and course_mngt.init_data is True):
+            if not course_mngt:
                 continue
 
             all_lessons = course.lessons.all()
@@ -35,8 +35,13 @@ class CourseAdminService:
                 """ Initial lessons """
                 LessonManagement.objects.get_or_create(lesson=lesson, course=course)
 
+    def enable_courses_data(self, courses):
+        CourseDocumentManagement.objects.filter(user=self.user, course__in=courses).update(is_available=True)
+        VideoManagement.objects.filter(user=self.user, course__in=courses).update(is_available=True)
+
     def disable_courses_data(self, courses):
         CourseDocumentManagement.objects.filter(user=self.user, course__in=courses).update(is_available=False)
+        VideoManagement.objects.filter(user=self.user, course__in=courses).update(is_available=False)
 
 
 def get_users_by_course_sale_status(course_id, sale_status):

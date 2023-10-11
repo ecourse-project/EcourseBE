@@ -1,12 +1,8 @@
 from django.contrib import admin
-from django.db.models import F
 
 from apps.payment.models import Order
 from apps.payment.enums import SUCCESS, FAILED
-from apps.documents import enums as doc_enums
-from apps.documents.services.admin import DocumentAdminService
-from apps.courses import enums as course_enums
-from apps.courses.services.admin import CourseAdminService
+from apps.payment.services.services import OrderService
 
 
 @admin.register(Order)
@@ -23,38 +19,24 @@ class OrderAdmin(admin.ModelAdmin):
         "created",
     )
 
-    def has_delete_permission(self, request, obj=None):
-        return True
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            self.delete_model(request, obj)
 
-    def save_model(self, request, obj, form, change):
-        """
-        Given a model instance save it to the database.
-        """
-        if change:
-            doc_service = DocumentAdminService(obj.user)
-            course_service = CourseAdminService(obj.user)
-            if obj.status == SUCCESS:
-                """ Document """
-                all_docs = obj.documents.all()
-                all_docs.update(sold=F('sold') + 1)
-                doc_service.update_document_sale_status(all_docs, doc_enums.BOUGHT)
+    def delete_model(self, request, obj):
+        order_service = OrderService(obj)
+        order_service.order_failed()
+        obj.delete()
 
-                """ Course """
-                all_courses = obj.courses.all()
-                all_courses.update(sold=F('sold') + 1)
-                course_service.update_course_sale_status(all_courses, course_enums.BOUGHT)
-                course_service.init_courses_data(all_courses)
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        instance = form.instance
+        order_service = OrderService(instance)
 
-            if obj.status == FAILED:
-                """ Document """
-                doc_service.update_document_sale_status(obj.documents.all(), doc_enums.AVAILABLE)
-
-                """ Course """
-                all_courses = obj.courses.all()
-                course_service.update_course_sale_status(all_courses, course_enums.AVAILABLE)
-                course_service.disable_courses_data(all_courses)
-
-        obj.save()
+        if instance.status == SUCCESS:
+            order_service.order_success()
+        elif instance.status == FAILED:
+            order_service.order_failed()
 
     def get_queryset(self, request):
         return super(OrderAdmin, self).get_queryset(request).select_related("user")

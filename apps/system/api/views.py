@@ -22,11 +22,15 @@ class SystemInfoView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
-        file_size = round((UploadFile.objects.all().aggregate(Sum("file_size")).get("file_size__sum") or 0) / 1024, 2)
-        image_size = round((UploadImage.objects.all().aggregate(Sum("image_size")).get("image_size__sum") or 0) / 1024,
-                           2)
-        video_size = round((UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024,
-                           2)
+        file_size = round(
+            (UploadFile.objects.all().aggregate(Sum("file_size")).get("file_size__sum") or 0) / 1024, 2
+        )
+        image_size = round(
+            (UploadImage.objects.all().aggregate(Sum("image_size")).get("image_size__sum") or 0) / 1024, 2
+        )
+        video_size = round(
+            (UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024, 2
+        )
 
         context = {
             "base_dir": settings.BASE_DIR,
