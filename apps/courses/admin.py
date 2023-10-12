@@ -292,7 +292,8 @@ class LessonQuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
             obj.history = history
             obj.is_done_quiz = False
             obj.date_done_quiz = None
-            obj.save(update_fields=["history", "is_done_quiz", "date_done_quiz"])
+            obj.start_time = None
+            obj.save(update_fields=["history", "is_done_quiz", "date_done_quiz", "start_time"])
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
