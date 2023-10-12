@@ -19,7 +19,7 @@ from apps.quiz.models import (
 from apps.quiz.services.fill_blank_services import get_list_hidden, check_correct
 from apps.configuration.models import Configuration
 from apps.courses.models import LessonManagement, CourseManagement
-from apps.core.utils import get_now
+from apps.core.utils import get_now, remove_punctuation
 
 
 def get_quiz_queryset():
@@ -223,19 +223,21 @@ def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
         fill_question = answer.quiz.fill_blank_question
         correct = 0
         user_answer = answer.words or []
+        user_answer_copy = user_answer.copy()
         hidden_words = get_list_hidden(fill_question.hidden_words)
-        for word in hidden_words:
-            if not user_answer:
+        hidden_words_values = [w["word"] for w in hidden_words]
+        for word in hidden_words_values:
+            if not user_answer_copy:
                 break
-            if check_correct(word["word"], user_answer[0]):
+            if check_correct(word, user_answer_copy[0]):
                 correct += 1
-            user_answer.pop(0)
+            user_answer_copy.pop(0)
 
         res.append(
             {
                 "quiz_id": str(answer.quiz_id),
                 "user_answer": user_answer,
-                "correct_answer": fill_question.content or "",
+                "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
                 "correct": correct,
                 "total": len(hidden_words),
             }
