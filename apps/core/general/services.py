@@ -185,7 +185,7 @@ class CustomDictDataServices:
     def add_quiz_detail(self, data: dict, field: str):
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_quiz_mngt = LessonQuizManagement.objects.filter(
-                user=self.user, course_mngt__course_id=data["id"], lesson_id=lesson["id"]
+                course_mngt__user=self.user, course_mngt__course_id=data["id"], lesson_id=lesson["id"]
             ).first()
             if lesson_quiz_mngt and lesson_quiz_mngt.is_done_quiz and lesson_quiz_mngt.date_done_quiz:
                 data["lessons"][index][field] = response_quiz_statistic(
