@@ -44,6 +44,7 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
+    removed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["lesson_number"]
@@ -54,6 +55,13 @@ class Lesson(TimeStampedModel):
     @property
     def total_docs_videos(self):
         return self.total_videos + self.total_documents
+
+
+class LessonsRemoved(Lesson):
+    class Meta:
+        proxy = True
+        verbose_name = "Lesson"
+        verbose_name_plural = "Lessons removed"
 
 
 class Course(TimeStampedModel):

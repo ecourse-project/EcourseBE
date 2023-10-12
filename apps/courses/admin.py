@@ -15,13 +15,14 @@ from apps.courses.models import (
     CourseDocumentManagement,
     VideoManagement,
     LessonQuizManagement,
+    LessonsRemoved,
 )
 from apps.courses.services.admin import (
     insert_remove_docs_videos,
 )
+from apps.courses.forms import CourseForm
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
-
 
 
 @admin.register(CourseDocument)
@@ -57,6 +58,18 @@ class CourseTopicAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(LessonsRemoved)
+class LessonsRemovedAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "lesson_number",
+    )
+
+    def get_queryset(self, request):
+        qs = super(LessonsRemovedAdmin, self).get_queryset(request)
+        return qs.filter(removed=True)
+
+
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     search_fields = (
@@ -74,9 +87,18 @@ class LessonAdmin(admin.ModelAdmin):
     readonly_fields = ("total_documents", "total_videos")
     filter_horizontal = ("videos", "documents")
 
+    def get_queryset(self, request):
+        qs = super(LessonAdmin, self).get_queryset(request)
+        return qs.filter(removed=False)
+
     def get_fields(self, request, obj=None):
         fields = super(LessonAdmin, self).get_fields(request, obj)
-        for field in ["total_documents", "total_videos"]:
+        removed_fields = (
+            ["total_documents", "total_videos", "removed"]
+            if not request.user.is_superuser
+            else ["total_documents", "total_videos"]
+        )
+        for field in removed_fields:
             fields.remove(field)
         return fields
 
@@ -149,12 +171,13 @@ class CourseAdmin(admin.ModelAdmin):
         "name",
     )
     filter_horizontal = ("lessons",)
+    form = CourseForm
 
-    def get_fields(self, request, obj=None):
-        fields = super(CourseAdmin, self).get_fields(request, obj)
-        for field in ["sold", "views", "num_of_rates", "rating"]:
-            fields.remove(field)
-        return fields
+    # def get_fields(self, request, obj=None):
+    #     fields = super(CourseAdmin, self).get_fields(request, obj)
+    #     for field in ["sold", "views", "num_of_rates", "rating"]:
+    #         fields.remove(field)
+    #     return fields
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
