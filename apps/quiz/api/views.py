@@ -51,15 +51,14 @@ class QuizResultView(APIView):
             not course_mngt or not LessonManagement.objects.filter(course_id=course_id, lesson_id=lesson_id)
         ):
             raise NoItemException("Lesson does not exist or Lesson does not belong to the course")
-        # if LessonQuizManagement.objects.filter(course_mngt=course_mngt, lesson_id=lesson_id, is_done_quiz=True):
-        #     raise CompletedQuizException
+        if LessonQuizManagement.objects.filter(course_mngt=course_mngt, lesson_id=lesson_id, is_done_quiz=True):
+            raise CompletedQuizException
 
-        store_user_answers(user=user, user_answers=answers)
-        user_quiz_info = quiz_statistic(user=user, course_id=course_id, lesson_id=lesson_id)
-
+        created, _, _, _ = store_user_answers(user=user, user_answers=answers)
+        user_quiz_info = quiz_statistic(user=user, course_id=course_id, lesson_id=lesson_id, created=created)
         quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(course_mngt=course_mngt, lesson_id=lesson_id)
         quiz_mngt.is_done_quiz = True
-        quiz_mngt.date_done_quiz = datetime.datetime.now()
+        quiz_mngt.date_done_quiz = created
         quiz_mngt.save(update_fields=["is_done_quiz", "date_done_quiz"])
 
         return Response(

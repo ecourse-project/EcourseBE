@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.conf import settings
+from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
 from apps.courses.models import (
     Course,
@@ -19,6 +21,7 @@ from apps.courses.services.admin import (
 )
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
+
 
 
 @admin.register(CourseDocument)
@@ -273,8 +276,23 @@ class VideoManagementAdmin(admin.ModelAdmin):
 
 
 @admin.register(LessonQuizManagement)
-class LessonQuizManagementAdmin(admin.ModelAdmin):
+class LessonQuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "id",
+        "is_done_quiz",
+        "date_done_quiz",
     )
+    change_form_template = "reset/clear_quiz.html"
+
+    def response_change(self, request, obj):
+        if "clear-quiz" in request.POST:
+            history = obj.history or []
+            if obj.date_done_quiz:
+                history.append(obj.date_done_quiz.isoformat())
+            obj.history = history
+            obj.is_done_quiz = False
+            obj.date_done_quiz = None
+            obj.save(update_fields=["history", "is_done_quiz", "date_done_quiz"])
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 

@@ -151,6 +151,7 @@ class ChoicesQuizUserAnswerAdmin(admin.ModelAdmin):
         'user',
         'quiz',
         'choice',
+        'created',
     )
     readonly_fields = ('created',)
 
@@ -164,6 +165,7 @@ class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
         'user',
         'quiz',
         'answer',
+        'created',
     )
     readonly_fields = ('created',)
 
@@ -179,6 +181,7 @@ class FillBlankUserAnswerAdmin(admin.ModelAdmin):
         'user',
         'quiz',
         'words',
+        'created',
     )
     readonly_fields = ('created',)
 

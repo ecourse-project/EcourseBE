@@ -19,6 +19,7 @@ from apps.quiz.models import (
 from apps.quiz.services.fill_blank_services import get_list_hidden, check_correct
 from apps.configuration.models import Configuration
 from apps.courses.models import LessonManagement, CourseManagement
+from apps.core.utils import get_now
 
 
 def get_quiz_queryset():
@@ -56,9 +57,11 @@ def store_user_answers(user, user_answers):
     choice_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_CHOICES]
     match_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_MATCH]
     fill_type_objs = [obj for obj in user_answers if obj.get("question_type") == QUESTION_TYPE_FILL]
+    now = get_now()
 
     choice_answer_objs = [
         ChoicesQuizUserAnswer(
+            created=now,
             user=user,
             quiz_id=choice_obj.get("quiz_id"),
             choice_id=choice_obj.get("answer"),
@@ -68,6 +71,7 @@ def store_user_answers(user, user_answers):
 
     match_answer_objs = [
         MatchColumnUserAnswer(
+            created=now,
             user=user,
             quiz_id=match_obj.get("quiz_id"),
             first_content_id=answer[0],
@@ -79,6 +83,7 @@ def store_user_answers(user, user_answers):
 
     fill_answer_objs = [
         FillBlankUserAnswer(
+            created=now,
             user=user,
             quiz_id=fill_obj.get("quiz_id"),
             words=fill_obj.get("answer") or [],
@@ -93,10 +98,10 @@ def store_user_answers(user, user_answers):
     if fill_answer_objs:
         FillBlankUserAnswer.objects.bulk_create(fill_answer_objs)
 
-    return choice_answer_objs, match_answer_objs, fill_answer_objs
+    return now, choice_answer_objs, match_answer_objs, fill_answer_objs
 
 
-def user_correct_quiz_choices(user, course_id, lesson_id) -> Dict:
+def user_correct_quiz_choices(user, course_id, lesson_id, created) -> Dict:
     total_quiz = QuizManagement.objects.filter(
         Q(
             question_type=QUESTION_TYPE_CHOICES,
@@ -110,6 +115,7 @@ def user_correct_quiz_choices(user, course_id, lesson_id) -> Dict:
 
     user_choice_answers = get_user_choice_answer_queryset().filter(
         Q(
+            created=created,
             user=user,
             quiz__in=total_quiz,
         )
@@ -150,7 +156,7 @@ def get_total_correct_match(first_column, second_column) -> List[List[str]]:
     return res
 
 
-def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
+def user_correct_quiz_match(user, course_id, lesson_id, created) -> List[Dict]:
     match_quiz = QuizManagement.objects.filter(
         Q(
             question_type=QUESTION_TYPE_MATCH,
@@ -164,6 +170,7 @@ def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
 
     user_match_answers = MatchColumnUserAnswer.objects.filter(
         Q(
+            created=created,
             user=user,
             quiz__in=match_quiz,
         )
@@ -189,7 +196,7 @@ def user_correct_quiz_match(user, course_id, lesson_id) -> List[Dict]:
     return res
 
 
-def user_correct_quiz_fill(user, course_id, lesson_id) -> List:
+def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
     fill_quiz = QuizManagement.objects.filter(
         Q(
             question_type=QUESTION_TYPE_FILL,
@@ -205,6 +212,7 @@ def user_correct_quiz_fill(user, course_id, lesson_id) -> List:
 
     user_fill_answers = FillBlankUserAnswer.objects.filter(
         Q(
+            created=created,
             user=user,
             quiz__in=fill_quiz,
         )
@@ -236,10 +244,10 @@ def user_correct_quiz_fill(user, course_id, lesson_id) -> List:
     return res
 
 
-def quiz_statistic(user, course_id, lesson_id):
-    choices_quiz = user_correct_quiz_choices(user, course_id, lesson_id)
-    match_quiz = user_correct_quiz_match(user, course_id, lesson_id)
-    fill_quiz = user_correct_quiz_fill(user, course_id, lesson_id)
+def quiz_statistic(user, course_id, lesson_id, created):
+    choices_quiz = user_correct_quiz_choices(user, course_id, lesson_id, created)
+    match_quiz = user_correct_quiz_match(user, course_id, lesson_id, created)
+    fill_quiz = user_correct_quiz_fill(user, course_id, lesson_id, created)
     valid_match_quiz = [quiz for quiz in match_quiz if quiz["total"]]
     valid_fill_quiz = [quiz for quiz in fill_quiz if quiz["total"]]
 

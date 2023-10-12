@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 from model_utils.models import TimeStampedModel
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 from apps.users.models import User
 from apps.courses.enums import PROGRESS_STATUS, IN_PROGRESS, SALE_STATUSES, AVAILABLE
@@ -108,6 +109,7 @@ class LessonQuizManagement(TimeStampedModel):
     is_done_quiz = models.BooleanField(default=False)
     date_done_quiz = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
+    history = ArrayField(models.CharField(max_length=50), null=True, blank=True)
 
     def __str__(self):
         return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
