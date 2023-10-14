@@ -1,3 +1,7 @@
+from django.contrib.auth.models import Permission, ContentType
+from django.contrib.admin.models import LogEntry
+from django.contrib.sessions.models import Session
+
 from apps.carts.models import *
 from apps.classes.models import *
 from apps.configuration.models import *
@@ -10,6 +14,7 @@ from apps.rating.models import *
 from apps.settings.models import *
 from apps.upload.models import *
 from apps.users.models import *
+from apps.comments.models import *
 
 
 models = {
@@ -48,4 +53,61 @@ models = {
     "UploadVideo": UploadVideo,
     "User": User,
     "UserResetPassword": UserResetPassword,
+}
+
+
+import_db_model = {
+    "users.user": User,
+    "admin.logentry": LogEntry,
+
+    "configuration.configuration": Configuration,
+    "configuration.personalinfo": PersonalInfo,
+    "users.userresetpassword": UserResetPassword,
+
+    "upload.uploadfile": UploadFile,
+    "upload.uploadvideo": UploadVideo,
+    "upload.uploadfolder": UploadFolder,
+    "upload.uploadimage": UploadImage,
+
+    "documents.documenttopic": DocumentTopic,
+    "documents.document": Document,
+    "documents.documentmanagement": DocumentManagement,
+
+    "courses.coursetopic": CourseTopic,
+    "courses.coursedocument": CourseDocument,
+    "courses.lesson": Lesson,
+    "courses.course": Course,
+    "courses.coursemanagement": CourseManagement,
+    "courses.lessonmanagement": LessonManagement,
+    "courses.coursedocumentmanagement": CourseDocumentManagement,
+    "courses.videomanagement": VideoManagement,
+
+    "classes.classrequest": ClassRequest,
+
+    "payment.order": Order,
+
+    "settings.header": Header,
+    "settings.headerdetail": HeaderDetail,
+    "settings.homepagedetail": HomePageDetail,
+
+    "posts.posttopic": PostTopic,
+    "posts.post": Post,
+
+    "carts.cart": Cart,
+    "carts.favoritelist": FavoriteList,
+
+    "comments.replycomment": ReplyComment,
+    "comments.comment": Comment,
+
+    "rating.rating": Rating,
+
+    "sessions.session": Session,
+
+    # "quiz.answerchoices": None,
+    # "classes.class": Class,
+    # "classes.classmanagement": ClassManagement,
+    # "contenttypes.contenttype": ContentType,
+    # "upload.uploadavatar": UploadImage,
+    # "auth.permission": Permission,
+    # "users.testuser": User,
 }
