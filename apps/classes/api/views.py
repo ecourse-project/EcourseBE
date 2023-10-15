@@ -5,13 +5,11 @@ from rest_framework.views import APIView
 
 from apps.core.pagination import StandardResultsSetPagination
 from apps.classes.api.serializers import ListClassSerializer, ClassManagementSerializer, ClassSerializer
-from apps.classes.models import ClassRequest, Class
+from apps.classes.models import ClassRequest, Class, ClassManagement
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
-from apps.classes.enums import ACCEPTED
 from apps.courses.models import Course
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
-from apps.users.choices import MANAGER
 
 
 class JoinRequestView(APIView):
@@ -76,7 +74,8 @@ class ClassDetailView(generics.RetrieveAPIView):
     @staticmethod
     def is_accepted(user, class_obj):
         if not user.is_anonymous:
-            return True if user.role == MANAGER else ClassRequestService().get_user_request_status(user=user, class_obj=class_obj) == ACCEPTED
+            class_mngt = ClassManagement.objects.filter(user=user, course=class_obj).first()
+            return class_mngt.user_in_class if class_mngt else False
         return False
 
     def get_serializer_class(self):

@@ -48,12 +48,12 @@ class DocumentManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="doc_mngt", null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    last_update = models.DateTimeField(null=True, blank=True)
     sale_status = models.CharField(max_length=15, choices=STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["document__name"]
+        unique_together = ('user', 'document')
 
     def __str__(self):
         return f"{self.document.name} - {self.user.__str__()}"

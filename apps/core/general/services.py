@@ -1,27 +1,33 @@
-from django.db.models import QuerySet, Q
+from django.db.models import Q
 
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
 from apps.users.models import User
-from apps.quiz.models import Answer
 from apps.core.general import enums
 from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
 
 from apps.documents.models import Document
-from apps.courses.models import LessonManagement, VideoManagement, CourseDocumentManagement, Course
-from apps.classes.models import Class
+from apps.courses.models import (
+    LessonManagement,
+    VideoManagement,
+    CourseDocumentManagement,
+    Course,
+    LessonQuizManagement,
+)
+# from apps.classes.models import Class
 from apps.posts.models import Post
-
-from apps.documents.api.serializers import DocumentSerializer, DocumentManagementSerializer
-from apps.courses.api.serializers import ListCourseSerializer, ListCourseManagementSerializer
-from apps.classes.api.serializers import ListClassSerializer
-from apps.posts.api.serializers import PostSerializer
-
-from apps.documents.services.services import DocumentService
-from apps.courses.services.services import CourseService
-from apps.classes.services.services import ClassesService
-from apps.posts.services.services import PostsService
 from apps.classes.services.services import ClassRequestService
+from apps.quiz.services.services import (
+    quiz_statistic,
+    response_quiz_statistic,
+    get_quiz_queryset,
+)
+from apps.quiz.api.serializers import QuizManagementSerializer
+from apps.quiz.enums import (
+    QUESTION_TYPE_CHOICES,
+    QUESTION_TYPE_MATCH,
+    QUESTION_TYPE_FILL,
+)
 
 
 class CustomListDataServices:
@@ -32,12 +38,28 @@ class CustomListDataServices:
 
     def custom_response_list_data(self, data: list, **kwargs):
         fields = kwargs.get("fields", [])
+        data = self.filter_available_course_document(data)
+        data = self.filter_available_video(data)
 
         for field in fields:
             if field == enums.REQUEST_STATUS and kwargs.get("class_objs"):
                 data = self.class_request_service.add_request_status(data, field, self.user, kwargs.get("class_objs"))
             if field == enums.QUIZ_DETAIL:
                 data = self.add_quiz_detail(data, field)
+            if field == enums.LIST_QUIZ:
+                data = self.add_list_quiz(data, field)
+            if field == enums.IS_DONE_QUIZ:
+                data = self.add_is_done_quiz(data, field)
+        return data
+
+    def filter_available_course_document(self, data: list):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.filter_available_course_document(dt)
+        return data
+
+    def filter_available_video(self, data: list):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.filter_available_video(dt)
         return data
 
     def add_docs_videos_completed(self, data: list, doc_field: str, video_field: str):
@@ -45,9 +67,19 @@ class CustomListDataServices:
             data[index] = self.dict_data_service.add_docs_videos_completed(dt, doc_field, video_field)
         return data
 
+    def add_is_done_quiz(self, data: dict, field: str):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.add_is_done_quiz(dt, field)
+        return data
+
     def add_quiz_detail(self, data: list, field: str):
         for index, dt in enumerate(data):
             data[index] = self.dict_data_service.add_quiz_detail(dt, field)
+        return data
+
+    def add_list_quiz(self, data: list, field: str):
+        for index, dt in enumerate(data):
+            data[index] = self.dict_data_service.add_list_quiz(dt, field)
         return data
 
 
@@ -58,6 +90,9 @@ class CustomDictDataServices:
 
     def custom_response_dict_data(self, data: dict, **kwargs):
         fields = kwargs.get("fields", [])
+        data = self.filter_available_course_document(data)
+        data = self.filter_available_video(data)
+
         if enums.DOCS_COMPLETED in fields and enums.VIDEOS_COMPLETED in fields:
             data = self.add_docs_videos_completed(data, enums.DOCS_COMPLETED, enums.VIDEOS_COMPLETED)
 
@@ -66,6 +101,55 @@ class CustomDictDataServices:
                 data = self.class_request_service.add_request_status(data, field, self.user, kwargs.get("class_objs"))
             if field == enums.QUIZ_DETAIL:
                 data = self.add_quiz_detail(data, field)
+            if field == enums.LIST_QUIZ:
+                data = self.add_list_quiz(data, field)
+            if field == enums.IS_DONE_QUIZ:
+                data = self.add_is_done_quiz(data, field)
+
+        return data
+
+    def filter_available_course_document(self, data: dict):
+        if not data.get("lessons"):
+            return data
+
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_docs = [doc.get("id") for doc in lesson.get("documents", [])]
+            if not lesson_docs:
+                continue
+            available_docs = CourseDocumentManagement.objects.filter(
+                user=self.user,
+                course_id=data['id'],
+                lesson_id=lesson['id'],
+                document_id__in=lesson_docs,
+                is_available=True,
+            ).values_list("document_id", flat=True)
+            available_docs = [str(doc_id) for doc_id in available_docs]
+            data["lessons"][index]["documents"] = [
+                doc for doc in data["lessons"][index]["documents"] if doc.get("id") in available_docs
+            ]
+
+        return data
+
+    def filter_available_video(self, data: dict):
+        if not data.get("lessons"):
+            return data
+
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_videos = [video.get("id") for video in lesson.get("videos", [])]
+            if not lesson_videos:
+                continue
+            available_videos = VideoManagement.objects.filter(
+                user=self.user,
+                course_id=data['id'],
+                lesson_id=lesson['id'],
+                video_id__in=lesson_videos,
+                is_available=True,
+            ).values_list("video_id", flat=True)
+            available_videos = [str(video_id) for video_id in available_videos]
+            data["lessons"][index]["videos"] = [
+                video for video in data["lessons"][index]["videos"] if video.get("id") in available_videos
+            ]
+
         return data
 
     def add_docs_videos_completed(self, data: dict, doc_field: str, video_field: str):
@@ -77,6 +161,7 @@ class CustomDictDataServices:
                     CourseDocumentManagement.objects.filter(
                         user=self.user,
                         course_id=data['id'],
+                        lesson_id=lesson['id'],
                         document__in=lesson_obj.documents.all(),
                         is_completed=True,
                         is_available=True,
@@ -86,6 +171,7 @@ class CustomDictDataServices:
                     VideoManagement.objects.filter(
                         user=self.user,
                         course_id=data["id"],
+                        lesson_id=lesson['id'],
                         video__in=lesson_obj.videos.all(),
                         is_completed=True,
                         is_available=True,
@@ -97,26 +183,51 @@ class CustomDictDataServices:
 
         return data
 
+    # TODO: Optimize by query
+    def add_is_done_quiz(self, data: dict, field: str):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_quiz = LessonQuizManagement.objects.filter(
+                course_mngt__user=self.user,
+                course_mngt__course_id=data['id'],
+                lesson_id=lesson['id']
+            ).first()
+            data["lessons"][index][field] = lesson_quiz.is_done_quiz if lesson_quiz else False
+
+        return data
+
     def add_quiz_detail(self, data: dict, field: str):
-        quiz_detail = {}
-        quiz_answers = []
-        correct_answers = 0
-        total_answers = Answer.objects.filter(quiz__course_id=data['id'], user=self.user)
+        for index, lesson in enumerate(data["lessons"], start=0):
+            lesson_quiz_mngt = LessonQuizManagement.objects.filter(
+                course_mngt__user=self.user, course_mngt__course_id=data["id"], lesson_id=lesson["id"]
+            ).first()
+            if lesson_quiz_mngt and lesson_quiz_mngt.is_done_quiz and lesson_quiz_mngt.date_done_quiz:
+                data["lessons"][index][field] = response_quiz_statistic(
+                    quiz_statistic(
+                        user=self.user,
+                        course_id=data['id'],
+                        lesson_id=lesson["id"],
+                        created=lesson_quiz_mngt.date_done_quiz,
+                    )
+                )
+        return data
 
-        for answer in total_answers:
-            quiz_answers.append({
-                "quiz_id": answer.quiz_id,
-                "answer_choice": answer.choice,
-                "correct_answer": answer.quiz.correct_answer.choice
-            })
-            if answer.choice == answer.quiz.correct_answer.choice:
-                correct_answers += 1
-
-        quiz_detail["correct_answers"] = correct_answers
-        quiz_detail["total_quiz"] = len(total_answers)
-        quiz_detail["quiz_answers"] = quiz_answers
-        data[field] = quiz_detail
-
+    def add_list_quiz(self, data: dict, field: str):
+        for index, lesson in enumerate(data["lessons"], start=0):
+            data["lessons"][index][field] = (
+                QuizManagementSerializer(
+                    get_quiz_queryset().filter(
+                        Q(
+                            Q(course_id=data['id'], lesson_id=lesson["id"])
+                            & Q(
+                                Q(question_type=QUESTION_TYPE_CHOICES, choices_question__isnull=False)
+                                | Q(question_type=QUESTION_TYPE_MATCH, match_question__isnull=False)
+                                | Q(question_type=QUESTION_TYPE_FILL, fill_blank_question__isnull=False)
+                            )
+                        )
+                    ),
+                    many=True,
+                ).data
+            )
         return data
 
     def add_rating(self, data: dict, field: str):
@@ -159,57 +270,6 @@ def search_item(item_name: str, search_type: str, user: User) -> dict:
     elif search_type.upper() == POST:
         response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
 
-    # if search_type.upper() == ALL:
-    #     documents = DocumentService().get_all_documents_queryset.filter(name__icontains=item_name)
-    #     courses = CourseService().get_all_courses_queryset.filter(name__icontains=item_name)
-    #     classes = ClassesService().get_all_classes_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["documents"] = DocumentSerializer(documents, many=True).data
-    #         response["courses"] = ListCourseSerializer(courses, many=True).data
-    #         response["classes"] = ListClassSerializer(classes, many=True).data
-    #     else:
-    #         response["documents"] = DocumentManagementSerializer(documents, many=True).data
-    #         response["courses"] = ListCourseManagementSerializer(courses, many=True).data
-    #         response["classes"] = CustomListDataServices(user=user).custom_response_list_data(
-    #             data=ListClassSerializer(classes, many=True).data,
-    #             fields=[enums.REQUEST_STATUS],
-    #             user=user,
-    #             class_objs=classes,
-    #         )
-    #     response["posts"] = PostSerializer(PostsService().get_all_posts_queryset.filter(name__icontains=item_name), many=True).data
-    #
-    # elif search_type.upper() == DOCUMENT:
-    #     documents = DocumentService().get_all_documents_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["documents"] = DocumentSerializer(documents, many=True).data
-    #     else:
-    #         response["documents"] = DocumentManagementSerializer(documents, many=True).data
-    #
-    # elif search_type.upper() == COURSE:
-    #     courses = CourseService().get_all_courses_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["courses"] = ListCourseSerializer(courses, many=True).data
-    #     else:
-    #         response["courses"] = ListCourseManagementSerializer(courses, many=True).data
-    #
-    # elif search_type.upper() == CLASS:
-    #     classes = ClassesService().get_all_classes_queryset.filter(name__icontains=item_name)
-    #     if user.is_anonymous or not user.is_authenticated:
-    #         response["classes"] = ListClassSerializer(classes, many=True).data
-    #     else:
-    #         response["classes"] = CustomListDataServices(user=user).custom_response_list_data(
-    #             data=ListClassSerializer(classes, many=True).data,
-    #             fields=[enums.REQUEST_STATUS],
-    #             user=user,
-    #             class_objs=classes,
-    #         )
-    #
-    # elif search_type.upper() == POST:
-    #     response["posts"] = PostSerializer(
-    #         PostsService().get_all_posts_queryset.filter(name__icontains=item_name), many=True
-    #     ).data
-
     return response
-
 
 

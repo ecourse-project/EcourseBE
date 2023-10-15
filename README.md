@@ -16,9 +16,11 @@
 -   Install library:
     -   "pip install -r requirements.txt"
 -   Edit database information in
+-   Edit database information in
     -   "backend/ecourse/ecourse/settings/"
     -   Change "NAME" and "PASSWORD" in "DATABASES" variable
 -   Migrate:
+    -   "docker exec -it ecourse bash" (with Docker)
     -   "python manage.py migrate"
 -   Runserver:
     -   In "ecourse" directory, run "python manage.py runserver {port}"

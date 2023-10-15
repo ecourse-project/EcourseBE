@@ -1,0 +1,8 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    <div class="submit-row">
+            <input type="submit" value="Clear quiz answer" name="clear-quiz">
+    </div>
+{% endblock %}

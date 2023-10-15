@@ -1,5 +1,4 @@
 from django.db.models import Prefetch, Q
-from django.utils.timezone import localtime
 
 from apps.courses.models import (
     Course,
@@ -80,9 +79,8 @@ class CourseManagementService:
     def init_courses_management(self):
         if not CourseManagement.objects.filter(user=self.user).first():
             CourseManagement.objects.bulk_create([
-                CourseManagement(
-                    user=self.user, course=course, last_update=localtime()
-                ) for course in CourseService().get_all_courses_queryset
+                CourseManagement(user=self.user, course=course)
+                for course in CourseService().get_all_courses_queryset
             ])
 
     def update_lesson_progress(self, course_id: str, lessons: list):

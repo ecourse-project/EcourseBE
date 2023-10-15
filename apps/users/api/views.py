@@ -9,6 +9,7 @@ from apps.users.api.serializers import (
 from apps.users.exceptions import UserNotExistException
 from apps.users import services
 from apps.users.models import User
+from apps.users.choices import STUDENT
 from django.conf import settings
 from django.core.mail import send_mail
 from apps.users.choices import (
@@ -16,6 +17,25 @@ from apps.users.choices import (
     PASSWORD_RESET_EMAIL_MESSAGE,
 )
 from apps.core.utils import id_generator
+
+
+class UserInfoView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        user_id = self.request.query_params.get("user_id")
+        user = User.objects.filter(pk=user_id).first()
+        if not user:
+            raise UserNotExistException
+        return user
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = self.get_serializer(instance).data
+        user = self.request.user
+        if not user.is_anonymous and user.role == STUDENT:
+            data.pop("phone")
+        return Response(data)
 
 
 class UsersProfileView(generics.RetrieveUpdateAPIView):
@@ -81,5 +101,3 @@ class ChangePasswordView(generics.RetrieveUpdateAPIView):
             instance._prefetched_objects_cache = {}
 
         return Response({"detail": "Password has been changed!"}, status=status.HTTP_200_OK)
-
-            

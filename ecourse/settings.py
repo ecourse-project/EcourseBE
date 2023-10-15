@@ -118,7 +118,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'ecourse.custom_middleware.TimezoneMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'ecourse.custom_middleware.TrackingMiddleware',
+    # 'ecourse.custom_middleware.TrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'ecourse.urls'
@@ -182,7 +182,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 TIME_ZONE = "Asia/Ho_Chi_Minh"
 
@@ -282,11 +282,13 @@ EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="EMAIL_HOST_PASSWORD")
 EMAIL_PORT = env.int("EMAIL_PORT", default="EMAIL_PORT")
 
+
 # CKEDITOR
 CKEDITOR_BASEPATH = '/staticfiles/ckeditor/ckeditor/'
 
 CKEDITOR_CONFIGS = {
     'default': {
+        # "skin": "bootstrapck",
         "skin": "moono-lisa",
         "toolbar_Basic": [["Source", "-", "Bold", "Italic"]],
         "toolbar_Full": [

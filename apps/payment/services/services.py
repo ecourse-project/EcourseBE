@@ -1,15 +1,19 @@
 from datetime import datetime
 
-from django.utils.timezone import localtime
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 from apps.documents import enums as doc_enums
 from apps.documents.models import DocumentManagement, Document
 from apps.documents.api.serializers import DocumentManagementSerializer
+from apps.documents.services.admin import DocumentAdminService
 from apps.courses import enums as course_enums
 from apps.courses.models import CourseManagement, Course
 from apps.courses.api.serializers import CourseManagementSerializer
-from apps.payment.enums import FAILED
+from apps.courses.services.admin import CourseAdminService
+from apps.payment.enums import SUCCESS, FAILED
+from apps.payment.models import Order
+
+from apps.core.general.init_data import InitCourseServices
 
 
 class OrderService:
@@ -22,7 +26,7 @@ class OrderService:
             DocumentManagement.objects.filter(
                 user=user,
                 document__in=documents
-            ).update(sale_status=doc_enums.PENDING, last_update=localtime())
+            ).update(sale_status=doc_enums.PENDING)
 
     def add_courses(self, courses, user):
         if courses:
@@ -30,17 +34,17 @@ class OrderService:
             CourseManagement.objects.filter(
                 user=user,
                 course__in=courses
-            ).update(sale_status=course_enums.PENDING, last_update=localtime())
+            ).update(sale_status=course_enums.PENDING)
 
     def cancel_order(self):
         DocumentManagement.objects.filter(
             user=self.order.user,
             document__in=self.order.documents.all()
-        ).update(sale_status=doc_enums.AVAILABLE, last_update=localtime())
+        ).update(sale_status=doc_enums.AVAILABLE)
         CourseManagement.objects.filter(
             user=self.order.user,
             course__in=self.order.courses.all()
-        ).update(sale_status=course_enums.AVAILABLE, last_update=localtime())
+        ).update(sale_status=course_enums.AVAILABLE)
 
         self.order.status = FAILED
         self.order.save(update_fields=['status'])
@@ -63,6 +67,34 @@ class OrderService:
             documents=DocumentManagementSerializer(doc_mngt, many=True).data,
             courses=CourseManagementSerializer(course_mngt, many=True).data
         )
+
+    def order_success(self):
+        doc_service = DocumentAdminService(self.order.user)
+        course_service = CourseAdminService(self.order.user)
+        """ Document """
+        all_docs = self.order.documents.all()
+        all_docs.update(sold=F('sold') + 1)
+        doc_service.update_document_sale_status(all_docs, doc_enums.BOUGHT)
+
+        """ Course """
+        all_courses = self.order.courses.all()
+        all_courses.update(sold=F('sold') + 1)
+        course_service.update_course_sale_status(all_courses, course_enums.BOUGHT)
+        for course in all_courses:
+            InitCourseServices().init_course_data(course=course, user=self.order.user)
+        course_service.enable_courses_data(all_courses)
+
+    def order_failed(self):
+        doc_service = DocumentAdminService(self.order.user)
+        course_service = CourseAdminService(self.order.user)
+
+        """ Document """
+        doc_service.update_document_sale_status(self.order.documents.all(), doc_enums.AVAILABLE)
+
+        """ Course """
+        all_courses = self.order.courses.all()
+        course_service.update_course_sale_status(all_courses, course_enums.AVAILABLE)
+        course_service.disable_courses_data(all_courses)
 
 
 # timestamp now - last 12 characters user id

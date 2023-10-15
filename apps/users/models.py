@@ -39,6 +39,13 @@ class User(AbstractUser):
         ordering = ["full_name", "email"]
 
 
+class UserDataBackUp(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    documents = models.JSONField(null=True, blank=True)
+    courses = models.JSONField(null=True, blank=True)
+
+
 class TestUser(User):
     class Meta:
         proxy = True

@@ -69,7 +69,7 @@ export interface User {
   email: string;
   full_name: string;
   avatar: string;
-  phone: string;
+  phone?: string;
   role: RoleEnum;
 }
 
@@ -121,6 +121,15 @@ export interface OImageUpload {
   image_size: number;
   image_path: string;
   image_short_path: string;
+  image_type: string;
+  is_avatar: boolean;
+}
+
+export interface UploadImageSuccess {
+  id: string;
+  image_path: string;
+  image_short_path: string;
+  image_size: number;
   image_type: string;
   is_avatar: boolean;
 }
@@ -227,6 +236,9 @@ export interface Lesson {
   documents: CourseDocument[];
   docs_completed?: string[];
   videos_completed?: string[];
+  quiz_detail?: QuizResult;
+  list_quiz: Quiz[];
+  is_done_quiz: boolean;
 }
 
 export interface Course {
@@ -250,7 +262,6 @@ export interface Course {
   is_favorite?: boolean;
   // rating_detail?: Rating[];
   // my_rating?: Rating;
-  quiz_detail?: QuizResult;
   // rating_stats?: RatingStats;
   request_status?: RequestStatus;
   course_of_class?: boolean;
@@ -385,45 +396,83 @@ export interface RatingStats {
 }
 
 // ===========================================Quiz===========================================
-export enum AnswerChoiceEnum {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  NO_CHOICE = '-1',
+export enum QuestionTypeEnum {
+  CHOICES = 'CHOICES',
+  MATCH = 'MATCH',
+  FILL = 'FILL',
+}
+
+export enum ContentTypeEnum {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+}
+
+export interface MatchQuestion {
+  content: string;
+  first_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
+  second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
+}
+
+export interface FillBlankQuestion {
+  content: string;
+}
+
+export interface ChoicesQuestion {
+  content: string;
+  content_type: ContentTypeEnum;
+  choices: Array<{choice: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
 }
 
 export interface Quiz {
   id: string;
-  course: string;
-  question: string;
-  A: string;
-  B: string;
-  C: string;
-  D: string;
+  order: number;
+  time_limit?: number;
+  question_type: QuestionTypeEnum;
+  choices_question?: ChoicesQuestion;
+  match_question?: MatchQuestion;
+  fill_blank_question?: FillBlankQuestion;
+
 }
 
 export interface UserAnswersArgs {
   quiz_id: string;
-  answer_choice: AnswerChoiceEnum;
-  correct_answer?: AnswerChoiceEnum;
+  question_type: QuestionTypeEnum;
+  answer: string | Array<string> | Array<Array<string>>;
 }
 
 export interface QuizResultArgs {
   course_id: string;
-  answers: UserAnswersArgs[];
+  lesson_id: string;
+  user_answers: UserAnswersArgs[];
 }
 
-export interface CorrectAnswer {
-  id: string;
-  correct_answer: AnswerChoiceEnum;
+export interface ChoicesQuizAnswer {
+  correct: number;
+  total: number;
+  result: Array<{quiz_id: string, user_answer: string, correct_answer?: string}>;
+}
+
+export interface MatchQuizAnswer {
+  quiz_id: string;
+  correct: number;
+  total: number;
+  user_answer: Array<Array<string>>;
+  correct_answer?: Array<Array<string>>;
+}
+
+export interface FillQuizAnswer {
+  quiz_id: string;
+  correct: number;
+  total: number;
+  user_answer: Array<string>;
+  correct_answer?: Array<string>;
 }
 
 export interface QuizResult {
   mark?: number;
-  correct_answers: number;
-  total_quiz: number;
-  quiz_answers: UserAnswersArgs[];
+  choices_quiz: ChoicesQuizAnswer;
+  match_quiz: MatchQuizAnswer[];
+  fill_quiz: FillQuizAnswer[];
 }
 
 // ===========================================Setting===========================================
@@ -493,6 +542,7 @@ const parseParamsToUrL = (url: string, params: string[], paramsName: string) => 
 export const apiURL = {
   login: () => 'api/users-auth/token/',
   refresh: () => 'api/users-auth/token/refresh/',
+  userInfo: (user_id) => `api/users/user-info/?user_id=${user_id}`,
   me: () => 'api/users/me/',
   register: () => 'api/users-auth/registration/',
   existEmail: (email) => `api/users/exists/?email=${email}`,
@@ -558,9 +608,10 @@ export const apiURL = {
   documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
-  listQuiz: (id) => `api/quiz/?course_id=${id}`,
+  listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
+  quizStartTime: (course_id, lesson_id, is_start) => `api/quiz/start-time/?course_id=${course_id}&lesson_id=${lesson_id}&is_start=${is_start}`,
 
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
@@ -595,6 +646,8 @@ export const apiURL = {
   listPostTopics: () =>  `api/posts/topics/`,
 
   getPaymentInfo: () => `api/configuration/payment-info/`,
+
+  uploadImage: () => 'api/upload/upload-images/',
 };
 
 class CourseService {
@@ -602,10 +655,15 @@ class CourseService {
     return apiClient.get(apiURL.me());
   }
 
-  static updateInfo(phone?: string, full_name?: string): Promise<User> {
+  static userInfo(user_id: string): Promise<User> {
+    return apiClient.get(apiURL.userInfo(user_id));
+  }
+
+  static updateInfo(phone?: string, full_name?: string, avatar?: string): Promise<User> {
     return apiClient.patch(apiURL.me(), {
         phone: phone,
         full_name: full_name,
+        avatar: avatar,
     });
   }
 
@@ -763,8 +821,8 @@ class CourseService {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
   }
 
-  static listQuiz(id: string): Promise<Quiz[]> {
-    return apiClient.get(apiURL.listQuiz(id));
+  static listQuiz(course_id: string, lesson_id: string): Promise<Quiz[]> {
+    return apiClient.get(apiURL.listQuiz(course_id, lesson_id));
   }
 
   static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
@@ -773,6 +831,10 @@ class CourseService {
 
   static downloadCerti(course_id: string): Promise<any> {
     return apiClient.get(apiURL.downloadCerti(course_id));
+  }
+
+  static quizStartTime(course_id: string, lesson_id: string, is_start: boolean): Promise<{start_time?: string}> {
+    return apiClient.get(apiURL.quizStartTime(course_id, lesson_id, is_start));
   }
 
   static listHeaders(): Promise<Nav[]> {
@@ -823,5 +885,8 @@ class CourseService {
     return apiClient.get(apiURL.getPaymentInfo());
   }
 
+  static uploadImage(data: any): Promise<any> {
+    return apiClient.post(apiURL.uploadImage(), data);
+  }
 }
 export default CourseService;

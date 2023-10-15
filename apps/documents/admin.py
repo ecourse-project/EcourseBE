@@ -62,7 +62,7 @@ class DocumentTopicAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentManagement)
 class DocumentManagementAdmin(admin.ModelAdmin):
-    list_filter = ("document", "user", "sale_status")
+    list_filter = ("document", "sale_status")
     search_fields = (
         "document__name",
         "user__email",
@@ -76,6 +76,3 @@ class DocumentManagementAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super(DocumentManagementAdmin, self).get_queryset(request).select_related("user", "document")
-
-    def has_delete_permission(self, request, obj=None):
-        return False
