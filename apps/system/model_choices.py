@@ -63,6 +63,7 @@ import_db_model = {
     "configuration.configuration": Configuration,
     "configuration.personalinfo": PersonalInfo,
     "users.userresetpassword": UserResetPassword,
+    "users.userdatabackup": UserDataBackUp,
 
     "upload.uploadfile": UploadFile,
     "upload.uploadvideo": UploadVideo,

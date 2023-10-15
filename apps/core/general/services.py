@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
 from apps.users.models import User
@@ -21,6 +23,11 @@ from apps.quiz.services.services import (
     get_quiz_queryset,
 )
 from apps.quiz.api.serializers import QuizManagementSerializer
+from apps.quiz.enums import (
+    QUESTION_TYPE_CHOICES,
+    QUESTION_TYPE_MATCH,
+    QUESTION_TYPE_FILL,
+)
 
 
 class CustomListDataServices:
@@ -102,6 +109,9 @@ class CustomDictDataServices:
         return data
 
     def filter_available_course_document(self, data: dict):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_docs = [doc.get("id") for doc in lesson.get("documents", [])]
             if not lesson_docs:
@@ -121,6 +131,9 @@ class CustomDictDataServices:
         return data
 
     def filter_available_video(self, data: dict):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_videos = [video.get("id") for video in lesson.get("videos", [])]
             if not lesson_videos:
@@ -202,7 +215,16 @@ class CustomDictDataServices:
         for index, lesson in enumerate(data["lessons"], start=0):
             data["lessons"][index][field] = (
                 QuizManagementSerializer(
-                    get_quiz_queryset().filter(course_id=data['id'], lesson_id=lesson["id"]),
+                    get_quiz_queryset().filter(
+                        Q(
+                            Q(course_id=data['id'], lesson_id=lesson["id"])
+                            & Q(
+                                Q(question_type=QUESTION_TYPE_CHOICES, choices_question__isnull=False)
+                                | Q(question_type=QUESTION_TYPE_MATCH, match_question__isnull=False)
+                                | Q(question_type=QUESTION_TYPE_FILL, fill_blank_question__isnull=False)
+                            )
+                        )
+                    ),
                     many=True,
                 ).data
             )

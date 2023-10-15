@@ -122,6 +122,9 @@ class LessonQuizManagement(TimeStampedModel):
     def __str__(self):
         return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
 
+    class Meta:
+        verbose_name_plural = "Management - Lesson quiz"
+
 
 class LessonManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

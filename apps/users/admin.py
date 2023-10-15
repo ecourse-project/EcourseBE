@@ -33,6 +33,10 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
             Q(is_testing_user=True)
         )
 
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        change_user_role(obj, form.initial["role"], obj.role)
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
