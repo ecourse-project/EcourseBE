@@ -191,6 +191,7 @@ class QuizManagementAdmin(admin.ModelAdmin):
     list_display = (
         'order',
         'course',
+        'lesson',
         'question_type',
         'choices_question',
         'match_question',

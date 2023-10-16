@@ -30,7 +30,7 @@ class FillBlankQuestionForm(forms.ModelForm):
 
         if self.instance:
             list_words = [w.get("word") for w in self.instance.hidden_words] if self.instance.hidden_words else []
-            self.fields["hidden"].choices = [(i, remove_punctuation(word)) for i, word in enumerate(list_words, start=1)]
+            self.fields["hidden"].choices = [(i, remove_punctuation(word)) for i, word in enumerate(list_words, start=1) if remove_punctuation(word)]
             self.initial["hidden"] = (
                 [w.get("id") for w in self.instance.hidden_words if w.get("hidden")]
                 if self.instance.hidden_words

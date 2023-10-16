@@ -25,6 +25,11 @@ from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 
 
+@admin.action(description='Unremove for selected lessons')
+def unremove(modeladmin, request, queryset):
+    queryset.update(removed=False)
+
+
 @admin.register(CourseDocument)
 class CourseDocumentAdmin(admin.ModelAdmin):
     search_fields = (
@@ -64,6 +69,7 @@ class LessonsRemovedAdmin(admin.ModelAdmin):
         "name",
         "lesson_number",
     )
+    actions = (unremove,)
 
     def get_queryset(self, request):
         qs = super(LessonsRemovedAdmin, self).get_queryset(request)
@@ -172,12 +178,18 @@ class CourseAdmin(admin.ModelAdmin):
     )
     filter_horizontal = ("lessons",)
     form = CourseForm
+    change_form_template = "admin_button/remove_lesson.html"
 
     # def get_fields(self, request, obj=None):
     #     fields = super(CourseAdmin, self).get_fields(request, obj)
     #     for field in ["sold", "views", "num_of_rates", "rating"]:
     #         fields.remove(field)
     #     return fields
+
+    def response_change(self, request, obj):
+        if "remove-lesson" in request.POST:
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 
     def save_model(self, request, obj, form, change):
         if obj.course_of_class:
@@ -302,10 +314,44 @@ class VideoManagementAdmin(admin.ModelAdmin):
 class LessonQuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "id",
+        "user",
+        "course_or_class",
+        "lesson",
         "is_done_quiz",
         "date_done_quiz",
     )
-    change_form_template = "reset/clear_quiz.html"
+    fields = (
+        "lesson",
+        "is_done_quiz",
+        "date_done_quiz",
+        "start_time",
+        "history",
+    )
+    change_form_template = "admin_button/clear_quiz.html"
+    readonly_fields = ("lesson",)
+
+    # def get_fields(self, request, obj=None):
+    #     fields = super(LessonQuizManagementAdmin, self).get_fields(request, obj)
+    #     for field in ["course_mngt"]:
+    #         fields.remove(field)
+    #     print(fields)
+    #     return fields
+
+    def course_or_class(self, obj):
+        course = obj.course_mngt.course
+        return (
+            format_html(f'<a href="{settings.BASE_URL}/admin/classes/class/{str(course.id)}/change/">{course.name}</a>')
+            if course.course_of_class
+            else format_html(f'<a href="{settings.BASE_URL}/admin/courses/course/{str(course.id)}/change/">{course.name}</a>')
+        )
+
+    def user(self, obj):
+        user = obj.course_mngt.user
+        return (
+            format_html(f'<a href="{settings.BASE_URL}/admin/users/testuser/{str(user.pk)}/change/">{user.email}</a>')
+            if user.is_testing_user
+            else format_html(f'<a href="{settings.BASE_URL}/admin/users/user/{str(user.pk)}/change/">{user.email}</a>')
+        )
 
     def response_change(self, request, obj):
         if "clear-quiz" in request.POST:

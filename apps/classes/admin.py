@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
 from apps.classes.services.admin import join_class_request
 from apps.courses.services.admin import insert_remove_docs_videos
 from apps.courses.models import LessonManagement
+from apps.courses.forms import CourseForm
 from apps.core.general.init_data import InitCourseServices
 
 
@@ -35,10 +37,17 @@ class ClassAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("is_selling", "price")
     filter_horizontal = ("lessons",)
+    form = CourseForm
+    change_form_template = "admin_button/remove_lesson.html"
+
+    def response_change(self, request, obj):
+        if "remove-lesson" in request.POST:
+            return HttpResponseRedirect(".")
+        return super().response_change(request, obj)
 
     def get_fields(self, request, obj=None):
         fields = super(ClassAdmin, self).get_fields(request, obj)
-        for field in ["price", "is_selling", "sold", "views", "rating", "num_of_rates"]:
+        for field in ["price", "is_selling"]:
             fields.remove(field)
         return fields
 
