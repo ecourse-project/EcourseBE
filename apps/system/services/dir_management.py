@@ -27,3 +27,12 @@ def apply_dir_action(action: str, root: str, source: str, destination: str = "",
         os.mkdir(source_path)
 
     return message
+
+
+def get_folder_size(path):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            total_size += os.path.getsize(file_path)
+    return total_size

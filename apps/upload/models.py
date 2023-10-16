@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from model_utils.models import TimeStampedModel
 
+from apps.core.utils import get_summary_content
+
 
 class UploadFile(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -18,7 +20,7 @@ class UploadFile(TimeStampedModel):
         ordering = ["file_name"]
 
     def __str__(self):
-        return str(self.file_name)
+        return get_summary_content(self.file_name)
 
     def delete_file(self):
         self.file_path.delete()
@@ -41,7 +43,7 @@ class UploadImage(TimeStampedModel):
         ordering = ["image_name"]
 
     def __str__(self):
-        return str(self.image_name)
+        return get_summary_content(self.image_name)
 
     def delete_image(self):
         self.image_path.delete()
@@ -73,7 +75,7 @@ class UploadVideo(TimeStampedModel):
         ordering = ["order"]
 
     def __str__(self):
-        return str(self.video_name)
+        return get_summary_content(self.video_name)
 
     def delete_video(self):
         self.video_path.delete()
@@ -89,4 +91,4 @@ class UploadFolder(TimeStampedModel):
     folder_path = models.FileField(max_length=255, null=True, blank=True, help_text="(.zip file)")
 
     def __str__(self):
-        return str(self.name)
+        return get_summary_content(self.name)

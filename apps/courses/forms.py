@@ -23,18 +23,21 @@ class CourseForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        lesson_removed_ids = set(cleaned_data.get("lessons_removed"))
+        lesson_removed_ids = cleaned_data.get("lessons_removed")
 
         if lesson_removed_ids:
-            lesson_ids = set([str(lesson.pk) for lesson in cleaned_data.get("lessons")])
-            if lesson_ids.intersection(lesson_removed_ids):
-                raise forms.ValidationError("Cannot remove lesson that belong to 'Chosen lessons'")
+            for lesson in Lesson.objects.filter(pk__in=lesson_removed_ids):
+                if lesson.courses.all().first():
+                    raise forms.ValidationError(
+                        "Cannot remove lesson that belong to 'Chosen lessons' of Course or Class"
+                    )
 
         Lesson.objects.filter(pk__in=list(lesson_removed_ids)).update(removed=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.fields["lessons_removed"].choices = [
+        available_lesson = [
             (str(lesson.pk), lesson.__str__()) for lesson in Lesson.objects.filter(removed=False).order_by("name")
         ]
+        self.fields["lessons"].choices = available_lesson
+        self.fields["lessons_removed"].choices = available_lesson

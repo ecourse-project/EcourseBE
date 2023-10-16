@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>System Information</title>
+  <script>
+    function addLineBreaks() {
+      var element = document.getElementById("text");
+      var text = element.innerHTML;
+      element.innerHTML = text.replace(/\n/g, "<br>");
+    }
+  </script>
+</head>
+<body onload="addLineBreaks()">
+    <pre>
+      Base dir: {{ base_dir }}
+      Media root: {{ media_root }}
+      Storage:
+        Upload File: {{ storage.file }} MB
+        Upload Image: {{ storage.image }} MB
+        Upload Video: {{ storage.video }} MB
+        Media: {{ storage.media.size }} MB (Updated: {{ storage.media.update }})
+        FE Source: {{ storage.src_fe.size }} MB (Updated: {{ storage.src_fe.update }})
+        BE Source: {{ storage.src_be.size }} MB (Updated: {{ storage.src_be.update }})
+        Total: {{ storage.total }} MB
+  </pre>
+</body>
+</html>

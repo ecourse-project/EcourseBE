@@ -9,9 +9,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from apps.system.models import Storage
 from apps.system.model_choices import models
+from apps.system.choices import MEDIA, SOURCE_FE, SOURCE_BE
 from apps.system.services.database_services import apply_action
-from apps.system.services.dir_management import apply_dir_action
+from apps.system.services.dir_management import apply_dir_action, get_folder_size
 from apps.core.system import get_tree_str
 from apps.core.utils import create_serializer_class
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
@@ -22,6 +24,23 @@ class SystemInfoView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
+        context = {
+            "directory": get_tree_str(settings.BASE_DIR / "apps"),
+            "media": get_tree_str(settings.MEDIA_ROOT),
+        }
+
+        return render(request, "data/system/system_info.html", context)
+
+
+class StorageView(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        storage_media = Storage.objects.filter(storage_type=MEDIA).order_by("-created").first()
+        storage_fe = Storage.objects.filter(storage_type=SOURCE_FE).order_by("-created").first()
+        storage_be = Storage.objects.filter(storage_type=SOURCE_BE).order_by("-created").first()
+
         file_size = round(
             (UploadFile.objects.all().aggregate(Sum("file_size")).get("file_size__sum") or 0) / 1024, 2
         )
@@ -31,21 +50,43 @@ class SystemInfoView(APIView):
         video_size = round(
             (UploadVideo.objects.all().aggregate(Sum("video_size")).get("video_size__sum") or 0) / 1024, 2
         )
+        media_size = fe_size = be_size = 0
+        media_update = fe_update = be_update = ""
+
+        if storage_media:
+            media_size = round(storage_media.size / pow(1024, 2), 2)
+            media_update = storage_media.created.strftime("%Y-%m-%d %H:%M:%S")
+        if storage_fe:
+            fe_size = round(storage_fe.size / pow(1024, 2), 2)
+            fe_update = storage_fe.created.strftime("%Y-%m-%d %H:%M:%S")
+        if storage_be:
+            be_size = round(storage_be.size / pow(1024, 2), 2)
+            be_update = storage_be.created.strftime("%Y-%m-%d %H:%M:%S")
 
         context = {
             "base_dir": settings.BASE_DIR,
             "media_root": settings.MEDIA_ROOT,
-            "directory": get_tree_str(settings.BASE_DIR / "apps"),
-            "media": get_tree_str(settings.MEDIA_ROOT),
             "storage": {
                 "file": file_size,
                 "image": image_size,
                 "video": video_size,
-                "total": round(file_size + image_size + video_size, 2),
+                "media": {
+                    "size": media_size,
+                    "update": media_update
+                },
+                "src_fe": {
+                    "size": fe_size,
+                    "update": fe_update
+                },
+                "src_be": {
+                    "size": be_size,
+                    "update": be_update
+                },
+                "total": fe_size + be_size,
             }
         }
 
-        return render(request, "data/system/system_info.html", context)
+        return render(request, "storage_info.html", context)
 
 
 class GetDataFromDatabase(APIView):
