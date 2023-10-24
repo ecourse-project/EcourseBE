@@ -1,7 +1,15 @@
+from uuid import uuid4
+from typing import List
 from string import punctuation
 
-from apps.quiz.enums import ADMIN_DISPLAY_SUBSTRING
+from django.db.models import Q
 
+from apps.quiz.enums import ADMIN_DISPLAY_SUBSTRING, QUESTION_TYPE_FILL
+from apps.quiz.models import (
+    QuizManagement,
+    FillBlankUserAnswer,
+    FillBlankQuestion,
+)
 from apps.core.utils import remove_punctuation
 
 
@@ -54,3 +62,89 @@ def check_correct(original, word):
     ):
         return True
     return False
+
+
+def fill_question_processing(data):
+    res = {}
+    for question in data:
+        pk = str(uuid4())
+        instance = FillBlankQuestion(
+            pk=pk,
+            content=question.get("content"),
+            hidden_words=question.get("hidden_words")
+        )
+        res[pk] = {
+            "order": question.get("order", 1),
+            "time_limit": question.get("time_limit", 10),
+            "FillBlankQuestion": instance,
+        }
+    return res
+
+
+def store_fill_question(data):
+    res = fill_question_processing(data)
+    list_question = []
+    list_question_mngt = []
+    for pk, info in res.items():
+        list_question.append(info["FillBlankQuestion"])
+        list_question_mngt.append(
+            QuizManagement(
+                order=info["order"],
+                question_type=QUESTION_TYPE_FILL,
+                fill_blank_question=info["FillBlankQuestion"],
+                time_limit=info["time_limit"],
+            )
+        )
+    if list_question:
+        FillBlankQuestion.objects.bulk_create(list_question)
+    return list_question_mngt
+
+
+def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
+    fill_quiz = QuizManagement.objects.filter(
+        Q(
+            question_type=QUESTION_TYPE_FILL,
+            fill_blank_question__isnull=False,
+            course_id=course_id,
+            lesson_id=lesson_id,
+        )
+        & ~Q(fill_blank_question__hidden_words=[])
+        & ~Q(fill_blank_question__hidden_words__isnull=True)
+    )
+    if not fill_quiz:
+        return []
+
+    user_fill_answers = FillBlankUserAnswer.objects.filter(
+        Q(
+            created=created,
+            user=user,
+            quiz__in=fill_quiz,
+        )
+    )
+
+    res = []
+    for answer in user_fill_answers:
+        fill_question = answer.quiz.fill_blank_question
+        correct = 0
+        user_answer = answer.words or []
+        user_answer_copy = user_answer.copy()
+        hidden_words = get_list_hidden(fill_question.hidden_words)
+        hidden_words_values = [w["word"] for w in hidden_words]
+        for word in hidden_words_values:
+            if not user_answer_copy:
+                break
+            if check_correct(word, user_answer_copy[0]):
+                correct += 1
+            user_answer_copy.pop(0)
+
+        res.append(
+            {
+                "quiz_id": str(answer.quiz_id),
+                "user_answer": user_answer,
+                "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
+                "correct": correct,
+                "total": len(hidden_words),
+            }
+        )
+
+    return res

@@ -265,6 +265,7 @@ export interface Course {
   // rating_stats?: RatingStats;
   request_status?: RequestStatus;
   course_of_class?: boolean;
+  test: boolean;
 }
 
 // ===========================================Classes===========================================
@@ -408,19 +409,27 @@ export enum ContentTypeEnum {
 }
 
 export interface MatchQuestion {
+  order?: number;
+  time_limit?: number;
   content: string;
   first_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
   second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
+  correct_answer?: Array<Array<string>>;
 }
 
 export interface FillBlankQuestion {
+  order?: number,
+  time_limit?: number,
   content: string;
+  hidden_words?: Array<{id: number, word: string, hidden: boolean}>;
 }
 
 export interface ChoicesQuestion {
+  order?: number;
+  time_limit?: number;
   content: string;
-  content_type: ContentTypeEnum;
-  choices: Array<{choice: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
+  content_type?: ContentTypeEnum;
+  choices: Array<{choice?: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
 }
 
 export interface Quiz {
@@ -444,6 +453,14 @@ export interface QuizResultArgs {
   course_id: string;
   lesson_id: string;
   user_answers: UserAnswersArgs[];
+}
+
+export interface CreateQuizArgs {
+  course_id: string;
+  lesson_id: string;
+  choices_question: Array<ChoicesQuestion>;
+  match_question: Array<MatchQuestion>;
+  fill_blank_question: Array<FillBlankQuestion>;
 }
 
 export interface ChoicesQuizAnswer {
@@ -579,6 +596,7 @@ export const apiURL = {
   cancelOrder: (id) => `api/payment/order/cancel/?order_id=${id}`,
   calculatePrice: () => `api/payment/order/calculate/`,
 
+  getListCourses: () => `api/courses/all/`,
   getHomeCourses: (limit, page, topic?, course_id?: string[]) => {
     let url = `api/courses/home/?limit=${limit}&page=${page}&topic=${topic}`;
     if (course_id) {
@@ -608,6 +626,7 @@ export const apiURL = {
   documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
+  createQuiz: () => `api/quiz/create/`,
   listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
@@ -760,6 +779,10 @@ class CourseService {
     return apiClient.post(apiURL.calculatePrice(), params);
   }
 
+  static getListCourses(): Promise<{id: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>}> {
+    return apiClient.get(apiURL.getListCourses());
+  }
+
   static getAllCourses(params: PaginationParams, topic?: string, course_id?: string[]): Promise<Pagination<Course>> {
     return apiClient.get(apiURL.getAllCourses(params.limit, params.page, topic, course_id));
   }
@@ -819,6 +842,10 @@ class CourseService {
 
   static courseRatingFilter(course_id: string, score: RatingEnum): Promise<Rating> {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
+  }
+
+  static createQuiz(params: CreateQuizArgs): Promise<{}> {
+    return apiClient.post(apiURL.createQuiz(), params);
   }
 
   static listQuiz(course_id: string, lesson_id: string): Promise<Quiz[]> {

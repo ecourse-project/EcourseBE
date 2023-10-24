@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from apps.core.utils import get_summary_content, create_serializer_class
 from apps.courses.models import Course, Lesson, CourseTopic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer, UploadVideoSerializer
 
@@ -61,6 +63,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "sold",
             "lessons",
             "thumbnail",
+            "test",
         )
 
     def to_representation(self, instance):
@@ -167,3 +170,25 @@ class ListCourseManagementSerializer(serializers.ModelSerializer):
     #     course_rating = obj.course.rating_obj
     #     my_rating = course_rating.ratings.filter(user=self.context['request'].user).first()
     #     return RatingSerializer(my_rating).data if my_rating else {}
+
+
+class AllCourseSerializer(serializers.ModelSerializer):
+    lesson_serializer = create_serializer_class(Lesson, ["id", "name"])
+    lessons = lesson_serializer(many=True)
+
+    class Meta:
+        model = Course
+        fields = (
+            "id",
+            "name",
+            "course_of_class",
+            "lessons",
+        )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        name = representation.pop("name", None)
+        representation["name"] = (
+            f"{'CLASS' if representation['course_of_class'] else 'COURSE'} - {get_summary_content(name)}"
+        )
+        return representation

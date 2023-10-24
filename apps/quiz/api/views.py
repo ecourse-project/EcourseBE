@@ -11,17 +11,24 @@ from rest_framework.views import APIView
 from apps.quiz.api.serializers import QuizManagementSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.quiz.services.services import (
+    store_quiz,
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
-    get_quiz_queryset,
     validate_lesson_of_course,
 )
+from apps.quiz.services.queryset_services import get_quiz_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
 from apps.quiz.certificate.templates import add_info_certificate, certificate_form
 from apps.courses.models import CourseManagement, LessonManagement, LessonQuizManagement, Course
 from apps.courses.exceptions import NoItemException
 from apps.core.utils import get_now
+
+
+class CreateQuizView(APIView):
+    def post(self, request, *args, **kwargs):
+        store_quiz(request.data)
+        return Response(data={})
 
 
 class ListQuizView(generics.ListAPIView):

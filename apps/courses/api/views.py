@@ -1,10 +1,11 @@
-from django.db.models import F
+from django.db.models import F, Q, Prefetch
 
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users_auth.authentication import ManagerPermission
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.general.services import CustomDictDataServices
 from apps.core.general.enums import COURSE_EXTRA_FIELDS, CLASS_EXTRA_FIELDS
@@ -12,10 +13,11 @@ from apps.courses.api.serializers import (
     CourseManagementSerializer,
     ListCourseManagementSerializer,
     ListCourseSerializer,
+    AllCourseSerializer,
 )
 from apps.courses.services.services import CourseManagementService, CourseService
 from apps.courses.enums import BOUGHT
-from apps.courses.models import Course
+from apps.courses.models import Course, Lesson
 from apps.classes.services.services import ClassManagementService
 from apps.classes.api.serializers import ClassManagementSerializer
 
@@ -43,6 +45,24 @@ class CourseListView(generics.ListAPIView):
             return service.get_course_mngt_queryset_by_selling
 
 
+class AllCourseListView(generics.ListAPIView):
+    serializer_class = AllCourseSerializer
+    permission_classes = (ManagerPermission,)
+
+    def get_queryset(self):
+        return (
+            Course.objects.only('id', 'name', 'course_of_class')
+            .filter(
+                Q(Q(course_of_class=True) | Q(course_of_class=False, is_selling=True))
+                & Q(test=False)
+            )
+            .prefetch_related(
+                Prefetch("lessons", queryset=Lesson.objects.only("id", "name"))
+            )
+            .order_by("course_of_class")
+        )
+
+
 class UserCoursesListView(generics.ListAPIView):
     serializer_class = ListCourseManagementSerializer
     pagination_class = StandardResultsSetPagination
@@ -54,6 +74,7 @@ class UserCoursesListView(generics.ListAPIView):
 
 class CourseRetrieveView(generics.RetrieveAPIView):
     serializer_class = CourseManagementSerializer
+    permission_classes = (AllowAny,)
 
     def get_object(self):
         course_id = self.request.query_params.get('course_id')

@@ -86,8 +86,9 @@ class MatchColumnContent(models.Model):
 
 class MatchColumnMatchAnswer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    first_content = models.ForeignKey(MatchColumnContent, on_delete=models.SET_NULL, null=True, blank=True, related_name="match_answer_from_first")
-    second_content = models.ForeignKey(MatchColumnContent, on_delete=models.SET_NULL, null=True, blank=True, related_name="match_answer_from_second")
+    match_question = models.ForeignKey("MatchColumnQuestion", on_delete=models.CASCADE, null=True, blank=True)
+    first_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_first")
+    second_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_second")
 
     def __str__(self):
         first = second = 'None'

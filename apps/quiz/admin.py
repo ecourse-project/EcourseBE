@@ -19,7 +19,7 @@ from apps.quiz.models import (
 )
 from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
-from apps.quiz.services.services import get_user_choice_answer_queryset
+from apps.quiz.services.queryset_services import get_user_choice_answer_queryset
 from apps.quiz.enums import ANSWER_TYPE_TEXT, ANSWER_TYPE_IMAGE
 
 
@@ -82,6 +82,7 @@ class MatchColumnContentAdmin(admin.ModelAdmin):
 @admin.register(MatchColumnMatchAnswer)
 class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
     list_display = (
+        'match_question',
         'first',
         'second',
     )

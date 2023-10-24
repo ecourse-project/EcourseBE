@@ -19,6 +19,7 @@ class StorageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
         'size_KB',
         'size_MB',
         'size_GB',
+        'created',
     )
 
     def size_KB(self, obj):

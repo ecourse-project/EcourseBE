@@ -82,7 +82,7 @@ class StorageView(APIView):
                     "size": be_size,
                     "update": be_update
                 },
-                "total": fe_size + be_size,
+                "total": round(fe_size + be_size, 2),
             }
         }
 

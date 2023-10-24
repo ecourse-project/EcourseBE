@@ -80,6 +80,7 @@ class Course(TimeStampedModel):
     is_selling = models.BooleanField(default=True)
     course_of_class = models.BooleanField(default=False)
     num_of_rates = models.PositiveIntegerField(default=0)
+    test = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["name"]
