@@ -1,6 +1,7 @@
 from apps.system.model_choices import import_db_model
 import json
 
+
 def apply_action(model, data: dict, action: str, extra_data, extra_action: str = "", ):
     if action == "all":
         data = model.objects.all()
@@ -41,18 +42,25 @@ def import_database(json_file):
 
         m2m_field = []
         json_field = []
+        array_field = []
         fk_key_field = []
         for field in model_field:
             field_type = model._meta.get_field(field).get_internal_type()
             if field_type == "ManyToManyField":
                 m2m_field.append(field)
-            elif field_type == "ArrayField" or field_type == "JSONField":
+            elif field_type == "JSONField":
                 json_field.append(field)
+            elif field_type == "ArrayField":
+                array_field.append(field)
             elif field_type == "ForeignKey" or field_type == "OneToOneField":
                 fk_key_field.append(field)
 
         for item in items:
             for field in json_field:
+                value = item["fields"][field]
+                if isinstance(value, str):
+                    item["fields"][field] = json.loads(value) if value is not None else value
+            for field in array_field:
                 value = item["fields"][field]
                 item["fields"][field] = json.loads(value) if value is not None else value
             for field in fk_key_field:
@@ -69,5 +77,8 @@ def import_database(json_file):
                     exec(f"record.{key}.set({val})")
 
         else:
+            for dt in items:
+                print(dt["fields"]["action_time"])
+                model.objects.create(pk=dt["pk"], **dt["fields"])
             obj_create = [model(pk=dt["pk"], **dt["fields"]) for dt in items]
             model.objects.bulk_create(obj_create)

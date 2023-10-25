@@ -87,11 +87,12 @@ def create_serializer_class(model_class, fields: Union[List, Tuple, Text]):
     return type(f'{meta_class}Serializer', (ModelSerializer,), {'Meta': meta_class})
 
 
-def get_summary_content(content, max_word=10):
+def get_summary_content(content, max_word=10, max_length=50):
     if content and isinstance(content, str):
         content_elements = content.split(" ")
         summary = " ".join(content_elements[:max_word])
-        return summary + "..." if len(content_elements) > max_word else summary
+        summary = summary[:max_length] if len(summary) > max_length else summary
+        return summary + "..." if len(content_elements) > max_word or len(summary) > max_length else summary
     return ""
 
 

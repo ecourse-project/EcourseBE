@@ -191,6 +191,7 @@ class FillBlankUserAnswerAdmin(admin.ModelAdmin):
 class QuizManagementAdmin(admin.ModelAdmin):
     list_display = (
         'order',
+        'name',
         'course',
         'lesson',
         'question_type',

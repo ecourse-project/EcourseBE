@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.quiz.models import QuizManagement
 from apps.quiz.api.serializers import QuizManagementSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.quiz.services.services import (
@@ -26,22 +27,27 @@ from apps.core.utils import get_now
 
 
 class CreateQuizView(APIView):
-    def post(self, request, *args, **kwargs):
-        store_quiz(request.data)
-        return Response(data={})
-
-
-class ListQuizView(generics.ListAPIView):
-    serializer_class = QuizManagementSerializer
-
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         course_id = self.request.query_params.get("course_id")
         lesson_id = self.request.query_params.get("lesson_id")
         if not course_id:
             raise NoItemException("Missing course ID")
         if not lesson_id:
             raise NoItemException("Missing lesson ID")
-        return get_quiz_queryset().filter(course_id=course_id, lesson_id=lesson_id)
+        qs = get_quiz_queryset().filter(course_id=course_id, lesson_id=lesson_id).order_by("order")
+        return Response(data=QuizManagementSerializer(qs, many=True).data)
+
+    # def patch(self, request, *args, **kwargs):
+    #     store_quiz(request.data)
+    #     return Response(data={})
+
+    def post(self, request, *args, **kwargs):
+        store_quiz(request.data)
+        return Response(data={})
+
+    def delete(self, request, *args, **kwargs):
+        QuizManagement.objects.filter(pk__in=request.data).delete()
+        return Response(data={})
 
 
 class QuizResultView(APIView):

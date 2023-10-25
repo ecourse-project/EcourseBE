@@ -103,7 +103,7 @@ def store_match_question(data):
 def get_total_correct_match(match_question: MatchColumnQuestion, first_column, second_column) -> List[List[str]]:
     res = []
     match_answers = MatchColumnMatchAnswer.objects.filter(
-        match_question=match_question,
+        # match_question=match_question,
         first_content__isnull=False,
         second_content__isnull=False,
     )

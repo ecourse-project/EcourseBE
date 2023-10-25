@@ -27,6 +27,7 @@ def store_quiz(data):
     all_obj = []
     for lst_obj in [choices_ques_mngt, match_ques_mngt, fill_ques_mngt]:
         for obj in lst_obj:
+            obj.name = data.get("name")
             obj.lesson_id = data.get("lesson_id")
             obj.course_id = data.get("course_id")
         all_obj.extend(lst_obj)

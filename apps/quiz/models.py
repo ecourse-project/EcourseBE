@@ -146,6 +146,7 @@ class FillBlankQuestion(models.Model):
 # ======================================================Management======================================================
 class QuizManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=500, null=True, blank=True)
     order = models.PositiveSmallIntegerField(default=1)
     question_type = models.CharField(max_length=20, choices=enums.QUESTION_TYPES, null=True, blank=True)
     choices_question = models.ForeignKey(ChoicesQuizQuestion, on_delete=models.SET_NULL, null=True, blank=True)

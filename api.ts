@@ -434,6 +434,7 @@ export interface ChoicesQuestion {
 
 export interface Quiz {
   id: string;
+  name: string;
   order: number;
   time_limit?: number;
   question_type: QuestionTypeEnum;
@@ -456,6 +457,7 @@ export interface QuizResultArgs {
 }
 
 export interface CreateQuizArgs {
+  name: string;
   course_id: string;
   lesson_id: string;
   choices_question: Array<ChoicesQuestion>;
@@ -626,7 +628,7 @@ export const apiURL = {
   documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
-  createQuiz: () => `api/quiz/create/`,
+  createQuiz: () => `api/quiz/`,
   listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
