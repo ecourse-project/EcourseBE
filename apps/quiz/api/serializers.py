@@ -112,6 +112,7 @@ class QuizManagementSerializer(serializers.ModelSerializer):
         model = QuizManagement
         fields = (
             "id",
+            "name",
             "order",
             "time_limit",
             "question_type",

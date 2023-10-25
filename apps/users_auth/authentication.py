@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission
 
 from apps.users_auth.services import update_user_ip
 from apps.users_auth.choices import LIMIT_IP_PATH
+from apps.users.choices import MANAGER
 
 from ipware import get_client_ip
 
@@ -16,3 +17,8 @@ class CustomIsAuthenticated(BasePermission):
             user.save(update_fields=["ip_addresses", "unverified_ip_addresses"])
 
         return has_permission
+
+
+class ManagerPermission(BasePermission):
+    def has_permission(self, request, view):
+        return True if not request.user.is_anonymous and request.user.role == MANAGER else False

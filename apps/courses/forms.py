@@ -19,6 +19,7 @@ class CourseForm(forms.ModelForm):
             "thumbnail",
             "is_selling",
             "course_of_class",
+            "test",
         )
 
     def clean(self):

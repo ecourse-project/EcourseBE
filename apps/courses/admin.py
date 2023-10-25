@@ -180,11 +180,14 @@ class CourseAdmin(admin.ModelAdmin):
     form = CourseForm
     change_form_template = "admin_button/remove_lesson.html"
 
-    # def get_fields(self, request, obj=None):
-    #     fields = super(CourseAdmin, self).get_fields(request, obj)
-    #     for field in ["sold", "views", "num_of_rates", "rating"]:
-    #         fields.remove(field)
-    #     return fields
+    def get_fields(self, request, obj=None):
+        fields = super(CourseAdmin, self).get_fields(request, obj)
+        removed_fields = []
+        if not request.user.is_superuser:
+            removed_fields.extend(["test"])
+        for field in removed_fields:
+            fields.remove(field)
+        return fields
 
     def response_change(self, request, obj):
         if "remove-lesson" in request.POST:

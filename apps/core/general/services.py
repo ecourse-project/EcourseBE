@@ -20,8 +20,8 @@ from apps.classes.services.services import ClassRequestService
 from apps.quiz.services.services import (
     quiz_statistic,
     response_quiz_statistic,
-    get_quiz_queryset,
 )
+from apps.quiz.services.queryset_services import get_quiz_queryset
 from apps.quiz.api.serializers import QuizManagementSerializer
 from apps.quiz.enums import (
     QUESTION_TYPE_CHOICES,
@@ -153,6 +153,9 @@ class CustomDictDataServices:
         return data
 
     def add_docs_videos_completed(self, data: dict, doc_field: str, video_field: str):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
@@ -185,6 +188,9 @@ class CustomDictDataServices:
 
     # TODO: Optimize by query
     def add_is_done_quiz(self, data: dict, field: str):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_quiz = LessonQuizManagement.objects.filter(
                 course_mngt__user=self.user,
@@ -196,6 +202,9 @@ class CustomDictDataServices:
         return data
 
     def add_quiz_detail(self, data: dict, field: str):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             lesson_quiz_mngt = LessonQuizManagement.objects.filter(
                 course_mngt__user=self.user, course_mngt__course_id=data["id"], lesson_id=lesson["id"]
@@ -212,6 +221,9 @@ class CustomDictDataServices:
         return data
 
     def add_list_quiz(self, data: dict, field: str):
+        if not data.get("lessons"):
+            return data
+
         for index, lesson in enumerate(data["lessons"], start=0):
             data["lessons"][index][field] = (
                 QuizManagementSerializer(
