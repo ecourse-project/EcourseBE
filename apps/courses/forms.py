@@ -12,6 +12,7 @@ class CourseForm(forms.ModelForm):
         model = Course
         fields = (
             "name",
+            "topic",
             "description",
             "price",
             "lessons",
