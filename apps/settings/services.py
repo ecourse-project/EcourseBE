@@ -85,10 +85,10 @@ def get_home_page() -> list:
         homepage.append({
             "topic": obj.display_name,
             "detail": {
-                'document_id': [obj["id"] for obj in sorted_data if obj["type"] == DOCUMENT],
-                'course_id': [obj["id"] for obj in sorted_data if obj["type"] == COURSE],
-                'class_id': [obj["id"] for obj in sorted_data if obj["type"] == CLASS],
-                'post_id': [obj["id"] for obj in sorted_data if obj["type"] == POST],
+                'document_id': [obj["id"] for obj in sorted_data if obj["type"] == DOCUMENT] or None,
+                'course_id': [obj["id"] for obj in sorted_data if obj["type"] == COURSE] or None,
+                'class_id': [obj["id"] for obj in sorted_data if obj["type"] == CLASS] or None,
+                'post_id': [obj["id"] for obj in sorted_data if obj["type"] == POST] or None,
             }
         })
     return homepage
