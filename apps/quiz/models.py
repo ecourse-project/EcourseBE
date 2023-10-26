@@ -1,9 +1,8 @@
 import uuid
 
 from django.db import models
-from model_utils.models import TimeStampedModel
-
 from django_better_admin_arrayfield.models.fields import ArrayField
+from model_utils.models import TimeStampedModel
 
 from apps.users.models import User
 from apps.courses.models import Course, Lesson

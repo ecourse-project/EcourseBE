@@ -20,7 +20,7 @@ class Header(models.Model):
         ordering = ["order"]
 
     def __str__(self):
-        return self.display_name
+        return self.display_name if self.display_name else "Header's display name - None"
 
 
 class HeaderDetail(models.Model):
@@ -35,9 +35,13 @@ class HeaderDetail(models.Model):
     class Meta:
         ordering = ["header", "order"]
 
+    def __str__(self):
+        return self.display_name if self.display_name else "Header detail's display name - None"
+
 
 class HomePageDetail(models.Model):
     display_name = models.CharField(max_length=100, null=True, blank=True)
+    max_items_display = models.PositiveSmallIntegerField(default=6)
     documents = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     courses = ArrayField(models.CharField(max_length=50), null=True, blank=True)
     classes = ArrayField(models.CharField(max_length=50), null=True, blank=True)
@@ -47,4 +51,7 @@ class HomePageDetail(models.Model):
 
     class Meta:
         ordering = ['order', "display_name"]
+
+    def __str__(self):
+        return self.display_name if self.display_name else "Homepage's display name - None"
 
