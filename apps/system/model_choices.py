@@ -57,13 +57,16 @@ models = {
 
 
 import_db_model = {
+    "contenttypes.contenttype": ContentType,
+    "auth.permission": Permission,
+
     "users.user": User,
-    "admin.logentry": LogEntry,
+    "users.userdatabackup": UserDataBackUp,
+    # "admin.logentry": LogEntry,
 
     "configuration.configuration": Configuration,
     "configuration.personalinfo": PersonalInfo,
     "users.userresetpassword": UserResetPassword,
-    "users.userdatabackup": UserDataBackUp,
 
     "upload.uploadfile": UploadFile,
     "upload.uploadvideo": UploadVideo,
@@ -104,7 +107,19 @@ import_db_model = {
 
     "sessions.session": Session,
 
-    # "quiz.answerchoices": None,
+    "quiz.choicesquizchoicename": ChoicesQuizChoiceName,
+    "quiz.choicesquizanswer": ChoicesQuizAnswer,
+    "quiz.choicesquizquestion": ChoicesQuizQuestion,
+    "quiz.choicesquizuseranswer": ChoicesQuizUserAnswer,
+    "quiz.matchcolumncontent": MatchColumnContent,
+    "quiz.matchcolumnmatchanswer": MatchColumnMatchAnswer,
+    "quiz.matchcolumnquestion": MatchColumnQuestion,
+    "quiz.matchcolumnuseranswer": MatchColumnUserAnswer,
+    "quiz.fillblankquestion": FillBlankQuestion,
+    "quiz.fillblankuseranswer": FillBlankUserAnswer,
+    "quiz.quizmanagement": QuizManagement,
+
+
     # "classes.class": Class,
     # "classes.classmanagement": ClassManagement,
     # "contenttypes.contenttype": ContentType,

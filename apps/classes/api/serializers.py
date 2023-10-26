@@ -84,4 +84,5 @@ class ListClassSerializer(serializers.ModelSerializer):
             "name",
             "course_of_class",
             "thumbnail",
+            "test",
         )
