@@ -6,5 +6,5 @@ urlpatterns = [
     path("result/", views.QuizResultView.as_view()),
     path("certi/", views.GenerateCertificate.as_view()),
     path("start-time/", views.QuizStartTimeView.as_view()),
-    path("", views.CreateQuizView.as_view()),
+    path("", views.QuizView.as_view()),
 ]

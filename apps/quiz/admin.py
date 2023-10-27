@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.conf import settings
+from django.db.models import Prefetch
+from apps.courses.models import Lesson
 
 from apps.core.utils import get_summary_content
 from apps.quiz.models import (
@@ -191,15 +193,55 @@ class FillBlankUserAnswerAdmin(admin.ModelAdmin):
 class QuizManagementAdmin(admin.ModelAdmin):
     list_display = (
         'order',
-        'name',
+        # 'name',
         'course',
         'lesson',
         'question_type',
         'choices_question',
         'match_question',
         'fill_blank_question',
+        "time_limit",
     )
     form = QuizManagementForm
 
+    def get_fields(self, request, obj=None):
+        fields = super(QuizManagementAdmin, self).get_fields(request, obj)
+        fields.remove("name")
+        return fields
+
     def get_queryset(self, request):
-        return super(QuizManagementAdmin, self).get_queryset(request).select_related("choices_question", "course")
+        return (
+            super(QuizManagementAdmin, self).get_queryset(request)
+            .only(
+                "id",
+                "name",
+                "order",
+                "question_type",
+                "choices_question",
+                "match_question",
+                "fill_blank_question",
+                "course__name",
+                "lesson__name",
+                "time_limit",
+            )
+            .defer(
+                "created",
+                "modified",
+                "choices_question_id",
+                "choices_question__created",
+                "choices_question__modified",
+                "match_question_id",
+                "match_question__created",
+                "match_question__modified",
+                "fill_blank_question_id",
+                "fill_blank_question__created",
+                "fill_blank_question__modified",
+            )
+            .select_related(
+                "lesson",
+                "course",
+                "choices_question",
+                "match_question",
+                "fill_blank_question",
+            )
+        )

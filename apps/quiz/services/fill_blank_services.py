@@ -64,7 +64,7 @@ def check_correct(original, word):
     return False
 
 
-def fill_question_processing(data):
+def fill_question_processing(data: list):
     res = {}
     for question in data:
         pk = str(uuid4())
@@ -81,7 +81,7 @@ def fill_question_processing(data):
     return res
 
 
-def store_fill_question(data):
+def store_fill_question(data: list):
     res = fill_question_processing(data)
     list_question = []
     list_question_mngt = []
@@ -98,6 +98,12 @@ def store_fill_question(data):
     if list_question:
         FillBlankQuestion.objects.bulk_create(list_question)
     return list_question_mngt
+
+
+def delete_fill_question(quiz_mngt: QuizManagement):
+    if quiz_mngt and quiz_mngt.fill_blank_question:
+        quiz_mngt.fill_blank_question.delete()
+        quiz_mngt.delete()
 
 
 def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
