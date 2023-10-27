@@ -10,6 +10,8 @@ from apps.classes.services.services import ClassesService, ClassRequestService, 
 from apps.courses.models import Course
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
+from apps.users.tracking.tracking_services import tracking_course_class_views
+from apps.configuration.models import Configuration
 
 
 class JoinRequestView(APIView):
@@ -96,6 +98,8 @@ class ClassDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
+        if Configuration.objects.first().tracking_views:
+            tracking_course_class_views(request.user, instance)
         class_obj = instance if isinstance(instance, Course) or isinstance(instance, Class) else instance.course
         custom_data = CustomDictDataServices(user=request.user)
         return Response(

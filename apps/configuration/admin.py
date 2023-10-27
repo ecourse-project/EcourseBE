@@ -25,6 +25,12 @@ class ConfigurationAdmin(admin.ModelAdmin):
         "display_correct_answer",
     )
 
+    def get_fields(self, request, obj=None):
+        fields = super(ConfigurationAdmin, self).get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields.remove("tracking_views")
+        return fields
+
     def has_delete_permission(self, request, obj=None):
         return False
 

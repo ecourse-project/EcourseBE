@@ -26,6 +26,7 @@ class User(AbstractUser):
     ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
     unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
     is_testing_user = models.BooleanField(default=False)
+    other_data = models.JSONField(default=dict(classes=dict(), courses=dict(), docs=dict(), posts=dict()))
 
     def __str__(self):
         return self.email
