@@ -63,7 +63,12 @@ class UploadVideo(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.PositiveSmallIntegerField(default=1)
     video_name = models.CharField(max_length=255, null=True, blank=True)
-    video_path = models.FileField(max_length=255, null=True, blank=True)
+    video_path = (
+        models.FileField(
+            max_length=255, null=True, blank=True,
+            help_text="(Support: .mp4, .mov, .flv, .f4v, .mkv, .webm, .ogg)",
+        )
+    )
     video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")
     video_type = models.CharField(max_length=10, null=True, blank=True)
     video_embedded_url = models.TextField(null=True, blank=True)

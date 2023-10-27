@@ -65,7 +65,7 @@ def choices_quiz_data_processing(obj: Dict):
     return obj_clone
 
 
-def choices_question_processing(data):
+def choices_question_processing(data: list):
     res = {}
     for question in data:
         pk = str(uuid4())
@@ -89,7 +89,7 @@ def choices_question_processing(data):
     return res
 
 
-def store_choices_question(data):
+def store_choices_question(data: list):
     res = choices_question_processing(data)
     list_question = []
     list_answer_instance = []
@@ -113,6 +113,17 @@ def store_choices_question(data):
         [obj.choices.set(res[str(obj.pk)]["ChoicesQuizAnswer"]) for obj in list_question]
 
     return list_question_mngt
+
+
+def delete_choices_question(quiz_mngt: QuizManagement):
+    if quiz_mngt and quiz_mngt.choices_question:
+        question = quiz_mngt.choices_question
+        choices = question.choices.all()
+        for choice in choices:
+            choice.answer_image.delete() if choice.answer_image else ""
+        choices.delete()
+        question.delete()
+        quiz_mngt.delete()
 
 
 def user_correct_quiz_choices(user, course_id, lesson_id, created) -> Dict:

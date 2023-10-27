@@ -409,6 +409,7 @@ export enum ContentTypeEnum {
 }
 
 export interface MatchQuestion {
+  id?: string;
   order?: number;
   time_limit?: number;
   content: string;
@@ -418,6 +419,7 @@ export interface MatchQuestion {
 }
 
 export interface FillBlankQuestion {
+  id?: string;
   order?: number,
   time_limit?: number,
   content: string;
@@ -425,6 +427,7 @@ export interface FillBlankQuestion {
 }
 
 export interface ChoicesQuestion {
+  id?: string;
   order?: number;
   time_limit?: number;
   content: string;
@@ -456,7 +459,7 @@ export interface QuizResultArgs {
   user_answers: UserAnswersArgs[];
 }
 
-export interface CreateQuizArgs {
+export interface QuizArgs {
   name: string;
   course_id: string;
   lesson_id: string;
@@ -629,6 +632,8 @@ export const apiURL = {
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
   createQuiz: () => `api/quiz/`,
+  editQuiz: () => `api/quiz/`,
+  deleteQuiz: () => `api/quiz/`,
   listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
@@ -846,8 +851,16 @@ class CourseService {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
   }
 
-  static createQuiz(params: CreateQuizArgs): Promise<{}> {
+  static createQuiz(params: QuizArgs): Promise<Quiz[]> {
     return apiClient.post(apiURL.createQuiz(), params);
+  }
+
+  static editQuiz(params: QuizArgs): Promise<Quiz[]> {
+    return apiClient.patch(apiURL.editQuiz(), params);
+  }
+
+  static deleteQuiz(list_quiz_id: Array<string>): Promise<{}> {
+    return apiClient.delete(apiURL.deleteQuiz(), list_quiz_id);
   }
 
   static listQuiz(course_id: string, lesson_id: string): Promise<Quiz[]> {

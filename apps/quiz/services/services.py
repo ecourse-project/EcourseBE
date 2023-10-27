@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Text, Dict, List, Union
 
 from apps.quiz.enums import (
     QUESTION_TYPE_CHOICES,
@@ -11,15 +11,27 @@ from apps.quiz.models import (
     MatchColumnUserAnswer,
     FillBlankUserAnswer,
 )
-from apps.quiz.services.choices_question_services import user_correct_quiz_choices, store_choices_question
-from apps.quiz.services.match_column_services import user_correct_quiz_match, store_match_question
-from apps.quiz.services.fill_blank_services import user_correct_quiz_fill, store_fill_question
+from apps.quiz.services.choices_question_services import (
+    user_correct_quiz_choices,
+    store_choices_question,
+    delete_choices_question,
+)
+from apps.quiz.services.match_column_services import (
+    user_correct_quiz_match,
+    store_match_question,
+    delete_match_question,
+)
+from apps.quiz.services.fill_blank_services import (
+    user_correct_quiz_fill,
+    store_fill_question,
+    delete_fill_question,
+)
 from apps.configuration.models import Configuration
 from apps.courses.models import LessonManagement, CourseManagement
 from apps.core.utils import get_now
 
 
-def store_quiz(data):
+def store_quiz(data: Dict):
     choices_ques_mngt = store_choices_question(data.get("choices_question", []))
     match_ques_mngt = store_match_question(data.get("match_question", []))
     fill_ques_mngt = store_fill_question(data.get("fill_blank_question", []))
@@ -33,7 +45,38 @@ def store_quiz(data):
         all_obj.extend(lst_obj)
 
     if all_obj:
-        QuizManagement.objects.bulk_create(all_obj)
+        return QuizManagement.objects.bulk_create(all_obj)
+    return QuizManagement.objects.none()
+
+
+def delete_quiz(list_question_id: Union[List[Text], Text]):
+    list_id = [list_question_id] if isinstance(list_question_id, Text) else list_question_id
+    for item in list_id:
+        quiz_mngt = QuizManagement.objects.filter(pk=item).first()
+        if quiz_mngt:
+            if quiz_mngt.question_type == QUESTION_TYPE_CHOICES:
+                delete_choices_question(quiz_mngt)
+            elif quiz_mngt.question_type == QUESTION_TYPE_MATCH:
+                delete_match_question(quiz_mngt)
+            elif quiz_mngt.question_type == QUESTION_TYPE_FILL:
+                delete_fill_question(quiz_mngt)
+
+
+def edit_quiz(data: Dict):
+    choices_ques = data.get("choices_question", [])
+    match_ques = data.get("match_question", [])
+    fill_ques = data.get("fill_blank_question", [])
+
+    list_ques_id = [
+        obj.get("id")
+        for list_ques in [choices_ques, match_ques, fill_ques]
+        for obj in list_ques
+        if obj.get("id")
+    ]
+
+    delete_quiz(list_ques_id)
+    new_quiz = store_quiz(data)
+    return new_quiz
 
 
 def store_user_answers(user, user_answers):

@@ -42,7 +42,7 @@ def init_match_question_column(column_data: List[Dict]) -> List[MatchColumnConte
     ]
 
 
-def match_question_processing(data):
+def match_question_processing(data: list):
     res = {}
     for question in data:
         pk = str(uuid4())
@@ -58,7 +58,7 @@ def match_question_processing(data):
     return res
 
 
-def store_match_question(data):
+def store_match_question(data: list):
     res = match_question_processing(data)
     list_question = []
     list_content_instance = []
@@ -98,6 +98,19 @@ def store_match_question(data):
             MatchColumnMatchAnswer.objects.bulk_create(list_correct_answer)
 
     return list_question_mngt
+
+
+def delete_match_question(quiz_mngt: QuizManagement):
+    if quiz_mngt and quiz_mngt.match_question:
+        question = quiz_mngt.match_question
+        first_column = question.first_column.all()
+        second_column = question.second_column.all()
+        [content.content_image.delete() for content in first_column if content.content_image]
+        [content.content_image.delete() for content in second_column if content.content_image]
+        first_column.delete()
+        second_column.delete()
+        question.delete()
+        quiz_mngt.delete()
 
 
 def get_total_correct_match(match_question: MatchColumnQuestion, first_column, second_column) -> List[List[str]]:

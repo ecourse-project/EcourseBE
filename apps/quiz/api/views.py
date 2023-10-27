@@ -3,16 +3,17 @@ import datetime
 from reportlab.lib.units import inch, toLength
 from django.http import FileResponse
 
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.quiz.models import QuizManagement
 from apps.quiz.api.serializers import QuizManagementSerializer
 from apps.quiz.exceptions import CompletedQuizException
 from apps.quiz.services.services import (
     store_quiz,
+    delete_quiz,
+    edit_quiz,
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
@@ -20,13 +21,16 @@ from apps.quiz.services.services import (
 )
 from apps.quiz.services.queryset_services import get_quiz_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
-from apps.quiz.certificate.templates import add_info_certificate, certificate_form
+from apps.quiz.certificate.templates import add_info_certificate
 from apps.courses.models import CourseManagement, LessonManagement, LessonQuizManagement, Course
 from apps.courses.exceptions import NoItemException
 from apps.core.utils import get_now
+from apps.users_auth.authentication import ManagerPermission
 
 
-class CreateQuizView(APIView):
+class QuizView(APIView):
+    permission_classes = (ManagerPermission,)
+
     def get(self, request, *args, **kwargs):
         course_id = self.request.query_params.get("course_id")
         lesson_id = self.request.query_params.get("lesson_id")
@@ -37,16 +41,16 @@ class CreateQuizView(APIView):
         qs = get_quiz_queryset().filter(course_id=course_id, lesson_id=lesson_id).order_by("order")
         return Response(data=QuizManagementSerializer(qs, many=True).data)
 
-    # def patch(self, request, *args, **kwargs):
-    #     store_quiz(request.data)
-    #     return Response(data={})
+    def patch(self, request, *args, **kwargs):
+        new_quiz = edit_quiz(request.data)
+        return Response(data=QuizManagementSerializer(new_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):
-        store_quiz(request.data)
-        return Response(data={})
+        quiz = store_quiz(request.data)
+        return Response(data=QuizManagementSerializer(quiz, many=True).data)
 
     def delete(self, request, *args, **kwargs):
-        QuizManagement.objects.filter(pk__in=request.data).delete()
+        delete_quiz(request.data)
         return Response(data={})
 
 
