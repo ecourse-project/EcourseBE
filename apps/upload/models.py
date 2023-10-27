@@ -4,6 +4,7 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 
 from apps.core.utils import get_summary_content
+from apps.upload.enums import video_ext_list
 
 
 class UploadFile(TimeStampedModel):
@@ -60,13 +61,17 @@ class UploadAvatar(UploadImage):
 
 
 class UploadVideo(TimeStampedModel):
+    @staticmethod
+    def get_available_video_type():
+        return " ".join([f".{ext.lower()}" for ext in video_ext_list])
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.PositiveSmallIntegerField(default=1)
     video_name = models.CharField(max_length=255, null=True, blank=True)
     video_path = (
         models.FileField(
             max_length=255, null=True, blank=True,
-            help_text="(Support: .mp4, .mov, .flv, .f4v, .mkv, .webm, .ogg)",
+            help_text=f"(Support: {get_available_video_type()})",
         )
     )
     video_size = models.PositiveBigIntegerField(null=True, help_text="(KB)")

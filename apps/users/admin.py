@@ -28,6 +28,7 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
             fields.remove(field)
         return fields
 
+
     def get_queryset(self, request):
         return super(TestUserAdmin, self).get_queryset(request).filter(
             Q(is_testing_user=True)
@@ -51,9 +52,11 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
     def get_fields(self, request, obj=None):
         fields = super(UserAdmin, self).get_fields(request, obj)
-        removed_fields = ["groups", "username", "password"]
+        removed_fields = ["groups"]
         if not request.user.is_superuser:
-            removed_fields.extend(["user_permissions", "is_staff", "is_superuser"])
+            removed_fields.extend(
+                ["user_permissions", "is_staff", "is_superuser", "other_data", "username", "password"]
+            )
         for field in removed_fields:
             fields.remove(field)
         return fields
