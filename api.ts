@@ -786,7 +786,7 @@ class CourseService {
     return apiClient.post(apiURL.calculatePrice(), params);
   }
 
-  static getListCourses(): Promise<{id: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>}> {
+  static getListCourses(): Promise<{id: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>}[]> {
     return apiClient.get(apiURL.getListCourses());
   }
 
