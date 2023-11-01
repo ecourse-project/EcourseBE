@@ -140,6 +140,7 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "price",
             "sold",
             "thumbnail",
+            "test",
         )
 
 

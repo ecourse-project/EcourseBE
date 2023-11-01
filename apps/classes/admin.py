@@ -3,25 +3,11 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 
 from apps.classes.models import Class, ClassRequest, ClassManagement
-from apps.classes.services.admin import join_class_request
-from apps.courses.services.admin import insert_remove_docs_videos
-from apps.courses.models import LessonManagement
+from apps.classes.services.admin import join_class_single_request
+from apps.classes.services.admin_action import accept, deny
+from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement
 from apps.courses.forms import CourseForm
-from apps.core.general.init_data import InitCourseServices
-
-
-@admin.action(description='Accept selected users')
-def accept(modeladmin, request, queryset):
-    queryset.update(accepted=True)
-    for obj in queryset:
-        join_class_request(obj)
-
-
-@admin.action(description='Deny selected users')
-def deny(modeladmin, request, queryset):
-    queryset.update(accepted=False)
-    for obj in queryset:
-        join_class_request(obj)
+from apps.core.general.init_data import UserDataManagementService
 
 
 @admin.register(Class)
@@ -62,39 +48,28 @@ class ClassAdmin(admin.ModelAdmin):
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
-
         before_lessons = set(instance.lessons.all())
         super().save_related(request, form, formsets, change)
         after_lessons = set(instance.lessons.all())
 
+        all_lessons = instance.lessons.all()
         lessons_remove = before_lessons.difference(after_lessons)
         lessons_add = after_lessons.difference(before_lessons)
 
-        if lessons_remove:
-            LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
-            for lesson in lessons_remove:
-                insert_remove_docs_videos(instance.id, lesson.id, lesson.documents.all(), lesson.videos.all(), None, None)
-        if lessons_add:
-            lesson_mngt_list = []
-            for lesson in lessons_add:
-                lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
-                insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
-            LessonManagement.objects.bulk_create(lesson_mngt_list)
-
-    # def get_form(self, request, obj=None, **kwargs):
-    #     form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
-    #     form.base_fields['course'].queryset = Course.objects.filter(course_of_class=True)
-    #     return form
-
-    # def save_model(self, request, obj, form, change):
-    #     obj.save()
-    #     init_course_id = form.initial.get('course')
-    #     if change and obj.course:
-    #         if init_course_id is None or init_course_id != obj.course.id:
-    #             init_course_mngt(course=obj.course, users=obj.users.all())
-    #             for user in obj.users.all():
-    #                 course_service = CourseAdminService(user)
-    #                 course_service.init_courses_data([obj.course])
+        if not instance.init_data:
+            UserDataManagementService(None).create_lesson_mngt(instance, all_lessons)
+            UserDataManagementService(None).create_course_mngt_for_multiple_users(instance)
+            instance.init_data = True
+            instance.save(update_fields=["init_data"])
+        else:
+            if lessons_add:
+                UserDataManagementService(None).create_lesson_mngt(instance, all_lessons)
+                CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
+                VideoManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
+            if lessons_remove:
+                LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
+                CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
+                VideoManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
 
 
 @admin.register(ClassRequest)
@@ -129,7 +104,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save()
-        join_class_request(obj)
+        join_class_single_request(obj)
 
     def delete_model(self, request, obj):
         class_mngt = ClassManagement.objects.filter(user=obj.user, course=obj.class_request).first()
@@ -148,7 +123,7 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
-    list_filter = ("course",)
+    list_filter = ("course", "user_in_class")
     search_fields = (
         "user__email",
         "course__name",
@@ -162,7 +137,7 @@ class ClassManagementAdmin(admin.ModelAdmin):
         "is_done_quiz",
         "user_in_class",
     )
-    readonly_fields = ("progress", "status", "sale_status")
+    readonly_fields = ("progress", "status", "sale_status", "views")
 
     def get_queryset(self, request):
         qs = super(ClassManagementAdmin, self).get_queryset(request).select_related("user", "course")
@@ -170,15 +145,19 @@ class ClassManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        for field in ["is_favorite", "sale_status"]:
+        remove_fields = ["is_favorite", "sale_status"]
+        if not request.user.is_superuser:
+            remove_fields.extend(["views"])
+        for field in remove_fields:
             fields.remove(field)
         return fields
 
-    def save_model(self, request, obj, form, change):
-        if change:
-            if obj.user_in_class and obj.course and obj.user:
-                InitCourseServices().init_course_data(obj.course, obj.user)
-        obj.save()
+    def get_list_display(self, request):
+        list_display = super(ClassManagementAdmin, self).get_list_display(request)
+        if request.user.is_superuser:
+            list_display = tuple(list(list_display) + ["views"])
+            return list_display
+        return list_display
 
     def has_delete_permission(self, request, obj=None):
         if obj and ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True):

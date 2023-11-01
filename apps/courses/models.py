@@ -44,6 +44,8 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
+
+    # Tracking fields
     removed = models.BooleanField(default=False)
 
     class Meta:
@@ -80,7 +82,10 @@ class Course(TimeStampedModel):
     is_selling = models.BooleanField(default=True)
     course_of_class = models.BooleanField(default=False)
     num_of_rates = models.PositiveIntegerField(default=0)
+
+    # Tracking fields
     test = models.BooleanField(default=False)
+    init_data = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["name"]
@@ -101,6 +106,7 @@ class CourseManagement(TimeStampedModel):
     sale_status = models.CharField(max_length=15, choices=SALE_STATUSES, default=AVAILABLE)
     is_favorite = models.BooleanField(default=False)
     user_in_class = models.BooleanField(null=True)
+    views = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["course__name"]
@@ -150,9 +156,10 @@ class CourseDocumentManagement(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="course_doc_mngt", null=True, blank=True)
     is_completed = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
+    enable = models.BooleanField(default=True)
 
     def __str__(self):
-        return str(id)
+        return str(self.id)
 
     class Meta:
         unique_together = ('document', 'lesson', 'course', 'user')
@@ -167,6 +174,7 @@ class VideoManagement(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="video_mngt", null=True, blank=True)
     is_completed = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
+    enable = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.id)

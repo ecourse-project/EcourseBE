@@ -130,3 +130,10 @@ def get_file_from_nested_folder(dir_path):
 def delete_directory(dir_path):
     if os.path.exists(dir_path) and os.path.isdir(dir_path):
         shutil.rmtree(dir_path)
+
+
+def bulk_create_batch_size(model_class, records: List, batch_size=200):
+    for i in range(0, len(records), batch_size):
+        batch = records[i:i + batch_size]
+        model_class.objects.bulk_create(batch)
+    return records

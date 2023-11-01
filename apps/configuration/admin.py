@@ -28,7 +28,8 @@ class ConfigurationAdmin(admin.ModelAdmin):
     def get_fields(self, request, obj=None):
         fields = super(ConfigurationAdmin, self).get_fields(request, obj)
         if not request.user.is_superuser:
-            fields.remove("tracking_views")
+            for field in ["tracking_api", "tracking_device", "tracking_views", "use_celery"]:
+                fields.remove(field)
         return fields
 
     def has_delete_permission(self, request, obj=None):
@@ -40,4 +41,3 @@ class PersonalInfoAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "id",
     )
-

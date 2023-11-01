@@ -5,7 +5,7 @@ from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 from apps.posts.models import PostTopic, Post
 from apps.settings.models import Header
-from apps.settings.enums import POST
+from apps.core.general.enums import POST
 
 
 class PostAdminForm(forms.ModelForm):

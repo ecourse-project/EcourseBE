@@ -10,7 +10,7 @@ from apps.rating.models import DocumentRating
 class DocumentService(object):
     @property
     def get_all_documents_queryset(self):
-        return Document.objects.select_related('thumbnail', 'file', 'topic').filter(is_selling=True)
+        return Document.objects.select_related('thumbnail', 'file', 'topic')
 
     def get_documents_by_topic(self, topic: str):
         if topic.strip():
@@ -41,15 +41,14 @@ class DocumentManagementService:
     @property
     def get_doc_management_queryset(self):
         return DocumentManagement.objects.prefetch_related(
-            Prefetch('document', queryset=Document.objects.select_related(
-                'thumbnail', 'file', 'topic'))
+            Prefetch('document', queryset=Document.objects.select_related('thumbnail', 'file', 'topic'))
         ).filter(user=self.user)
 
     def init_documents_management(self):
         if not DocumentManagement.objects.filter(user=self.user).first():
             DocumentManagement.objects.bulk_create([
                 DocumentManagement(user=self.user, document=doc)
-                for doc in DocumentService().get_all_documents_queryset
+                for doc in DocumentService().get_all_documents_queryset.filter(is_selling=True)
             ])
 
     @property
@@ -74,6 +73,11 @@ class DocumentManagementService:
         #     response["score_" + str(score)] = all_ratings.filter(rating=score).count()
         # data['rating_stats'] = response
         return data
+
+    def update_document_sale_status(self, documents, sale_status):
+        DocumentManagement.objects.filter(
+            user=self.user, document__in=documents
+        ).update(sale_status=sale_status)
 
 
 

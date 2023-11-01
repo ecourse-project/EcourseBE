@@ -5,29 +5,14 @@ from django.utils.html import format_html
 from django.conf import settings
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
-from apps.courses.models import (
-    Course,
-    Lesson,
-    CourseTopic,
-    CourseDocument,
-    LessonManagement,
-    CourseManagement,
-    CourseDocumentManagement,
-    VideoManagement,
-    LessonQuizManagement,
-    LessonsRemoved,
-)
-from apps.courses.services.admin import (
-    insert_remove_docs_videos,
-)
+from apps.courses.models import *
 from apps.courses.forms import CourseForm
+from apps.courses.services.admin_action import *
+
 from apps.upload.models import UploadFile
 from apps.upload.enums import video_ext_list
 
-
-@admin.action(description='Unremove for selected lessons')
-def unremove(modeladmin, request, queryset):
-    queryset.update(removed=False)
+from apps.core.general.init_data import UserDataManagementService
 
 
 @admin.register(CourseDocument)
@@ -99,11 +84,9 @@ class LessonAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(LessonAdmin, self).get_fields(request, obj)
-        removed_fields = (
-            ["total_documents", "total_videos", "removed"]
-            if not request.user.is_superuser
-            else ["total_documents", "total_videos"]
-        )
+        removed_fields = ["total_documents", "total_videos"]
+        if not request.user.is_superuser:
+            removed_fields.extend(["removed"])
         for field in removed_fields:
             fields.remove(field)
         return fields
@@ -133,14 +116,16 @@ class LessonAdmin(admin.ModelAdmin):
         after_documents = set(instance.documents.all())
         after_videos = set(instance.videos.all())
 
-        insert_remove_docs_videos(
-            course_id=None,
-            lesson_id=instance.id,
-            docs_remove=before_documents.difference(after_documents),
-            videos_remove=before_videos.difference(after_videos),
-            docs_add=after_documents.difference(before_documents),
-            videos_add=after_videos.difference(before_videos),
-        )
+        # docs_add = after_documents.difference(before_documents)
+        # videos_add = after_videos.difference(before_videos)
+        docs_remove = before_documents.difference(after_documents)
+        videos_remove = before_videos.difference(after_videos)
+
+        if docs_remove or videos_remove:
+            if docs_remove:
+                CourseDocumentManagement.objects.filter(lesson=instance, document__in=docs_remove).update(is_available=False)
+            if videos_remove:
+                VideoManagement.objects.filter(lesson=instance, video__in=videos_remove).update(is_available=False)
 
     # Query objects for many to many
     # def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -184,7 +169,7 @@ class CourseAdmin(admin.ModelAdmin):
         fields = super(CourseAdmin, self).get_fields(request, obj)
         removed_fields = []
         if not request.user.is_superuser:
-            removed_fields.extend(["test"])
+            removed_fields.extend(["test", "init_data"])
         for field in removed_fields:
             fields.remove(field)
         return fields
@@ -201,24 +186,28 @@ class CourseAdmin(admin.ModelAdmin):
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
-
         before_lessons = set(instance.lessons.all())
         super().save_related(request, form, formsets, change)
         after_lessons = set(instance.lessons.all())
 
+        all_lessons = instance.lessons.all()
         lessons_remove = before_lessons.difference(after_lessons)
         lessons_add = after_lessons.difference(before_lessons)
 
-        if lessons_remove:
-            LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
-            for lesson in lessons_remove:
-                insert_remove_docs_videos(instance.id, lesson.id, lesson.documents.all(), lesson.videos.all(), None, None)
-        if lessons_add:
-            lesson_mngt_list = []
-            for lesson in lessons_add:
-                lesson_mngt_list.append(LessonManagement(course=instance, lesson=lesson))
-                insert_remove_docs_videos(instance.id, lesson.id, None, None, lesson.documents.all(), lesson.videos.all())
-            LessonManagement.objects.bulk_create(lesson_mngt_list)
+        if not instance.init_data:
+            UserDataManagementService(None).create_lesson_mngt(instance, all_lessons)
+            UserDataManagementService(None).create_course_mngt_for_multiple_users(instance)
+            instance.init_data = True
+            instance.save(update_fields=["init_data"])
+        else:
+            if lessons_add:
+                UserDataManagementService(None).create_lesson_mngt(instance, all_lessons)
+                CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
+                VideoManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
+            if lessons_remove:
+                LessonManagement.objects.filter(course=instance, lesson__in=lessons_remove).delete()
+                CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
+                VideoManagement.objects.filter(course=instance, lesson__in=lessons_remove).update(is_available=False)
 
     def get_queryset(self, request):
         qs = super(CourseAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
@@ -227,11 +216,11 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseManagement)
 class CourseManagementAdmin(admin.ModelAdmin):
-    list_filter = ("course__course_of_class", "course", "user", "sale_status")
+    list_filter = ("course__course_of_class", "course", "sale_status")
     search_fields = (
-        "user__email",
         "course__name",
         "sale_status",
+        "user__email",
     )
     list_display = (
         "user",
@@ -240,8 +229,9 @@ class CourseManagementAdmin(admin.ModelAdmin):
         "mark",
         "is_done_quiz",
         "sale_status",
+        "views",
     )
-    readonly_fields = ("progress", "user_in_class")
+    readonly_fields = ("progress", "user_in_class", "views")
 
     def get_queryset(self, request):
         qs = super(CourseManagementAdmin, self).get_queryset(request).select_related("user", "course")
@@ -249,9 +239,20 @@ class CourseManagementAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(CourseManagementAdmin, self).get_fields(request, obj)
-        for field in ["is_favorite"]:
+        remove_fields = ["is_favorite"]
+        if not request.user.is_superuser:
+            remove_fields.extend(["views"])
+        for field in remove_fields:
             fields.remove(field)
         return fields
+
+    def get_list_display(self, request):
+        list_display = super(CourseManagementAdmin, self).get_list_display(request)
+        if not request.user.is_superuser:
+            list_display = list(list_display)
+            list_display.remove("views")
+            return tuple(list_display)
+        return list_display
 
 
 @admin.register(LessonManagement)
@@ -283,7 +284,10 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
         "document",
         "is_completed",
         "is_available",
+        "enable"
     )
+    actions = (enable, disable)
+    readonly_fields = ("is_available",)
 
     def get_queryset(self, request):
         return super(CourseDocumentManagementAdmin, self).get_queryset(request).select_related(
@@ -305,7 +309,9 @@ class VideoManagementAdmin(admin.ModelAdmin):
         "video",
         "is_completed",
         "is_available",
+        "enable",
     )
+    actions = (enable, disable)
 
     def get_queryset(self, request):
         return super(VideoManagementAdmin, self).get_queryset(request).select_related(

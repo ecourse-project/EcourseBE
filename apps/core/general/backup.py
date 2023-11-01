@@ -40,7 +40,10 @@ def store_backup_user_data(user):
 def update_manager_document_mngt(user):
     all_doc = Document.objects.all()
     user_doc = DocumentManagement.objects.filter(user=user)
-    docs_mngt_to_create = all_doc.values_list("id", flat=True).difference(user_doc.values_list("document_id", flat=True))
+    docs_mngt_to_create = (
+        all_doc.values_list("id", flat=True)
+        .difference(user_doc.values_list("document_id", flat=True))
+    )
 
     if docs_mngt_to_create:
         DocumentManagement.objects.bulk_create([
@@ -54,7 +57,10 @@ def update_manager_document_mngt(user):
 def update_manager_course_mngt(user):
     all_course = Course.objects.all()
     user_course = CourseManagement.objects.filter(user=user)
-    courses_mngt_to_create = all_course.values_list("id", flat=True).difference(user_course.values_list("course_id", flat=True))
+    courses_mngt_to_create = (
+        all_course.values_list("id", flat=True)
+        .difference(user_course.values_list("course_id", flat=True))
+    )
 
     if courses_mngt_to_create:
         CourseManagement.objects.bulk_create([

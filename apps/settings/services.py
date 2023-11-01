@@ -1,12 +1,15 @@
 import datetime
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
-from apps.settings.enums import DOCUMENT, COURSE, CLASS, POST
+from apps.users.choices import MANAGER
+from apps.core.general.enums import DOCUMENT, COURSE, CLASS, POST
 from apps.settings.models import HeaderDetail, Header, HomePageDetail
-from apps.courses.services.services import CourseManagementService
-from apps.courses.models import Course
-from apps.documents.services.services import DocumentManagementService
-from apps.documents.models import Document
+
+from apps.courses.models import *
+
+
+from apps.documents.models import *
+
 from apps.classes.models import Class
 from apps.posts.models import Post
 from apps.core.utils import create_serializer_class
@@ -112,12 +115,3 @@ def get_headers() -> list:
             # "type": get_header_query_type(header_detail.first()),
         })
     return list_header
-
-
-class UserDataManagementService:
-    def __init__(self, user):
-        self.user = user
-
-    def init_user_data(self):
-        DocumentManagementService(self.user).init_documents_management()
-        CourseManagementService(self.user).init_courses_management()

@@ -1,5 +1,4 @@
 from typing import Dict
-import subprocess
 import json
 
 from django.contrib.auth.models import Permission, ContentType

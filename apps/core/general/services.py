@@ -3,20 +3,17 @@ from django.db.models import Q
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
 from apps.users.models import User
-from apps.core.general import enums
-from apps.settings.enums import ALL, DOCUMENT, COURSE, CLASS, POST
-
 from apps.documents.models import Document
 from apps.courses.models import (
-    LessonManagement,
-    VideoManagement,
-    CourseDocumentManagement,
     Course,
     LessonQuizManagement,
+    LessonManagement,
+    CourseDocumentManagement,
+    VideoManagement,
 )
-# from apps.classes.models import Class
 from apps.posts.models import Post
 from apps.classes.services.services import ClassRequestService
+
 from apps.quiz.services.services import (
     quiz_statistic,
     response_quiz_statistic,
@@ -28,6 +25,8 @@ from apps.quiz.enums import (
     QUESTION_TYPE_MATCH,
     QUESTION_TYPE_FILL,
 )
+
+from apps.core.general import enums
 
 
 class CustomListDataServices:
@@ -122,6 +121,7 @@ class CustomDictDataServices:
                 lesson_id=lesson['id'],
                 document_id__in=lesson_docs,
                 is_available=True,
+                enable=True,
             ).values_list("document_id", flat=True)
             available_docs = [str(doc_id) for doc_id in available_docs]
             data["lessons"][index]["documents"] = [
@@ -144,6 +144,7 @@ class CustomDictDataServices:
                 lesson_id=lesson['id'],
                 video_id__in=lesson_videos,
                 is_available=True,
+                enable=True,
             ).values_list("video_id", flat=True)
             available_videos = [str(video_id) for video_id in available_videos]
             data["lessons"][index]["videos"] = [
@@ -168,6 +169,7 @@ class CustomDictDataServices:
                         document__in=lesson_obj.documents.all(),
                         is_completed=True,
                         is_available=True,
+                        enable=True,
                     ).values_list("document", flat=True)
                 )
                 data["lessons"][index][video_field] = (
@@ -178,6 +180,7 @@ class CustomDictDataServices:
                         video__in=lesson_obj.videos.all(),
                         is_completed=True,
                         is_available=True,
+                        enable=True,
                     ).values_list("video", flat=True)
                 )
             else:
@@ -257,10 +260,10 @@ class CustomDictDataServices:
 
 def search_item(item_name: str, search_type: str, user: User) -> dict:
     response = {"documents": [], "courses": [], "classes": [], "posts": []}
-    if search_type.upper() not in [ALL, DOCUMENT, COURSE, CLASS, POST]:
+    if search_type.upper() not in [enums.ALL, enums.DOCUMENT, enums.COURSE, enums.CLASS, enums.POST]:
         return response
 
-    if search_type.upper() == ALL:
+    if search_type.upper() == enums.ALL:
         response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True).values_list("id", flat=True)
         response["courses"] = Course.objects.filter(
             name__icontains=item_name, is_selling=True, course_of_class=False
@@ -268,20 +271,22 @@ def search_item(item_name: str, search_type: str, user: User) -> dict:
         response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True).values_list("id", flat=True)
         response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
 
-    elif search_type.upper() == DOCUMENT:
+    elif search_type.upper() == enums.DOCUMENT:
         response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True).values_list("id", flat=True)
 
-    elif search_type.upper() == COURSE:
+    elif search_type.upper() == enums.COURSE:
         response["courses"] = Course.objects.filter(
             name__icontains=item_name, is_selling=True, course_of_class=False
         ).values_list("id", flat=True)
 
-    elif search_type.upper() == CLASS:
+    elif search_type.upper() == enums.CLASS:
         response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True).values_list("id", flat=True)
 
-    elif search_type.upper() == POST:
+    elif search_type.upper() == enums.POST:
         response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
 
     return response
 
 
+def check_existing_instance(model_class, **kwargs):
+    return True if model_class.objects.filter(**kwargs).exists() else False

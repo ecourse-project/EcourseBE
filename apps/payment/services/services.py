@@ -5,15 +5,14 @@ from django.db.models import Sum, F
 from apps.documents import enums as doc_enums
 from apps.documents.models import DocumentManagement, Document
 from apps.documents.api.serializers import DocumentManagementSerializer
-from apps.documents.services.admin import DocumentAdminService
+from apps.documents.services.services import DocumentManagementService
+
 from apps.courses import enums as course_enums
 from apps.courses.models import CourseManagement, Course
 from apps.courses.api.serializers import CourseManagementSerializer
-from apps.courses.services.admin import CourseAdminService
-from apps.payment.enums import SUCCESS, FAILED
-from apps.payment.models import Order
+from apps.courses.services.services import CourseManagementService
 
-from apps.core.general.init_data import InitCourseServices
+from apps.payment.enums import FAILED
 
 
 class OrderService:
@@ -69,8 +68,12 @@ class OrderService:
         )
 
     def order_success(self):
-        doc_service = DocumentAdminService(self.order.user)
-        course_service = CourseAdminService(self.order.user)
+        if not self.order.user:
+            return
+
+        doc_service = DocumentManagementService(self.order.user)
+        course_service = CourseManagementService(self.order.user)
+
         """ Document """
         all_docs = self.order.documents.all()
         all_docs.update(sold=F('sold') + 1)
@@ -80,13 +83,13 @@ class OrderService:
         all_courses = self.order.courses.all()
         all_courses.update(sold=F('sold') + 1)
         course_service.update_course_sale_status(all_courses, course_enums.BOUGHT)
-        for course in all_courses:
-            InitCourseServices().init_course_data(course=course, user=self.order.user)
-        course_service.enable_courses_data(all_courses)
 
     def order_failed(self):
-        doc_service = DocumentAdminService(self.order.user)
-        course_service = CourseAdminService(self.order.user)
+        if not self.order.user:
+            return
+
+        doc_service = DocumentManagementService(self.order.user)
+        course_service = CourseManagementService(self.order.user)
 
         """ Document """
         doc_service.update_document_sale_status(self.order.documents.all(), doc_enums.AVAILABLE)
@@ -94,7 +97,6 @@ class OrderService:
         """ Course """
         all_courses = self.order.courses.all()
         course_service.update_course_sale_status(all_courses, course_enums.AVAILABLE)
-        course_service.disable_courses_data(all_courses)
 
 
 # timestamp now - last 12 characters user id

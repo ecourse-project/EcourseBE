@@ -1,3 +1,5 @@
+from django.db.models import F
+
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -8,9 +10,9 @@ from apps.classes.api.serializers import ListClassSerializer, ClassManagementSer
 from apps.classes.models import ClassRequest, Class, ClassManagement
 from apps.classes.services.services import ClassesService, ClassRequestService, ClassManagementService
 from apps.courses.models import Course
+from apps.courses.services.services import CourseManagementService
 from apps.core.general.services import CustomListDataServices, CustomDictDataServices
 from apps.core.general.enums import REQUEST_STATUS, CLASS_EXTRA_FIELDS
-from apps.users.tracking.tracking_services import tracking_course_class_views
 from apps.configuration.models import Configuration
 
 
@@ -75,7 +77,8 @@ class ClassDetailView(generics.RetrieveAPIView):
 
     @staticmethod
     def is_accepted(user, class_obj):
-        if not user.is_anonymous:
+        if not user.is_anonymous and user.is_authenticated:
+            CourseManagementService(user).create_user_data_for_specific_course(class_obj)
             class_mngt = ClassManagement.objects.filter(user=user, course=class_obj).first()
             return class_mngt.user_in_class if class_mngt else False
         return False
@@ -98,8 +101,13 @@ class ClassDetailView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        if Configuration.objects.first().tracking_views:
-            tracking_course_class_views(request.user, instance)
+        if (
+                Configuration.objects.first().tracking_views
+                and isinstance(instance, ClassManagement)
+                and instance.user_in_class
+        ):
+            instance.views = F("views") + 1
+            instance.save(update_fields=['views'])
         class_obj = instance if isinstance(instance, Course) or isinstance(instance, Class) else instance.course
         custom_data = CustomDictDataServices(user=request.user)
         return Response(

@@ -71,6 +71,7 @@ export interface User {
   avatar: string;
   phone?: string;
   role: RoleEnum;
+  is_testing_user: boolean;
 }
 
 export interface OIsExist {

@@ -1,12 +1,5 @@
 import os
-import json
 from pprint import pformat
-import jwt
-
-from django.conf import settings
-
-from apps.users.models import UserTracking
-from ipware import get_client_ip
 
 
 def _get_dir_content(path, include_folders, recursive):
@@ -39,30 +32,3 @@ def get_tree_str(path, indent=''):
 
 # Example usage:
 # tree_str = get_tree_str('/path/to/folder')
-
-
-def tracking_user(request):
-    user_id = None
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if token:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        user_id = decoded_token.get("user_id")
-
-    post_data = request.body.decode('utf-8')
-    try:
-        data = json.loads(post_data)
-    except Exception:
-        data = None
-
-    UserTracking.objects.create(
-        user_id=user_id,
-        method=request.method,
-        ip_address=get_client_ip(request)[0],
-        path=request.path,
-        query_params=request.GET.dict() or None,
-        data=data,
-    )
-
-
-
-
