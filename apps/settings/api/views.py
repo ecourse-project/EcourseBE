@@ -1,10 +1,11 @@
-from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
-from apps.settings.services import get_headers, get_home_page, UserDataManagementService
+from apps.configuration.models import Configuration
+from apps.users.services import tracking_user_device
+from apps.settings.services import get_headers, get_home_page
+from apps.core.general.init_data import UserDataManagementService
 
 
 class HeaderAPIView(APIView):
@@ -25,5 +26,11 @@ class HomePageAPIView(APIView):
 
 class InitData(APIView):
     def get(self, request, *args, **kwargs):
-        UserDataManagementService(request.user).init_user_data()
+        user = request.user
+
+        if Configuration.objects.first():
+            tracking_user_device(request)
+        if user and not user.is_anonymous and user.is_authenticated and not user.first_login:
+            UserDataManagementService(user).create_multiple_course_mngt_for_user()
+
         return Response(data={"success": True})

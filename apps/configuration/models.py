@@ -9,10 +9,16 @@ class Configuration(models.Model):
     unlimited_document_time = models.BooleanField(default=False)
     ip_address_limit = models.PositiveSmallIntegerField(default=3)
     unlimited_ip_addresses = models.BooleanField(default=False)
-    user_tracking = models.BooleanField(default=False)
-    tracking_views = models.BooleanField(default=False)
     display_mark = models.BooleanField(default=True)
     display_correct_answer = models.BooleanField(default=True)
+
+    # Tracking config
+    tracking_api = models.BooleanField(default=False)
+    tracking_ip = models.BooleanField(default=False)
+    tracking_device = models.BooleanField(default=False)
+    tracking_views = models.BooleanField(default=False)
+
+    use_celery = models.BooleanField(default=False)
 
 
 class PersonalInfo(models.Model):

@@ -1,119 +1,106 @@
-from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement, CourseManagement, Course
+from django.db.models.query import QuerySet
+
 from apps.courses.enums import BOUGHT
-from apps.users.models import User
+from apps.courses.models import (
+    LessonManagement,
+    CourseDocumentManagement,
+    VideoManagement,
+    CourseManagement,
+    Course,
+    Lesson,
+)
 from apps.courses.services.services import CourseManagementService
+
+from apps.core.general.init_data import (
+    UserDataManagementService,
+    init_doc_video_data_for_multiple_users,
+)
+from apps.core.utils import bulk_create_batch_size
+from apps.users.services import get_active_users
+from apps.users.choices import MANAGER
+from apps.users.models import User
 
 
 class CourseAdminService:
-    def __init__(self, user):
-        self.user = user
+    @staticmethod
+    def add_course_data_admin(instance, lessons_add):
+        if isinstance(lessons_add, QuerySet):
+            lessons_qs = lessons_add
+        else:
+            lessons_qs = Lesson.objects.filter(pk__in=[lesson.pk for lesson in lessons_add])
 
-    def update_course_sale_status(self, courses, sale_status):
-        CourseManagement.objects.filter(
-            user=self.user, course__in=courses
-        ).update(sale_status=sale_status)
+        sv = UserDataManagementService(None)
+        users = get_active_users()
+        lesson_mngt = sv.prepare_lesson_data_for_single_course(instance, lessons_qs)
+        bulk_create_batch_size(LessonManagement, lesson_mngt) if lesson_mngt else []
+        course_doc, video = init_doc_video_data_for_multiple_users([instance], users)
+        if not course_doc:
+            CourseDocumentManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
+        if not video:
+            VideoManagement.objects.filter(course=instance, lesson__in=lessons_add).update(is_available=True)
 
-    def init_courses_data(self, courses):
+    def add_lesson_data_admin(self, instance: Lesson, docs_add_id, videos_add_id):
+        courses = instance.courses.all()
         for course in courses:
-            course_mngt = CourseManagement.objects.filter(course=course, user=self.user).first()
-            if not course_mngt:
-                continue
+            self.create_doc_video_mngt(
+                instance=course,
+                lesson=instance,
+                docs_add_id=docs_add_id,
+                videos_add_id=videos_add_id,
+            )
 
-            all_lessons = course.lessons.all()
-            for lesson in all_lessons:
-                """ Initial documents of course """
-                CourseDocumentManagement.objects.bulk_create([
-                    CourseDocumentManagement(user=self.user, document=document, lesson=lesson, course=course)
-                    for document in lesson.documents.all()
-                ])
-                """ Initial videos """
-                VideoManagement.objects.bulk_create([
-                    VideoManagement(user=self.user, video=video, lesson=lesson, course=course)
-                    for video in lesson.videos.all()
-                ])
+    @staticmethod
+    def create_doc_video_mngt(instance: Course, lesson: Lesson, users=None, docs_add_id=None, videos_add_id=None):
+        if not users:
+            users = get_active_users()
+        users_id = users.values_list("id", flat=True)
 
-                """ Initial lessons """
-                LessonManagement.objects.get_or_create(lesson=lesson, course=course)
+        course_doc_mngt = []
+        video_mngt = []
 
-    def enable_courses_data(self, courses):
-        CourseDocumentManagement.objects.filter(user=self.user, course__in=courses).update(is_available=True)
-        VideoManagement.objects.filter(user=self.user, course__in=courses).update(is_available=True)
+        # CourseDocumentManagement
+        course_docs = lesson.documents.only("id")
+        for doc in course_docs:
+            existing_user_docs = CourseDocumentManagement.objects.filter(
+                course=instance, lesson=lesson, document=doc, user__in=users
+            ).values_list("user_id", flat=True).distinct()
+            users_to_create = set(users_id).difference(set(existing_user_docs))
+            course_doc_mngt.extend([
+                CourseDocumentManagement(course=instance, lesson=lesson, document=doc, user_id=user_id)
+                for user_id in users_to_create
+            ])
 
-    def disable_courses_data(self, courses):
-        CourseDocumentManagement.objects.filter(user=self.user, course__in=courses).update(is_available=False)
-        VideoManagement.objects.filter(user=self.user, course__in=courses).update(is_available=False)
+        # VideoManagement
+        videos = lesson.videos.only("id")
+        for video in videos:
+            existing_user_videos = VideoManagement.objects.filter(
+                course=instance, lesson=lesson, video=video, user__in=users
+            ).values_list("user_id", flat=True).distinct()
+            users_to_create = set(users_id).difference(set(existing_user_videos))
+            video_mngt.extend([
+                VideoManagement(course=instance, lesson=lesson, video=video, user_id=user_id)
+                for user_id in users_to_create
+            ])
 
+        if docs_add_id is None and videos_add_id is None:
+            CourseDocumentManagement.objects.filter(course=instance, lesson=lesson).update(is_available=True)
+            VideoManagement.objects.filter(course=instance, lesson=lesson).update(is_available=True)
+        elif docs_add_id is not None and videos_add_id is not None:
+            if docs_add_id:
+                CourseDocumentManagement.objects.filter(
+                    course=instance, lesson=lesson, document_id__in=docs_add_id
+                ).update(is_available=True)
+            if videos_add_id:
+                VideoManagement.objects.filter(
+                    course=instance, lesson=lesson, video_id__in=videos_add_id
+                ).update(is_available=True)
 
-def get_users_by_course_sale_status(course_id, sale_status):
-    return CourseManagement.objects.filter(course_id=course_id, sale_status=sale_status).values_list("user_id", flat=True)
-
-
-def get_users_by_joined_class(course_id):
-    return CourseManagement.objects.filter(
-        course_id=course_id, course__course_of_class=True, user_in_class=True
-    ).values_list("user_id", flat=True)
-
-
-def insert_remove_docs_videos(course_id, lesson_id, docs_remove, videos_remove, docs_add, videos_add):
-    courses_include_lesson = [course_id] if course_id else []
-    if not courses_include_lesson:
-        courses_include_lesson = (
-            LessonManagement.objects.filter(lesson_id=lesson_id)
-            .distinct("course_id")
-            .values_list("course_id", flat=True)
+        return (
+            bulk_create_batch_size(CourseDocumentManagement, course_doc_mngt) if course_doc_mngt else [],
+            bulk_create_batch_size(VideoManagement, video_mngt) if video_mngt else []
         )
 
-    for course_id in courses_include_lesson:
-        if Course.objects.get(id=course_id).course_of_class:
-            user_ids = get_users_by_joined_class(course_id)
-        else:
-            user_ids = get_users_by_course_sale_status(course_id=course_id, sale_status=BOUGHT)
-        if user_ids:
-            is_update_mark = False
-            if docs_remove:
-                is_update_mark = True
-                CourseDocumentManagement.objects.filter(
-                    course_id=course_id, lesson_id=lesson_id, document__in=docs_remove, is_completed=False,
-                ).delete()
-                CourseDocumentManagement.objects.filter(
-                    course_id=course_id, lesson_id=lesson_id, document__in=docs_remove, is_completed=True,
-                ).update(is_available=False)
 
-            if videos_remove:
-                is_update_mark = True
-                VideoManagement.objects.filter(
-                    course_id=course_id, lesson_id=lesson_id, video__in=videos_remove, is_completed=False,
-                ).delete()
-                VideoManagement.objects.filter(
-                    course_id=course_id, lesson_id=lesson_id, video__in=videos_remove, is_completed=True,
-                ).update(is_available=False)
 
-            if docs_add:
-                is_update_mark = True
-                docs_to_update = []
-                for doc in docs_add:
-                    for user_id in user_ids:
-                        doc_obj, _ = CourseDocumentManagement.objects.get_or_create(
-                            course_id=course_id, lesson_id=lesson_id, user_id=user_id, document=doc
-                        )
-                        doc_obj.is_available = True
-                        docs_to_update.append(doc_obj)
-                if docs_to_update:
-                    CourseDocumentManagement.objects.bulk_update(docs_to_update, fields=["is_available"])
 
-            if videos_add:
-                is_update_mark = True
-                videos_to_update = []
-                for video in videos_add:
-                    for user_id in user_ids:
-                        video_obj, _ = VideoManagement.objects.get_or_create(
-                            course_id=course_id, lesson_id=lesson_id, user_id=user_id, video=video
-                        )
-                        video_obj.is_available = True
-                        videos_to_update.append(video_obj)
-                if videos_to_update:
-                    VideoManagement.objects.bulk_update(videos_to_update, fields=["is_available"])
 
-            if is_update_mark:
-                for user_id in user_ids:
-                    CourseManagementService(User.objects.get(id=user_id)).calculate_course_progress(course_id=course_id)

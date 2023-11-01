@@ -24,7 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "phone",
             "role",
+            "is_testing_user",
         )
+        read_only_fields = ["email", "role", "is_testing_user"]
 
     def to_representation(self, obj):
         representation = super(UserSerializer, self).to_representation(obj)
@@ -79,7 +81,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             )
         extra_kwargs = {
             'full_name': {'required': True},
-            }
+        }
     
     def validate(self, attrs):
         if attrs['password1'] != attrs['password2']:

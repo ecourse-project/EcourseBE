@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.configuration.models import Configuration
 from apps.users_auth.authentication import ManagerPermission
 from apps.core.pagination import StandardResultsSetPagination
 from apps.core.general.services import CustomDictDataServices
@@ -54,7 +55,7 @@ class AllCourseListView(generics.ListAPIView):
             Course.objects.only('id', 'name', 'course_of_class')
             .filter(
                 Q(Q(course_of_class=True) | Q(course_of_class=False, is_selling=True))
-                & Q(test=False)
+                & Q(test=False)  # TODO: Maybe include all course with test=True
             )
             .prefetch_related(
                 Prefetch("lessons", queryset=Lesson.objects.only("id", "name"))
@@ -69,7 +70,9 @@ class UserCoursesListView(generics.ListAPIView):
 
     def get_queryset(self):
         service = CourseManagementService(self.request.user)
-        return service.get_course_management_queryset.filter(sale_status=BOUGHT).order_by('course__name')
+        return service.get_course_management_queryset.filter(
+            sale_status=BOUGHT, course__course_of_class=False
+        ).order_by('course__name')
 
 
 class CourseRetrieveView(generics.RetrieveAPIView):
@@ -79,6 +82,9 @@ class CourseRetrieveView(generics.RetrieveAPIView):
     def get_object(self):
         course_id = self.request.query_params.get('course_id')
         user = self.request.user
+        CourseManagementService(user).create_user_data_for_specific_course(
+            instance=Course.objects.get(pk=course_id)
+        )
         return (
                 CourseManagementService(user=user).get_course_management_queryset.filter(course_id=course_id).first()
                 or ClassManagementService(user=user).get_class_management_queryset.filter(course_id=course_id).first()
@@ -86,10 +92,14 @@ class CourseRetrieveView(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance and instance.sale_status != BOUGHT:
-            course = instance.course
-            course.views = F("views") + 1
-            course.save(update_fields=['views'])
+        if instance:
+            if Configuration.objects.first().tracking_views:
+                instance.views = F("views") + 1
+                instance.save(update_fields=['views'])
+            if instance.sale_status != BOUGHT:
+                course = instance.course
+                course.views = F("views") + 1
+                course.save(update_fields=['views'])
         custom_data = CustomDictDataServices(request.user)
         return Response(
             custom_data.custom_response_dict_data(
@@ -145,4 +155,4 @@ class HomepageCourseListAPIView(generics.ListAPIView):
         elif list_id:
             return CourseService().get_courses_by_list_id(list_id)
         else:
-            return CourseService().get_all_courses_queryset
+            return CourseService().get_all_courses_queryset.filter(course_of_class=False, is_selling=True)

@@ -6,7 +6,7 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 from model_utils.models import TimeStampedModel
 
 from apps.core.utils import get_media_url
-from apps.users.choices import ROLE_CHOICES, STUDENT
+from apps.users.choices import ROLE_CHOICES, DEVICE_TYPE, STUDENT
 
 
 class User(AbstractUser):
@@ -26,7 +26,8 @@ class User(AbstractUser):
     ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
     unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
     is_testing_user = models.BooleanField(default=False)
-    other_data = models.JSONField(default=dict(classes=dict(), courses=dict(), docs=dict(), posts=dict()))
+    first_login = models.DateTimeField(blank=True, null=True)
+    other_data = models.JSONField(default=dict(), null=True, blank=True)
 
     def __str__(self):
         return self.email
@@ -68,3 +69,22 @@ class UserTracking(TimeStampedModel):
     path = models.CharField(max_length=100, null=True, blank=True)
     query_params = models.JSONField(null=True, blank=True)
     data = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "API tracking"
+        verbose_name = "Object"
+
+
+class DeviceTracking(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    device_type = models.CharField(max_length=10, choices=DEVICE_TYPE, null=True, blank=True)
+    device = models.CharField(max_length=20, null=True, blank=True)
+    browser = models.CharField(max_length=50, null=True, blank=True)
+    browser_version = models.CharField(max_length=20, null=True, blank=True)
+    system = models.CharField(max_length=50, null=True, blank=True)
+    system_version = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Device tracking"
+        verbose_name = "Object"

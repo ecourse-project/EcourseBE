@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
-from apps.users.models import User, TestUser, UserResetPassword, UserTracking, UserDataBackUp
+from apps.users.models import *
 from apps.core.utils import id_generator
 from apps.core.general.backup import change_user_role
 
@@ -28,7 +28,6 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
             fields.remove(field)
         return fields
 
-
     def get_queryset(self, request):
         return super(TestUserAdmin, self).get_queryset(request).filter(
             Q(is_testing_user=True)
@@ -46,9 +45,11 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "email",
         "full_name",
         "phone",
-        "last_login"
+        "last_login",
+        "date_joined",
     )
     filter_horizontal = ("user_permissions",)
+    readonly_fields = ("first_login", "last_login", "date_joined")
 
     def get_fields(self, request, obj=None):
         fields = super(UserAdmin, self).get_fields(request, obj)
@@ -106,5 +107,26 @@ class UserTrackingAdmin(admin.ModelAdmin):
         'created',
     )
 
-    def has_change_permission(self, request, obj=None):
-        return False
+
+@admin.register(DeviceTracking)
+class DeviceTrackingAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "device",
+        "browser",
+        "created",
+    )
+    fields = (
+        "created",
+        "user",
+        "device_type",
+        "device",
+        "browser",
+        "browser_version",
+        "system",
+        "system_version",
+    )
+    readonly_fields = ("created",)
+
+    def get_queryset(self, request):
+        return super(DeviceTrackingAdmin, self).get_queryset(request).select_related("user")

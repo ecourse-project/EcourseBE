@@ -82,6 +82,7 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
     'django_better_admin_arrayfield',
     'django_extensions',
+    'django_user_agents',
     'ckeditor',
     'ckeditor_uploader',
 ]
@@ -115,10 +116,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.gzip.GZipMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'ecourse.custom_middleware.TimezoneMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'ecourse.custom_middleware.TrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'ecourse.urls'
@@ -184,7 +185,7 @@ USE_L10N = True
 
 USE_TZ = False
 
-TIME_ZONE = "Asia/Ho_Chi_Minh"
+TIME_ZONE = env.str("TIME_ZONE", default="Asia/Ho_Chi_Minh")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -319,5 +320,11 @@ CKEDITOR_CONFIGS = {
     }
 }
 
-
 CKEDITOR_UPLOAD_PATH = ""
+
+# Celery
+# CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+# CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+# REDIS_URL = env.str("REDIS_URL", default="redis://localhost:6379/0")
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'

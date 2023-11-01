@@ -3,6 +3,7 @@ from django.contrib import admin
 from apps.payment.models import Order
 from apps.payment.enums import SUCCESS, FAILED
 from apps.payment.services.services import OrderService
+from apps.courses.models import Course
 
 
 @admin.register(Order)
@@ -22,6 +23,11 @@ class OrderAdmin(admin.ModelAdmin):
     def delete_queryset(self, request, queryset):
         for obj in queryset:
             self.delete_model(request, obj)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(OrderAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['courses'].queryset = Course.objects.filter(course_of_class=False)
+        return form
 
     def delete_model(self, request, obj):
         order_service = OrderService(obj)

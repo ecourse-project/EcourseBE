@@ -16,7 +16,7 @@ class ClassesService:
             Prefetch("lessons", queryset=Lesson.objects.prefetch_related(
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
-                     )
+            )
         ).select_related('topic', 'thumbnail').filter(course_of_class=True)
 
     def get_classes_by_topic(self, topic):

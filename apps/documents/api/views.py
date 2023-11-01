@@ -81,7 +81,7 @@ class HomepageDocumentListAPIView(generics.ListAPIView):
         elif list_id:
             return DocumentService().get_documents_by_list_id(list_id)
         else:
-            return DocumentService().get_all_documents_queryset
+            return DocumentService().get_all_documents_queryset.filter(is_selling=True)
 
 
 

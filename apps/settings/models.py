@@ -6,7 +6,7 @@ from model_utils.models import TimeStampedModel
 
 from apps.documents.models import DocumentTopic
 from apps.courses.models import CourseTopic
-from apps.settings.enums import DATA_TYPE_CHOICES
+from apps.core.general.enums import DATA_TYPE_CHOICES
 from apps.posts.models import PostTopic
 
 
