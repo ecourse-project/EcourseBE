@@ -1,60 +1,62 @@
 from django.contrib import admin
-from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.conf import settings
-from django.db.models import Prefetch
-from apps.courses.models import Lesson
+
 
 from apps.core.utils import get_summary_content
 from apps.quiz.models import (
-    ChoicesQuizChoiceName,
-    ChoicesQuizAnswer,
-    ChoicesQuizQuestion,
+    ChoiceName,
+    ChoicesAnswer,
+    ChoicesQuestion,
     MatchColumnContent,
     MatchColumnMatchAnswer,
     MatchColumnQuestion,
     FillBlankQuestion,
     MatchColumnUserAnswer,
-    ChoicesQuizUserAnswer,
+    ChoicesQuestionUserAnswer,
     FillBlankUserAnswer,
-    QuizManagement,
+    QuestionManagement,
+    Quiz,
 )
-from apps.quiz.forms import FillBlankQuestionForm, QuizManagementForm
+from apps.quiz.forms import FillBlankQuestionForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
 from apps.quiz.services.queryset_services import get_user_choice_answer_queryset
 from apps.quiz.enums import ANSWER_TYPE_TEXT, ANSWER_TYPE_IMAGE
 
 
-@admin.register(ChoicesQuizChoiceName)
-class ChoicesQuizChoiceNameAdmin(admin.ModelAdmin):
+@admin.register(ChoiceName)
+class ChoiceNameAdmin(admin.ModelAdmin):
     list_display = (
         'name',
+        'id',
     )
 
 
-@admin.register(ChoicesQuizAnswer)
-class ChoicesQuizAnswerAdmin(admin.ModelAdmin):
+@admin.register(ChoicesAnswer)
+class ChoicesAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'answer_text',
         'answer_type',
         'choice_name',
+        "id",
     )
 
     def get_queryset(self, request):
-        return super(ChoicesQuizAnswerAdmin, self).get_queryset(request).select_related("answer_image", "choice_name")
+        return super(ChoicesAnswerAdmin, self).get_queryset(request).select_related("answer_image", "choice_name")
 
 
-@admin.register(ChoicesQuizQuestion)
-class ChoicesQuizQuestionAdmin(admin.ModelAdmin):
+@admin.register(ChoicesQuestion)
+class ChoicesQuestionAdmin(admin.ModelAdmin):
     list_display = (
         'content_text',
         'content_image_url',
         'content_type',
         'correct_answer',
+        "id",
     )
 
     def get_queryset(self, request):
-        return super(ChoicesQuizQuestionAdmin, self).get_queryset(request).select_related("content_image", "correct_answer")
+        return super(ChoicesQuestionAdmin, self).get_queryset(request).select_related("content_image", "correct_answer")
 
     def content_image_url(self, obj):
         if obj.content_image and obj.content_image.image_path:
@@ -69,6 +71,7 @@ class MatchColumnContentAdmin(admin.ModelAdmin):
         'content_text',
         'content_image_url',
         'content_type',
+        "id",
     )
 
     def get_queryset(self, request):
@@ -87,6 +90,7 @@ class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
         'match_question',
         'first',
         'second',
+        "id",
     )
 
     def get_queryset(self, request):
@@ -113,6 +117,7 @@ class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
 class MatchColumnQuestionAdmin(admin.ModelAdmin):
     list_display = (
         'content',
+        "id",
     )
 
     def get_queryset(self, request):
@@ -124,6 +129,7 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
     list_display = (
         'original_content',
         'display_content',
+        "id",
     )
     form = FillBlankQuestionForm
     readonly_fields = ("hidden_words",)
@@ -148,27 +154,29 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
         obj.save()
 
 
-@admin.register(ChoicesQuizUserAnswer)
-class ChoicesQuizUserAnswerAdmin(admin.ModelAdmin):
+@admin.register(ChoicesQuestionUserAnswer)
+class ChoicesQuestionUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'user',
-        'quiz',
+        'question',
         'choice',
         'created',
+        "id",
     )
     readonly_fields = ('created',)
 
     def get_queryset(self, request):
-        return get_user_choice_answer_queryset(super(ChoicesQuizUserAnswerAdmin, self).get_queryset(request))
+        return get_user_choice_answer_queryset(super(ChoicesQuestionUserAnswerAdmin, self).get_queryset(request))
 
 
 @admin.register(MatchColumnUserAnswer)
 class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'user',
-        'quiz',
+        'question',
         'answer',
         'created',
+        "id",
     )
     readonly_fields = ('created',)
 
@@ -182,46 +190,40 @@ class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
 class FillBlankUserAnswerAdmin(admin.ModelAdmin):
     list_display = (
         'user',
-        'quiz',
+        'question',
         'words',
         'created',
+        "id",
     )
     readonly_fields = ('created',)
 
 
-@admin.register(QuizManagement)
-class QuizManagementAdmin(admin.ModelAdmin):
+@admin.register(QuestionManagement)
+class QuestionManagementAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         'order',
-        # 'name',
-        'course',
-        'lesson',
         'question_type',
         'choices_question',
         'match_question',
         'fill_blank_question',
         "time_limit",
     )
-    form = QuizManagementForm
 
     def get_fields(self, request, obj=None):
-        fields = super(QuizManagementAdmin, self).get_fields(request, obj)
-        fields.remove("name")
+        fields = super(QuestionManagementAdmin, self).get_fields(request, obj)
         return fields
 
     def get_queryset(self, request):
         return (
-            super(QuizManagementAdmin, self).get_queryset(request)
+            super(QuestionManagementAdmin, self).get_queryset(request)
             .only(
                 "id",
-                "name",
                 "order",
                 "question_type",
                 "choices_question",
                 "match_question",
                 "fill_blank_question",
-                "course__name",
-                "lesson__name",
                 "time_limit",
             )
             .defer(
@@ -238,10 +240,16 @@ class QuizManagementAdmin(admin.ModelAdmin):
                 "fill_blank_question__modified",
             )
             .select_related(
-                "lesson",
-                "course",
                 "choices_question",
                 "match_question",
                 "fill_blank_question",
             )
         )
+
+
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        'name',
+    )

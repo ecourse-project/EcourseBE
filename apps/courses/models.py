@@ -44,6 +44,7 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
+    quiz_location = models.JSONField(default=dict())
 
     # Tracking fields
     removed = models.BooleanField(default=False)
@@ -117,20 +118,24 @@ class CourseManagement(TimeStampedModel):
         return f"{self.course.name} - {self.user.__str__()}"
 
 
-class LessonQuizManagement(TimeStampedModel):
+class QuizManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course_mngt = models.ForeignKey(CourseManagement, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    quiz = models.ForeignKey("quiz.Quiz", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     is_done_quiz = models.BooleanField(default=False)
     date_done_quiz = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     history = ArrayField(models.CharField(max_length=50), null=True, blank=True)
 
     def __str__(self):
-        return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
+        return str(self.id)
 
     class Meta:
-        verbose_name_plural = "Management - Lesson quiz"
+        ordering = ["course"]
+        verbose_name_plural = "Management - Quiz"
+        unique_together = ('course', 'lesson', 'quiz', 'user')
 
 
 class LessonManagement(TimeStampedModel):

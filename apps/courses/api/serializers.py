@@ -42,6 +42,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "content",
             "videos",
             "documents",
+            "quiz_location",
         )
 
 

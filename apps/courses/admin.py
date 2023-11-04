@@ -71,6 +71,7 @@ class LessonAdmin(admin.ModelAdmin):
         "lesson_number",
         "course_include",
         "class_include",
+        "id",
     )
     ordering = (
         "name",
@@ -169,7 +170,7 @@ class CourseAdmin(admin.ModelAdmin):
         fields = super(CourseAdmin, self).get_fields(request, obj)
         removed_fields = []
         if not request.user.is_superuser:
-            removed_fields.extend(["test", "init_data"])
+            removed_fields.extend(["test", "init_data", "structure"])
         for field in removed_fields:
             fields.remove(field)
         return fields
@@ -234,8 +235,14 @@ class CourseManagementAdmin(admin.ModelAdmin):
     readonly_fields = ("progress", "user_in_class", "views")
 
     def get_queryset(self, request):
-        qs = super(CourseManagementAdmin, self).get_queryset(request).select_related("user", "course")
-        return qs.filter(course__course_of_class=False)
+        qs_condition = Q(course__course_of_class=False)
+        return (
+            super(CourseManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("user", "course")
+            .filter(qs_condition)
+            .order_by("course")
+        )
 
     def get_fields(self, request, obj=None):
         fields = super(CourseManagementAdmin, self).get_fields(request, obj)
@@ -267,7 +274,11 @@ class LessonManagementAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(LessonManagementAdmin, self).get_queryset(request).select_related("lesson", "course")
+        return (
+            super(LessonManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("lesson", "course")
+        )
 
 
 @admin.register(CourseDocumentManagement)
@@ -290,8 +301,11 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
     readonly_fields = ("is_available",)
 
     def get_queryset(self, request):
-        return super(CourseDocumentManagementAdmin, self).get_queryset(request).select_related(
-            "document", "lesson", "course", "user",
+        return (
+            super(CourseDocumentManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("document", "lesson", "course", "user")
+            .order_by("course", "lesson", "document__order")
         )
 
 
@@ -314,30 +328,36 @@ class VideoManagementAdmin(admin.ModelAdmin):
     actions = (enable, disable)
 
     def get_queryset(self, request):
-        return super(VideoManagementAdmin, self).get_queryset(request).select_related(
-            "video", "lesson", "course", "user",
+        return (
+            super(VideoManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("video", "lesson", "course", "user")
+            .order_by("course", "lesson", "video__order")
         )
 
 
-@admin.register(LessonQuizManagement)
-class LessonQuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
+@admin.register(QuizManagement)
+class QuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
-        "id",
         "user",
-        "course_or_class",
+        "course",
         "lesson",
+        "quiz",
         "is_done_quiz",
         "date_done_quiz",
     )
     fields = (
+        "user",
+        "course",
         "lesson",
+        "quiz",
         "is_done_quiz",
         "date_done_quiz",
         "start_time",
         "history",
     )
     change_form_template = "admin_button/clear_quiz.html"
-    readonly_fields = ("lesson",)
+    readonly_fields = ("course", "lesson", "quiz", "user")
 
     # def get_fields(self, request, obj=None):
     #     fields = super(LessonQuizManagementAdmin, self).get_fields(request, obj)
@@ -346,20 +366,12 @@ class LessonQuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
     #     print(fields)
     #     return fields
 
-    def course_or_class(self, obj):
-        course = obj.course_mngt.course
+    def get_queryset(self, request):
         return (
-            format_html(f'<a href="{settings.BASE_URL}/admin/classes/class/{str(course.id)}/change/">{course.name}</a>')
-            if course.course_of_class
-            else format_html(f'<a href="{settings.BASE_URL}/admin/courses/course/{str(course.id)}/change/">{course.name}</a>')
-        )
-
-    def user(self, obj):
-        user = obj.course_mngt.user
-        return (
-            format_html(f'<a href="{settings.BASE_URL}/admin/users/testuser/{str(user.pk)}/change/">{user.email}</a>')
-            if user.is_testing_user
-            else format_html(f'<a href="{settings.BASE_URL}/admin/users/user/{str(user.pk)}/change/">{user.email}</a>')
+            super(QuizManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("course", "lesson", "quiz", "user")
+            .order_by("course", "lesson")
         )
 
     def response_change(self, request, obj):

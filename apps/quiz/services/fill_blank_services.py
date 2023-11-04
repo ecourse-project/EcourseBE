@@ -6,7 +6,8 @@ from django.db.models import Q
 
 from apps.quiz.enums import ADMIN_DISPLAY_SUBSTRING, QUESTION_TYPE_FILL
 from apps.quiz.models import (
-    QuizManagement,
+    Quiz,
+    QuestionManagement,
     FillBlankUserAnswer,
     FillBlankQuestion,
 )
@@ -88,7 +89,7 @@ def store_fill_question(data: list):
     for pk, info in res.items():
         list_question.append(info["FillBlankQuestion"])
         list_question_mngt.append(
-            QuizManagement(
+            QuestionManagement(
                 order=info["order"],
                 question_type=QUESTION_TYPE_FILL,
                 fill_blank_question=info["FillBlankQuestion"],
@@ -100,41 +101,41 @@ def store_fill_question(data: list):
     return list_question_mngt
 
 
-def delete_fill_question(quiz_mngt: QuizManagement):
-    if quiz_mngt and quiz_mngt.fill_blank_question:
-        quiz_mngt.fill_blank_question.delete()
-        quiz_mngt.delete()
+def delete_fill_question(question_mngt: QuestionManagement):
+    if question_mngt and question_mngt.fill_blank_question:
+        question_mngt.fill_blank_question.delete()
+        question_mngt.delete()
 
 
-def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
-    fill_quiz = QuizManagement.objects.filter(
+def user_correct_question_fill(quiz: Quiz, user, created) -> List:
+    fill_question = quiz.question_mngt.filter(
         Q(
             question_type=QUESTION_TYPE_FILL,
             fill_blank_question__isnull=False,
-            course_id=course_id,
-            lesson_id=lesson_id,
         )
-        & ~Q(fill_blank_question__hidden_words=[])
-        & ~Q(fill_blank_question__hidden_words__isnull=True)
+        & ~Q(
+            Q(fill_blank_question__hidden_words=[])
+            | Q(fill_blank_question__hidden_words__isnull=True)
+        )
     )
-    if not fill_quiz:
+    if not fill_question:
         return []
 
     user_fill_answers = FillBlankUserAnswer.objects.filter(
         Q(
             created=created,
             user=user,
-            quiz__in=fill_quiz,
+            question__in=fill_question,
         )
     )
 
     res = []
     for answer in user_fill_answers:
-        fill_question = answer.quiz.fill_blank_question
+        question = answer.question.fill_blank_question
         correct = 0
         user_answer = answer.words or []
         user_answer_copy = user_answer.copy()
-        hidden_words = get_list_hidden(fill_question.hidden_words)
+        hidden_words = get_list_hidden(question.hidden_words)
         hidden_words_values = [w["word"] for w in hidden_words]
         for word in hidden_words_values:
             if not user_answer_copy:
@@ -145,7 +146,7 @@ def user_correct_quiz_fill(user, course_id, lesson_id, created) -> List:
 
         res.append(
             {
-                "quiz_id": str(answer.quiz_id),
+                "question_id": str(answer.question_id),
                 "user_answer": user_answer,
                 "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
                 "correct": correct,

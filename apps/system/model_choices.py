@@ -57,11 +57,13 @@ models = {
 
 
 import_db_model = {
-    "contenttypes.contenttype": ContentType,
-    "auth.permission": Permission,
+    # "contenttypes.contenttype": ContentType,
+    # "auth.permission": Permission,
 
     "users.user": User,
     "users.userdatabackup": UserDataBackUp,
+    "users.usertracking": UserTracking,
+    "users.devicetracking": DeviceTracking,
     # "admin.logentry": LogEntry,
 
     "configuration.configuration": Configuration,
@@ -107,17 +109,17 @@ import_db_model = {
 
     "sessions.session": Session,
 
-    "quiz.choicesquizchoicename": ChoicesQuizChoiceName,
-    "quiz.choicesquizanswer": ChoicesQuizAnswer,
-    "quiz.choicesquizquestion": ChoicesQuizQuestion,
-    "quiz.choicesquizuseranswer": ChoicesQuizUserAnswer,
-    "quiz.matchcolumncontent": MatchColumnContent,
-    "quiz.matchcolumnmatchanswer": MatchColumnMatchAnswer,
-    "quiz.matchcolumnquestion": MatchColumnQuestion,
-    "quiz.matchcolumnuseranswer": MatchColumnUserAnswer,
-    "quiz.fillblankquestion": FillBlankQuestion,
-    "quiz.fillblankuseranswer": FillBlankUserAnswer,
-    "quiz.quizmanagement": QuizManagement,
+    # "quiz.choicesquizchoicename": ChoiceName,
+    # "quiz.choicesquizanswer": ChoicesAnswer,
+    # "quiz.choicesquizquestion": ChoicesQuestion,
+    # "quiz.choicesquizuseranswer": ChoicesQuestionUserAnswer,
+    # "quiz.matchcolumncontent": MatchColumnContent,
+    # "quiz.matchcolumnmatchanswer": MatchColumnMatchAnswer,
+    # "quiz.matchcolumnquestion": MatchColumnQuestion,
+    # "quiz.matchcolumnuseranswer": MatchColumnUserAnswer,
+    # "quiz.fillblankquestion": FillBlankQuestion,
+    # "quiz.fillblankuseranswer": FillBlankUserAnswer,
+    # "quiz.quizmanagement": QuestionManagement,
 
 
     # "classes.class": Class,
