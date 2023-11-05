@@ -34,14 +34,18 @@ from apps.core.utils import get_now
 
 
 def add_quiz(data: Dict):
-    questions = data.pop("questions")
-    quiz_location = data.pop("quiz_location")
-    course_id = data.pop("course_id")
-    quiz = Quiz.objects.create(**data)
-    quiz.question_mngt.set(questions)
+    name = data.get("name")
+    quiz = Quiz.objects.create(name=name)
+    return quiz
+
+
+def assign_quiz(data: Dict):
+    quiz_location = data.get("quiz_location")
+    course_id = data.get("course_id")
 
     if not quiz_location:
-        return quiz
+        return {}
+
     course = Course.objects.get(pk=course_id)
     lessons = list(course.lessons.all())
     for lesson in lessons:
@@ -52,13 +56,17 @@ def add_quiz(data: Dict):
                 break
 
     Lesson.objects.bulk_update(lessons, fields=["quiz_location"])
-    return quiz
+    return {}
 
 
-def store_question(data: Dict):
-    choices_ques_mngt = store_choices_question(data.get("choices_question", []))
-    match_ques_mngt = store_match_question(data.get("match_question", []))
-    fill_ques_mngt = store_fill_question(data.get("fill_blank_question", []))
+def store_question(data: List):
+    choices_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_CHOICES]
+    match_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_MATCH]
+    fill_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_FILL]
+
+    choices_ques_mngt = store_choices_question(choices_ques)
+    match_ques_mngt = store_match_question(match_ques)
+    fill_ques_mngt = store_fill_question(fill_ques)
 
     all_obj = choices_ques_mngt + match_ques_mngt + fill_ques_mngt
     if all_obj:
@@ -92,6 +100,7 @@ def edit_question(data: Dict):
     ]
 
     delete_question(list_ques_id)
+    # TODO Need edit line below
     new_question = edit_question(data)
     return new_question
 
@@ -169,9 +178,9 @@ def quiz_statistic(quiz_id, user, created):
 
     total_question = choices_question["total"] + len(valid_match_question) + len(valid_fill_question)
     total_correct = (
-        choices_question["correct"]
-        + len([1 for question in valid_match_question if question["correct"] == question["total"]])
-        + len([1 for question in valid_fill_question if question["correct"] == question["total"]])
+            choices_question["correct"]
+            + len([1 for question in valid_match_question if question["correct"] == question["total"]])
+            + len([1 for question in valid_fill_question if question["correct"] == question["total"]])
     )
 
     res["mark"] = round(100 * total_correct / total_question, 0)

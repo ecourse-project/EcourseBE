@@ -2,6 +2,7 @@ import datetime
 
 from reportlab.lib.units import inch, toLength
 from django.http import FileResponse
+from django.db.models import Prefetch
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -14,23 +15,38 @@ from apps.quiz.api.serializers import (
 )
 from apps.quiz.services.services import (
     add_quiz,
+    assign_quiz,
     store_question,
-    delete_question,
-    edit_question,
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
 )
 from apps.quiz.services.queryset_services import get_question_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
+from apps.quiz.services.services import delete_question
 from apps.quiz.certificate.templates import add_info_certificate
+from apps.quiz.models import Quiz
 from apps.courses.models import CourseManagement, QuizManagement, Course
 from apps.core.utils import get_now
 from apps.users_auth.authentication import ManagerPermission
 
 
+class QuizAssignment(APIView):
+    permission_classes = (ManagerPermission,)
+
+    def post(self, request, *args, **kwargs):
+        assign_quiz(request.data)
+        return Response(data={})
+
+
 class AddQuizView(APIView):
     permission_classes = (ManagerPermission,)
+
+    def get(self, request, *args, **kwargs):
+        list_quiz = Quiz.objects.prefetch_related(
+            Prefetch("question_mngt", queryset=get_question_queryset())
+        )
+        return Response(data=QuizSerializer(list_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):
         quiz = add_quiz(request.data)
@@ -45,12 +61,21 @@ class QuestionView(APIView):
         return Response(data=QuestionManagementSerializer(qs, many=True).data)
 
     def patch(self, request, *args, **kwargs):
-        new_quiz = edit_question(request.data)
-        return Response(data=QuestionManagementSerializer(new_quiz, many=True).data)
+        quiz_id = request.data.get("quiz_id")
+        question_data = request.data.get("question")
+        old_question_id = question_data.pop("id")
+        new_question = store_question([question_data])
+        quiz = Quiz.objects.get(pk=quiz_id)
+        quiz.question_mngt.set(new_question)
+        delete_question(old_question_id)
+        return Response(data=QuizSerializer(quiz).data)
 
     def post(self, request, *args, **kwargs):
-        quiz = store_question(request.data)
-        return Response(data=QuestionManagementSerializer(quiz, many=True).data)
+        quiz_id = request.data.get("quiz_id")
+        question = store_question([request.data.get("question")])
+        quiz = Quiz.objects.get(pk=quiz_id)
+        quiz.question_mngt.set(question)
+        return Response(data=QuizSerializer(quiz).data)
 
     def delete(self, request, *args, **kwargs):
         delete_question(request.data)

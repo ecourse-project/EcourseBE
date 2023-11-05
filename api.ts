@@ -422,6 +422,7 @@ export interface MatchQuestion {
   first_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
   second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
   correct_answer?: Array<Array<string>>;
+  question_type: QuestionTypeEnum;
 }
 
 export interface FillBlankQuestion {
@@ -430,6 +431,7 @@ export interface FillBlankQuestion {
   time_limit?: number,
   content: string;
   hidden_words?: Array<{id: number, word: string, hidden: boolean}>;
+  question_type: QuestionTypeEnum;
 }
 
 export interface ChoicesQuestion {
@@ -439,6 +441,7 @@ export interface ChoicesQuestion {
   content: string;
   content_type?: ContentTypeEnum;
   choices: Array<{choice?: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
+  question_type: QuestionTypeEnum;
 }
 
 export interface Question {
@@ -471,11 +474,8 @@ export interface QuizResultArgs {
   user_answers: UserAnswersArgs[];
 }
 
-export interface AddQuizArgs {
-  id: string;
+export interface AssignQuizArgs {
   course_id: string;
-  name?: string;
-  questions?: string[];
   quiz_location: Array<{
     lesson_id: string,
     quiz?: Array<{
@@ -486,10 +486,13 @@ export interface AddQuizArgs {
   }>
 }
 
+export interface CreateQuizArgs {
+  name: string;
+}
+
 export interface QuestionArgs {
-  choices_question: Array<ChoicesQuestion>;
-  match_question: Array<MatchQuestion>;
-  fill_blank_question: Array<FillBlankQuestion>;
+  quiz_id: string;
+  question: ChoicesQuestion | MatchQuestion | FillBlankQuestion;
 }
 
 export interface ChoicesQuestionAnswer {
@@ -662,7 +665,9 @@ export const apiURL = {
   editQuestion: () => `api/quiz/question/`,
   deleteQuestion: () => `api/quiz/question/`,
   listQuestion: () => `api/quiz/question/`,
-  addQuiz: () => `api/quiz/`,
+  createQuiz: () => `api/quiz/`,
+  listQuiz: () =>  `api/quiz/`,
+  assignQuiz: () =>   `api/quiz/assign`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
   quizStartTime: (course_id, lesson_id, is_start) => `api/quiz/start-time/?course_id=${course_id}&lesson_id=${lesson_id}&is_start=${is_start}`,
@@ -879,11 +884,11 @@ class CourseService {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
   }
 
-  static createQuestion(params: QuestionArgs): Promise<Question[]> {
+  static createQuestion(params: QuestionArgs): Promise<Quiz> {
     return apiClient.post(apiURL.createQuestion(), params);
   }
 
-  static editQuestion(params: QuestionArgs): Promise<Question[]> {
+  static editQuestion(params: QuestionArgs): Promise<Quiz> {
     return apiClient.patch(apiURL.editQuestion(), params);
   }
 
@@ -895,8 +900,16 @@ class CourseService {
     return apiClient.get(apiURL.listQuestion());
   }
 
-  static addQuiz(args: AddQuizArgs): Promise<Quiz> {
-    return apiClient.post(apiURL.addQuiz(), args);
+  static createQuiz(args: CreateQuizArgs): Promise<Quiz> {
+    return apiClient.post(apiURL.createQuiz(), args);
+  }
+
+  static listQuiz(): Promise<Quiz[]> {
+    return apiClient.get(apiURL.listQuiz());
+  }
+
+  static assignQuiz(args: AssignQuizArgs): Promise<{}> {
+    return apiClient.post(apiURL.assignQuiz(), args);
   }
 
   static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
