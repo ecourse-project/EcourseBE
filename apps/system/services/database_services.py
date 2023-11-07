@@ -2,6 +2,8 @@ from typing import Dict
 import json
 
 from django.contrib.auth.models import Permission, ContentType
+from django.apps import apps
+from django.core import serializers
 
 from apps.system.model_choices import import_db_model
 from apps.users.models import User
@@ -113,3 +115,13 @@ def import_database(json_file):
     for key, model in choices.items():
         dict_data = handle_data(data, key, model)
         store_model_data(dict_data, model)
+
+
+def get_all_data():
+    all_models = apps.get_models()
+    all_data = []
+    for model in all_models:
+        data = model.objects.all()
+        serialized_data = serializers.serialize("json", data)
+        all_data.extend(json.loads(serialized_data))
+    return all_data

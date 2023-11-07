@@ -19,3 +19,5 @@ class SystemConfig(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     fe_dir_name = models.CharField(max_length=50, default="EcourseFE")
     be_dir_name = models.CharField(max_length=50, default="EcourseBE")
+    data_file_name = models.CharField(max_length=100, default="exported_data.json")
+

@@ -4,10 +4,13 @@ PASSWORD_RESET_EMAIL_MESSAGE = "A request has been received to reset the passwor
 
 
 MANAGER = "MANAGER"
+TEACHER = "TEACHER"
 STUDENT = "STUDENT"
+
 
 ROLE_CHOICES = [
     (MANAGER, MANAGER),
+    (TEACHER, TEACHER),
     (STUDENT, STUDENT),
 ]
 

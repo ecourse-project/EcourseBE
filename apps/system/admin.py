@@ -1,7 +1,9 @@
 import os
+import json
 
 from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponse
 
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
@@ -9,6 +11,7 @@ from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 from apps.system.models import Storage, SystemConfig
 from apps.system.services.dir_management import get_folder_size
 from apps.system.choices import MEDIA, SOURCE_FE, SOURCE_BE
+from apps.system.services.database_services import get_all_data
 
 
 @admin.register(Storage)
@@ -53,16 +56,29 @@ class StorageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
 
 @admin.register(SystemConfig)
-class SystemConfigAdmin(admin.ModelAdmin):
+class SystemConfigAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     list_display = (
         'id',
         'fe_dir_name',
         'be_dir_name',
+        'data_file_name',
     )
     list_editable = (
         'fe_dir_name',
         'be_dir_name',
+        'data_file_name',
     )
+
+    @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
+    def Export_data(self, request):
+        data = get_all_data()
+        filename = SystemConfig.objects.first().data_file_name
+        if not filename.lower().endswith(".json"):
+            filename += ".json"
+
+        response = HttpResponse(json.dumps(data), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response
 
     def has_add_permission(self, request):
         return False

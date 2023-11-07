@@ -15,6 +15,7 @@ from apps.settings.models import *
 from apps.upload.models import *
 from apps.users.models import *
 from apps.comments.models import *
+from apps.system.models import *
 
 
 models = {
@@ -108,6 +109,9 @@ import_db_model = {
     "rating.rating": Rating,
 
     "sessions.session": Session,
+
+    "system.systemconfig": SystemConfig,
+    "system.storage": Storage,
 
     # "quiz.choicesquizchoicename": ChoiceName,
     # "quiz.choicesquizanswer": ChoicesAnswer,

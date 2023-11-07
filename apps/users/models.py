@@ -13,6 +13,11 @@ class User(AbstractUser):
     username = models.CharField(max_length=10, default="ecourse")
     first_name = None
     last_name = None
+    is_staff = models.BooleanField(
+        verbose_name="Admin Permission",
+        default=False,
+        help_text="Designates whether the user can log into this admin site.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['username']

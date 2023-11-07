@@ -3,6 +3,7 @@ from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
 from apps.users.models import *
+from apps.users.choices import MANAGER
 from apps.core.utils import id_generator
 from apps.core.general.backup import change_user_role
 
@@ -48,26 +49,49 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "last_login",
         "date_joined",
     )
+    fields = [
+        "email",
+        "full_name",
+        "avatar",
+        "phone",
+        "role",
+        "first_login",
+        "last_login",
+        "date_joined",
+        "ip_addresses",
+        "unverified_ip_addresses",
+        "other_data",
+        "is_superuser",
+        "is_staff",
+        "is_active",
+        "is_testing_user",
+        "user_permissions",
+    ]
+
     filter_horizontal = ("user_permissions",)
     readonly_fields = ("first_login", "last_login", "date_joined")
 
     def get_fields(self, request, obj=None):
+        user = request.user
         fields = super(UserAdmin, self).get_fields(request, obj)
-        removed_fields = ["groups"]
-        if not request.user.is_superuser:
-            removed_fields.extend(
-                ["user_permissions", "is_staff", "is_superuser", "other_data", "username", "password"]
-            )
+
+        removed_fields = []
+        if not user.is_superuser:
+            removed_fields.extend(["is_superuser", "other_data"])
+            if not user.role == MANAGER:
+                removed_fields.extend(["user_permissions", "is_staff", "role", "is_testing_user"])
+
         for field in removed_fields:
-            fields.remove(field)
+            if field in fields:
+                fields.remove(field)
         return fields
 
     def get_queryset(self, request):
         qs = Q(is_testing_user=True)
         if not request.user.is_superuser:
-            qs |= Q(
-                Q(is_superuser=True),
-            )
+            qs |= Q(is_superuser=True)
+            if not request.user.role == MANAGER:
+                qs |= Q(role=MANAGER) | Q(email="admin@admin.com")
         return super(UserAdmin, self).get_queryset(request).filter(~qs)
 
     def save_model(self, request, obj, form, change):
