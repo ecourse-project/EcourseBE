@@ -2,26 +2,39 @@ from django.contrib import admin
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 
+from apps.users.models import User
 from apps.classes.models import Class, ClassRequest, ClassManagement
-from apps.classes.services.admin import join_class_single_request
+from apps.classes.services.admin import join_class_single_request, AdminClassPermissons
 from apps.classes.services.admin_action import accept, deny
-from apps.courses.models import LessonManagement, CourseDocumentManagement, VideoManagement
+from apps.courses.models import (
+    Lesson,
+    LessonManagement,
+    CourseDocumentManagement,
+    VideoManagement,
+    CourseTopic,
+)
 from apps.courses.forms import CourseForm
 from apps.core.general.init_data import UserDataManagementService
+from apps.core.general.admin_site import get_admin_attrs
 
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
-    list_filter = ("name", "topic")
-    search_fields = (
-        "name",
-    )
-    list_display = (
-        "name",
-        "topic",
-        "id",
-    )
-    readonly_fields = ("is_selling", "price")
+    def get_fields(self, request, obj=None):
+        return get_admin_attrs(request, "Class", "fields")
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "Class", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "Class", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "Class", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "Class", "list_display")
+
     filter_horizontal = ("lessons",)
     form = CourseForm
     change_form_template = "admin_button/remove_lesson.html"
@@ -31,20 +44,35 @@ class ClassAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
-    def get_fields(self, request, obj=None):
-        fields = super(ClassAdmin, self).get_fields(request, obj)
-        for field in ["price", "is_selling"]:
-            fields.remove(field)
-        return fields
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
+        filter_condition = AdminClassPermissons(request.user).user_condition()
+        form.base_fields['topic'].queryset = CourseTopic.objects.filter(filter_condition)
+        form.base_fields['lessons_remove'].queryset = Lesson.objects.filter(filter_condition)
+        return form
 
-    def save_model(self, request, obj, form, change):
-        if not Class.objects.filter(id=obj.id).first():
-            obj.course_of_class = True
-        obj.save()
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        filter_condition = AdminClassPermissons(request.user).user_condition()
+        filter_condition &= Q(removed=False)
+        if db_field.name == "lessons":
+            kwargs["queryset"] = Lesson.objects.filter(filter_condition)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     def get_queryset(self, request):
-        qs = super(ClassAdmin, self).get_queryset(request).prefetch_related("lessons").select_related('topic')
-        return qs.filter(course_of_class=True)
+        filter_condition = AdminClassPermissons(request.user).get_filter_condition()
+        return (
+            super(ClassAdmin, self)
+            .get_queryset(request)
+            .prefetch_related("lessons")
+            .select_related('topic', 'author')
+            .filter(filter_condition)
+        )
+
+    def save_model(self, request, obj, form, change):
+        if not Class.objects.filter(id=obj.id).exists():
+            obj.course_of_class = True
+            obj.author = request.user
+        obj.save()
 
     def save_related(self, request, form, formsets, change):
         instance = form.instance
@@ -74,33 +102,40 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(ClassRequest)
 class ClassRequestAdmin(admin.ModelAdmin):
-    list_filter = (
-        "class_request__name",
-    )
-    search_fields = (
-        "user__email",
-        "user__full_name",
-        "class_request__name",
-    )
-    list_display = (
-        "user",
-        "name",
-        "class_request",
-        "date_request",
-        "accepted",
-    )
     actions = (accept, deny)
+
+    def get_fields(self, request, obj=None):
+        return get_admin_attrs(request, "ClassRequest", "fields")
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "ClassRequest", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "ClassRequest", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "ClassRequest", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "ClassRequest", "list_display")
 
     def name(self, obj):
         return obj.user.full_name if obj.user else ""
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(ClassRequestAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['class_request'].queryset = Class.objects.filter(course_of_class=True)
+        filter_condition = AdminClassPermissons(request.user).get_filter_condition()
+        form.base_fields['class_request'].queryset = Class.objects.filter(filter_condition)
         return form
 
     def get_queryset(self, request):
-        return super(ClassRequestAdmin, self).get_queryset(request).select_related("user", "class_request")
+        filter_condition = AdminClassPermissons(request.user).get_filter_condition("class_request")
+        return (
+            super(ClassRequestAdmin, self)
+            .get_queryset(request)
+            .select_related("user", "class_request")
+            .filter(filter_condition)
+        )
 
     def save_model(self, request, obj, form, change):
         obj.save()
@@ -123,46 +158,41 @@ class ClassRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ClassManagement)
 class ClassManagementAdmin(admin.ModelAdmin):
-    list_filter = ("course", "user_in_class")
-    search_fields = (
-        "user__email",
-        "course__name",
-        "sale_status",
-    )
-    list_display = (
-        "user",
-        "course",
-        "progress",
-        "mark",
-        "is_done_quiz",
-        "user_in_class",
-    )
-    readonly_fields = ("progress", "status", "sale_status", "views")
-
-    def get_queryset(self, request):
-        qs = super(ClassManagementAdmin, self).get_queryset(request).select_related("user", "course")
-        return qs.filter(course__course_of_class=True)
-
     def get_fields(self, request, obj=None):
-        fields = super(ClassManagementAdmin, self).get_fields(request, obj)
-        remove_fields = ["is_favorite", "sale_status"]
-        if not request.user.is_superuser:
-            remove_fields.extend(["views"])
-        for field in remove_fields:
-            fields.remove(field)
-        return fields
+        return get_admin_attrs(request, "ClassManagement", "fields")
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "ClassManagement", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "ClassManagement", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "ClassManagement", "search_fields")
 
     def get_list_display(self, request):
-        list_display = super(ClassManagementAdmin, self).get_list_display(request)
-        if request.user.is_superuser:
-            list_display = tuple(list(list_display) + ["views"])
-            return list_display
-        return list_display
+        return get_admin_attrs(request, "ClassManagement", "list_display")
+
+    def get_queryset(self, request):
+        filter_condition = AdminClassPermissons(request.user).get_filter_condition("course")
+        return (
+            super(ClassManagementAdmin, self)
+            .get_queryset(request)
+            .select_related("user", "course")
+            .filter(filter_condition)
+            .order_by("course")
+        )
 
     def has_delete_permission(self, request, obj=None):
         if obj and ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True):
             return False
         # if ClassRequest.objects.filter(user=obj.user, class_request=obj.course, accepted=True)
         return True
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "ClassManagement", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "ClassManagement", "has_change_permission")
 
 

@@ -49,7 +49,7 @@ class AddQuizView(APIView):
         return Response(data=QuizSerializer(list_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):
-        quiz = add_quiz(request.data)
+        quiz = add_quiz(request.data, request.user)
         return Response(data=QuizSerializer(quiz).data)
 
 

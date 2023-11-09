@@ -11,6 +11,7 @@ from apps.upload.models import UploadImage, UploadFile, UploadVideo
 
 class CourseTopic(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
@@ -22,6 +23,7 @@ class CourseTopic(TimeStampedModel):
 
 class CourseDocument(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     topic = models.ForeignKey(CourseTopic, related_name="course_docs", on_delete=models.SET_NULL, null=True, blank=True)
@@ -37,6 +39,7 @@ class CourseDocument(TimeStampedModel):
 
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
     videos = models.ManyToManyField(UploadVideo, blank=True)
@@ -69,6 +72,7 @@ class LessonsRemoved(Lesson):
 
 class Course(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(CourseTopic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

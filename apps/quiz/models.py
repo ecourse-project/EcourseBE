@@ -212,6 +212,7 @@ class Quiz(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=300, null=True, blank=True)
     question_mngt = models.ManyToManyField(QuestionManagement, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.name)

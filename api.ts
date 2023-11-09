@@ -60,8 +60,9 @@ export interface OVerifyToken {
 // ===========================================Users===========================================
 
 export enum RoleEnum {
-  MANAGER='MANAGER',
-  STUDENT='STUDENT',
+  MANAGER = 'MANAGER',
+  TEACHER = 'TEACHER',
+  STUDENT = 'STUDENT',
 }
 
 export interface User {
@@ -272,6 +273,7 @@ export interface Course {
   request_status?: RequestStatus;
   course_of_class?: boolean;
   test: boolean;
+  author?: string;
 }
 
 // ===========================================Classes===========================================
@@ -442,6 +444,7 @@ export interface ChoicesQuestion {
   content_type?: ContentTypeEnum;
   choices: Array<{choice?: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
   question_type: QuestionTypeEnum;
+  correct_answer: string;
 }
 
 export interface Question {
@@ -819,7 +822,9 @@ class CourseService {
     return apiClient.post(apiURL.calculatePrice(), params);
   }
 
-  static getListCourses(): Promise<{id: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>}[]> {
+  static getListCourses(): Promise<{
+    id: string, author?: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>
+  }[]> {
     return apiClient.get(apiURL.getListCourses());
   }
 

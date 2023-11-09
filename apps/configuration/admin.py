@@ -40,4 +40,5 @@ class ConfigurationAdmin(admin.ModelAdmin):
 class PersonalInfoAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = (
         "id",
+        "payment_info",
     )

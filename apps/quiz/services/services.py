@@ -33,9 +33,9 @@ from apps.courses.models import Course, Lesson
 from apps.core.utils import get_now
 
 
-def add_quiz(data: Dict):
+def add_quiz(data: Dict, user):
     name = data.get("name")
-    quiz = Quiz.objects.create(name=name)
+    quiz = Quiz.objects.create(name=name, author=user)
     return quiz
 
 

@@ -17,7 +17,7 @@ class ClassesService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
             )
-        ).select_related('topic', 'thumbnail').filter(course_of_class=True)
+        ).select_related('topic', 'thumbnail', 'author').filter(course_of_class=True)
 
     def get_classes_by_topic(self, topic):
         if topic.strip():

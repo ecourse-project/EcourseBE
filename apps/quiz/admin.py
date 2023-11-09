@@ -3,24 +3,12 @@ from django.utils.html import format_html
 from django.conf import settings
 
 
-from apps.core.utils import get_summary_content
-from apps.quiz.models import (
-    ChoiceName,
-    ChoicesAnswer,
-    ChoicesQuestion,
-    MatchColumnContent,
-    MatchColumnMatchAnswer,
-    MatchColumnQuestion,
-    FillBlankQuestion,
-    MatchColumnUserAnswer,
-    ChoicesQuestionUserAnswer,
-    FillBlankUserAnswer,
-    QuestionManagement,
-    Quiz,
-)
+from apps.core.general.admin_site import get_admin_attrs
+from apps.quiz.models import *
 from apps.quiz.forms import FillBlankQuestionForm
 from apps.quiz.services.fill_blank_services import split_content, get_final_content
 from apps.quiz.services.queryset_services import get_user_choice_answer_queryset
+from apps.quiz.services.admin import AdminQuizPermissons
 from apps.quiz.enums import ANSWER_TYPE_TEXT, ANSWER_TYPE_IMAGE
 
 
@@ -249,7 +237,26 @@ class QuestionManagementAdmin(admin.ModelAdmin):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        'name',
-    )
+    def get_fields(self, request, obj=None):
+        return get_admin_attrs(request, "Quiz", "fields")
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "Quiz", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "Quiz", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "Quiz", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "Quiz", "list_display")
+
+    def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(QuizAdmin, self)
+            .get_queryset(request)
+            .select_related('author')
+            .filter(filter_condition)
+        )

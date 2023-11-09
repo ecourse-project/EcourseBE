@@ -10,6 +10,7 @@ from apps.documents.enums import STATUSES, AVAILABLE
 
 class DocumentTopic(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
@@ -21,6 +22,7 @@ class DocumentTopic(models.Model):
 
 class Document(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     topic = models.ForeignKey(DocumentTopic, null=True, blank=True, related_name="docs", on_delete=models.SET_NULL)

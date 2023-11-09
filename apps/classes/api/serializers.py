@@ -5,7 +5,7 @@ from apps.classes.models import Class, ClassManagement
 from apps.classes.services.services import ClassRequestService
 from apps.classes.enums import ACCEPTED
 from apps.upload.api.serializers import UploadImageSerializer
-from apps.users.choices import MANAGER
+from apps.users.choices import MANAGER, TEACHER
 
 
 class ClassSerializer(CourseSerializer):
@@ -76,6 +76,7 @@ class ClassManagementSerializer(serializers.ModelSerializer):
 
 class ListClassSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Class
@@ -85,4 +86,11 @@ class ListClassSerializer(serializers.ModelSerializer):
             "course_of_class",
             "thumbnail",
             "test",
+            "author",
         )
+
+    def get_author(self, obj):
+        if obj.author and obj.author.role == TEACHER:
+            return obj.author.full_name
+        return ""
+

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.users.choices import TEACHER
 from apps.core.utils import get_summary_content, create_serializer_class
 from apps.courses.models import Course, Lesson, CourseTopic, CourseDocument, CourseManagement
 from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer, UploadVideoSerializer
@@ -50,11 +51,13 @@ class CourseSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     lessons = LessonSerializer(many=True)
     topic = TopicSerializer()
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = (
             "id",
+            "author",
             "modified",
             "name",
             "topic",
@@ -66,6 +69,11 @@ class CourseSerializer(serializers.ModelSerializer):
             "thumbnail",
             "test",
         )
+
+    def get_author(self, obj):
+        if obj.author and obj.author.role == TEACHER:
+            return obj.author.full_name
+        return ""
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -129,11 +137,13 @@ class CourseManagementSerializer(serializers.ModelSerializer):
 class ListCourseSerializer(serializers.ModelSerializer):
     thumbnail = UploadImageSerializer()
     topic = TopicSerializer()
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = (
             "id",
+            "author",
             "modified",
             "name",
             "topic",
@@ -143,6 +153,11 @@ class ListCourseSerializer(serializers.ModelSerializer):
             "thumbnail",
             "test",
         )
+
+    def get_author(self, obj):
+        if obj.author and obj.author.role == TEACHER:
+            return obj.author.full_name
+        return ""
 
 
 class ListCourseManagementSerializer(serializers.ModelSerializer):
@@ -177,15 +192,22 @@ class ListCourseManagementSerializer(serializers.ModelSerializer):
 class AllCourseSerializer(serializers.ModelSerializer):
     lesson_serializer = create_serializer_class(Lesson, ["id", "name"])
     lessons = lesson_serializer(many=True)
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = (
             "id",
+            "author",
             "name",
             "course_of_class",
             "lessons",
         )
+
+    def get_author(self, obj):
+        if obj.author and obj.author.role == TEACHER:
+            return obj.author.full_name
+        return ""
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

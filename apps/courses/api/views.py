@@ -55,7 +55,6 @@ class AllCourseListView(generics.ListAPIView):
             Course.objects.only('id', 'name', 'course_of_class')
             .filter(
                 Q(Q(course_of_class=True) | Q(course_of_class=False, is_selling=True))
-                & Q(test=False)  # TODO: Maybe include all course with test=True
             )
             .prefetch_related(
                 Prefetch("lessons", queryset=Lesson.objects.only("id", "name"))

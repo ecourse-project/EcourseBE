@@ -37,7 +37,6 @@ course = [
 from apps.courses.models import Course, CourseDocument, Lesson, CourseTopic
 
 
-
 class UploadCourseServices:
     def create_course_data(self, courses: list):
         courses_lessons = [self.prepare_course_data(course) for course in courses]
