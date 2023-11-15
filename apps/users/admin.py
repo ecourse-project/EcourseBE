@@ -6,6 +6,7 @@ from apps.users.models import *
 from apps.users.choices import MANAGER
 from apps.core.utils import id_generator
 from apps.core.general.backup import change_user_role
+from apps.core.general.admin_site import get_admin_attrs
 
 
 @admin.register(UserDataBackUp)
@@ -41,58 +42,28 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
-    search_fields = ("email", "full_name", "phone")
-    list_display = (
-        "email",
-        "full_name",
-        "phone",
-        "last_login",
-        "date_joined",
-    )
-    fields = [
-        "email",
-        "full_name",
-        "avatar",
-        "phone",
-        "role",
-        "first_login",
-        "last_login",
-        "date_joined",
-        "ip_addresses",
-        "unverified_ip_addresses",
-        "other_data",
-        "is_superuser",
-        "is_staff",
-        "is_active",
-        "is_testing_user",
-        "groups",
-        "user_permissions",
-    ]
-
     filter_horizontal = ("user_permissions",)
-    readonly_fields = ("first_login", "last_login", "date_joined")
 
     def get_fields(self, request, obj=None):
-        user = request.user
-        fields = super(UserAdmin, self).get_fields(request, obj)
+        return get_admin_attrs(request, "User", "fields")
 
-        # removed_fields = []
-        # if not user.is_superuser:
-        #     removed_fields.extend(["is_superuser", "other_data"])
-        #     if not user.role == MANAGER:
-        #         removed_fields.extend(["user_permissions", "is_staff", "role", "is_testing_user"])
-        #
-        # for field in removed_fields:
-        #     if field in fields:
-        #         fields.remove(field)
-        return fields
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "User", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "User", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "User", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "User", "list_display")
 
     def get_queryset(self, request):
         qs = Q(is_testing_user=True)
         if not request.user.is_superuser:
             qs |= Q(is_superuser=True)
-            if not request.user.role == MANAGER:
-                qs |= Q(role=MANAGER)
+            qs |= Q(role=MANAGER) if not request.user.role == MANAGER else Q()
         return (
             super(UserAdmin, self)
             .get_queryset(request)
@@ -102,6 +73,15 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
     def save_model(self, request, obj, form, change):
         obj.save()
         change_user_role(obj, form.initial["role"], obj.role)
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "User", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "User", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "User", "has_delete_permission")
 
 
 @admin.register(UserResetPassword)

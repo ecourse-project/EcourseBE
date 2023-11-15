@@ -237,6 +237,37 @@ ADMIN_DISPLAY = {
             "search_fields": ["author__email", "name"],
             "list_display": ["name", "author", "created", "id"],
         },
+        "User": {
+            "has_add_permission": True,
+            "has_change_permission": True,
+            "has_delete_permission": True,
+            "fields": [
+                "email", "full_name", "avatar", "phone", "role", "first_login", "last_login",
+                "date_joined", "ip_addresses", "unverified_ip_addresses", "other_data", "is_superuser",
+                "is_staff", "is_active", "is_testing_user", "groups", "user_permissions",
+            ],
+            "readonly_fields": [],
+            "list_filter": ["role"],
+            "search_fields": ["email", "full_name", "phone"],
+            "list_display": ["email", "full_name", "phone", "last_login", "date_joined"],
+        },
+        "Configuration": {
+            "has_add_permission": True,
+            "has_change_permission": True,
+            "has_delete_permission": True,
+            "fields": [
+                "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer", "tracking_api", "tracking_ip", "tracking_device",
+                "tracking_views", "use_celery",
+            ],
+            "readonly_fields": [],
+            "list_filter": [],
+            "search_fields": [],
+            "list_display": [
+                "id", "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer"
+            ],
+        },
     },
 
     MANAGER: {
@@ -442,6 +473,35 @@ ADMIN_DISPLAY = {
             "search_fields": ["author__email", "name"],
             "list_display": ["name", "author", "created", "id"],
         },
+        "User": {
+            "has_add_permission": True,
+            "has_change_permission": True,
+            "has_delete_permission": True,
+            "fields": [
+                "email", "full_name", "avatar", "phone", "role", "first_login", "last_login",
+                "date_joined", "is_staff", "is_active", "groups", "user_permissions",
+            ],
+            "readonly_fields": ["date_joined", "first_login", "last_login"],
+            "list_filter": ["role"],
+            "search_fields": ["email", "full_name", "phone"],
+            "list_display": ["email", "full_name", "phone", "last_login", "date_joined"],
+        },
+        "Configuration": {
+            "has_add_permission": False,
+            "has_change_permission": True,
+            "has_delete_permission": False,
+            "fields": [
+                "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer", "use_celery",
+            ],
+            "readonly_fields": [],
+            "list_filter": [],
+            "search_fields": [],
+            "list_display": [
+                "id", "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer"
+            ],
+        },
     },
 
     TEACHER: {
@@ -641,6 +701,32 @@ ADMIN_DISPLAY = {
             "list_filter": [],
             "search_fields": ["name"],
             "list_display": ["name", "created", "id"],
+        },
+        "User": {
+            "has_add_permission": False,
+            "has_change_permission": False,
+            "has_delete_permission": False,
+            "fields": ["email", "full_name", "avatar", "phone", "last_login"],
+            "readonly_fields": ["date_joined", "first_login", "last_login"],
+            "list_filter": [],
+            "search_fields": ["email", "full_name", "phone"],
+            "list_display": ["email", "full_name", "phone", "last_login"],
+        },
+        "Configuration": {
+            "has_add_permission": False,
+            "has_change_permission": False,
+            "has_delete_permission": False,
+            "fields": [
+                "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer", "use_celery",
+            ],
+            "readonly_fields": [],
+            "list_filter": [],
+            "search_fields": [],
+            "list_display": [
+                "id", "document_time_limit", "unlimited_document_time", "ip_address_limit", "unlimited_ip_addresses",
+                "display_mark", "display_correct_answer"
+            ],
         },
     },
 }

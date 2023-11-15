@@ -66,15 +66,17 @@ class QuestionView(APIView):
         old_question_id = question_data.pop("id")
         new_question = store_question([question_data])
         quiz = Quiz.objects.get(pk=quiz_id)
-        quiz.question_mngt.set(new_question)
-        delete_question(old_question_id)
+        if new_question and isinstance(new_question, list):
+            quiz.question_mngt.add(new_question[0])
+            delete_question(old_question_id)
         return Response(data=QuizSerializer(quiz).data)
 
     def post(self, request, *args, **kwargs):
         quiz_id = request.data.get("quiz_id")
         question = store_question([request.data.get("question")])
         quiz = Quiz.objects.get(pk=quiz_id)
-        quiz.question_mngt.set(question)
+        if question and isinstance(question, list):
+            quiz.question_mngt.add(question[0])
         return Response(data=QuizSerializer(quiz).data)
 
     def delete(self, request, *args, **kwargs):
