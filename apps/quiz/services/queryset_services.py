@@ -11,7 +11,7 @@ from apps.quiz.models import (
 
 def get_question_queryset():
     return QuestionManagement.objects.select_related(
-            "choices_question",
+            "choices_question__correct_answer",
             "match_question",
             "fill_blank_question",
         ).prefetch_related(

@@ -39,6 +39,16 @@ def add_quiz(data: Dict, user):
     return quiz
 
 
+def delete_quiz(quiz_id):
+    try:
+        quiz = Quiz.objects.get(pk=quiz_id)
+        questions = quiz.question_mngt.all()
+        delete_question([ques.id for ques in questions])
+        quiz.delete()
+    except Quiz.DoesNotExist:
+        raise QuizDoesNotExistException()
+
+
 def assign_quiz(data: Dict):
     quiz_location = data.get("quiz_location")
     course_id = data.get("course_id")
@@ -76,15 +86,14 @@ def store_question(data: List):
 
 def delete_question(list_question_id: Union[List[Text], Text]):
     list_id = [list_question_id] if isinstance(list_question_id, Text) else list_question_id
-    for item in list_id:
-        question_mngt = QuestionManagement.objects.filter(pk=item).first()
-        if question_mngt:
-            if question_mngt.question_type == QUESTION_TYPE_CHOICES:
-                delete_choices_question(question_mngt)
-            elif question_mngt.question_type == QUESTION_TYPE_MATCH:
-                delete_match_question(question_mngt)
-            elif question_mngt.question_type == QUESTION_TYPE_FILL:
-                delete_fill_question(question_mngt)
+    list_question_mngt = QuestionManagement.objects.filter(pk__in=list_id)
+    for question_mngt in list_question_mngt:
+        if question_mngt.question_type == QUESTION_TYPE_CHOICES:
+            delete_choices_question(question_mngt)
+        elif question_mngt.question_type == QUESTION_TYPE_MATCH:
+            delete_match_question(question_mngt)
+        elif question_mngt.question_type == QUESTION_TYPE_FILL:
+            delete_fill_question(question_mngt)
 
 
 def edit_question(data: Dict):

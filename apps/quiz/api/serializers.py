@@ -8,6 +8,7 @@ from apps.quiz.models import (
     ChoicesQuestion,
     MatchColumnContent,
     MatchColumnQuestion,
+    MatchColumnMatchAnswer,
     FillBlankQuestion,
     QuestionManagement,
 )
@@ -46,6 +47,7 @@ class ChoicesAnswerSerializer(serializers.ModelSerializer):
 class ChoicesQuestionSerializer(serializers.ModelSerializer):
     choices = ChoicesAnswerSerializer(many=True)
     content_image = UploadImageSerializer()
+    correct_answer = ChoiceNameSerializer()
 
     class Meta:
         model = ChoicesQuestion
@@ -54,6 +56,7 @@ class ChoicesQuestionSerializer(serializers.ModelSerializer):
             "content_image",
             "content_type",
             "choices",
+            "correct_answer",
         )
 
     def to_representation(self, instance):
@@ -81,6 +84,7 @@ class MatchColumnContentSerializer(serializers.ModelSerializer):
 class MatchColumnQuestionSerializer(serializers.ModelSerializer):
     first_column = MatchColumnContentSerializer(many=True)
     second_column = MatchColumnContentSerializer(many=True)
+    correct_answer = serializers.SerializerMethodField()
 
     class Meta:
         model = MatchColumnQuestion
@@ -88,7 +92,13 @@ class MatchColumnQuestionSerializer(serializers.ModelSerializer):
             "content",
             "first_column",
             "second_column",
+            "correct_answer",
         )
+
+    # TODO: Need to optimize queries
+    def get_correct_answer(self, obj):
+        answers = obj.matchcolumnmatchanswer_set.filter(first_content__isnull=False, second_content__isnull=False)
+        return [[ans.first_content_id, ans.second_content_id] for ans in answers]
 
 
 class FillBlankQuestionSerializer(serializers.ModelSerializer):

@@ -7,6 +7,8 @@ urlpatterns = [
     path("certi/", views.GenerateCertificate.as_view()),
     path("start-time/", views.QuizStartTimeView.as_view()),
     path("assign/", views.QuizAssignment.as_view()),
+    path("question/delete/", views.DeleteQuestionView.as_view()),
     path("question/", views.QuestionView.as_view()),
-    path("", views.AddQuizView.as_view()),
+    path("delete/", views.DeleteQuizView.as_view()),
+    path("", views.QuizView.as_view()),
 ]

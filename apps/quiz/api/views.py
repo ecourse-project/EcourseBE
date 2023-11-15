@@ -15,15 +15,16 @@ from apps.quiz.api.serializers import (
 )
 from apps.quiz.services.services import (
     add_quiz,
+    delete_quiz,
     assign_quiz,
     store_question,
+    delete_question,
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
 )
 from apps.quiz.services.queryset_services import get_question_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
-from apps.quiz.services.services import delete_question
 from apps.quiz.certificate.templates import add_info_certificate
 from apps.quiz.models import Quiz
 from apps.courses.models import CourseManagement, QuizManagement, Course
@@ -39,7 +40,7 @@ class QuizAssignment(APIView):
         return Response(data={})
 
 
-class AddQuizView(APIView):
+class QuizView(APIView):
     permission_classes = (ManagerPermission,)
 
     def get(self, request, *args, **kwargs):
@@ -51,6 +52,14 @@ class AddQuizView(APIView):
     def post(self, request, *args, **kwargs):
         quiz = add_quiz(request.data, request.user)
         return Response(data=QuizSerializer(quiz).data)
+
+
+class DeleteQuizView(APIView):
+    permission_classes = (ManagerPermission,)
+
+    def get(self, request, *args, **kwargs):
+        delete_quiz(self.request.query_params.get("quiz_id"))
+        return Response(data={})
 
 
 class QuestionView(APIView):
@@ -79,9 +88,12 @@ class QuestionView(APIView):
             quiz.question_mngt.add(question[0])
         return Response(data=QuizSerializer(quiz).data)
 
-    def delete(self, request, *args, **kwargs):
-        list_question_id = request.data.get("list_question_id")
-        delete_question(list_question_id)
+
+class DeleteQuestionView(APIView):
+    permission_classes = (ManagerPermission,)
+
+    def post(self, request, *args, **kwargs):
+        delete_question(request.data)  # list_id
         return Response(data={})
 
 
