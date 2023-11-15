@@ -80,7 +80,8 @@ class QuestionView(APIView):
         return Response(data=QuizSerializer(quiz).data)
 
     def delete(self, request, *args, **kwargs):
-        delete_question(request.data)
+        list_question_id = request.data.get("list_question_id")
+        delete_question(list_question_id)
         return Response(data={})
 
 

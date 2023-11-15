@@ -444,7 +444,7 @@ export interface ChoicesQuestion {
   content_type?: ContentTypeEnum;
   choices: Array<{choice?: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
   question_type: QuestionTypeEnum;
-  correct_answer: string;
+  correct_answer: {id: string, name: string};
 }
 
 export interface Question {
@@ -496,6 +496,10 @@ export interface CreateQuizArgs {
 export interface QuestionArgs {
   quiz_id: string;
   question: ChoicesQuestion | MatchQuestion | FillBlankQuestion;
+}
+
+export interface DeleteQuestionArgs {
+  list_question_id: string[];
 }
 
 export interface ChoicesQuestionAnswer {
@@ -897,8 +901,8 @@ class CourseService {
     return apiClient.patch(apiURL.editQuestion(), params);
   }
 
-  static deleteQuestion(list_question_id: Array<string>): Promise<{}> {
-    return apiClient.delete(apiURL.deleteQuestion(), list_question_id);
+  static deleteQuestion(params: DeleteQuestionArgs): Promise<{}> {
+    return apiClient.delete(apiURL.deleteQuestion(), params);
   }
 
   static listQuestion(): Promise<Question[]> {
