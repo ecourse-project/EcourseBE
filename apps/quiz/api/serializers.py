@@ -96,6 +96,7 @@ class FillBlankQuestionSerializer(serializers.ModelSerializer):
         model = FillBlankQuestion
         fields = (
             "content",
+            "hidden_words",
         )
 
     def to_representation(self, instance):
