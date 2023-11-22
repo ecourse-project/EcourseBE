@@ -71,6 +71,7 @@ def fill_question_processing(data: list):
         pk = str(uuid4())
         instance = FillBlankQuestion(
             pk=pk,
+            title=question.get("title"),
             content=question.get("content"),
             hidden_words=question.get("hidden_words")
         )

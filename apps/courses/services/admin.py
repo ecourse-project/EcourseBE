@@ -48,7 +48,7 @@ class AdminCoursePermissons:
         return (
             self.course_condition() & self.user_condition()
             if not fk_field
-            else self.course_condition_fk(fk_field) and self.user_condition_fk(fk_field)
+            else self.course_condition_fk(fk_field) & self.user_condition_fk(fk_field)
         )
 
 

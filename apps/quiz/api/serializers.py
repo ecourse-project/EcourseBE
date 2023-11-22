@@ -81,10 +81,23 @@ class MatchColumnContentSerializer(serializers.ModelSerializer):
         return match_column_question_data_processing(representation)
 
 
+class MatchColumnMatchAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchColumnMatchAnswer
+        fields = (
+            "first_content",
+            "second_content",
+        )
+
+    def to_representation(self, instance):
+        representation = super(MatchColumnMatchAnswerSerializer, self).to_representation(instance)
+        return [representation["first_content"], representation["second_content"]]
+
+
 class MatchColumnQuestionSerializer(serializers.ModelSerializer):
     first_column = MatchColumnContentSerializer(many=True)
     second_column = MatchColumnContentSerializer(many=True)
-    correct_answer = serializers.SerializerMethodField()
+    correct_answer = MatchColumnMatchAnswerSerializer(source="matchcolumnmatchanswer_set", many=True)
 
     class Meta:
         model = MatchColumnQuestion
@@ -95,22 +108,19 @@ class MatchColumnQuestionSerializer(serializers.ModelSerializer):
             "correct_answer",
         )
 
-    # TODO: Need to optimize queries
-    def get_correct_answer(self, obj):
-        answers = obj.matchcolumnmatchanswer_set.filter(first_content__isnull=False, second_content__isnull=False)
-        return [[ans.first_content_id, ans.second_content_id] for ans in answers]
-
 
 class FillBlankQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = FillBlankQuestion
         fields = (
+            "title",
             "content",
             "hidden_words",
         )
 
     def to_representation(self, instance):
         representation = super(FillBlankQuestionSerializer, self).to_representation(instance)
+        representation["full_content"] = representation["content"]
         representation["content"] = get_final_content(instance.hidden_words, RESPONSE_SUBSTRING)
         return question_data_processing(representation)
 
@@ -147,3 +157,4 @@ class QuizSerializer(serializers.ModelSerializer):
             "name",
             "questions",
         )
+        

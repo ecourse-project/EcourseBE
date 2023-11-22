@@ -1,7 +1,9 @@
+from django.contrib.auth.models import Permission
 from django.contrib import admin
 from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
+from apps.users.forms import UserForm
 from apps.users.models import *
 from apps.users.choices import MANAGER
 from apps.core.utils import id_generator
@@ -42,6 +44,7 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
+    form = UserForm
     filter_horizontal = ("user_permissions",)
 
     def get_fields(self, request, obj=None):
@@ -73,6 +76,14 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
     def save_model(self, request, obj, form, change):
         obj.save()
         change_user_role(obj, form.initial["role"], obj.role)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        instance = form.instance
+        permissions = form.cleaned_data.get("permissions")
+        permission_objs = Permission.objects.filter(codename__in=permissions)
+        if permission_objs:
+            instance.user_permissions.set(permission_objs)
 
     def has_add_permission(self, request):
         return get_admin_attrs(request, "User", "has_add_permission")
@@ -119,6 +130,10 @@ class UserTrackingAdmin(admin.ModelAdmin):
 
 @admin.register(DeviceTracking)
 class DeviceTrackingAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+        "user__full_name",
+    )
     list_display = (
         "user",
         "device",

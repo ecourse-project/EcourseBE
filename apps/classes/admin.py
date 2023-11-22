@@ -35,8 +35,8 @@ class ClassAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         return get_admin_attrs(request, "Class", "list_display")
 
-    filter_horizontal = ("lessons",)
     form = CourseForm
+    filter_horizontal = ("lessons",)
     change_form_template = "admin_button/remove_lesson.html"
 
     def response_change(self, request, obj):
@@ -48,7 +48,7 @@ class ClassAdmin(admin.ModelAdmin):
         form = super(ClassAdmin, self).get_form(request, obj, **kwargs)
         filter_condition = AdminClassPermissons(request.user).user_condition()
         form.base_fields['topic'].queryset = CourseTopic.objects.filter(filter_condition)
-        form.base_fields['lessons_remove'].queryset = Lesson.objects.filter(filter_condition)
+        form.base_fields['lessons_remove'].queryset = Lesson.objects.filter(filter_condition & Q(removed=False))
         return form
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):

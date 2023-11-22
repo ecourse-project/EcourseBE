@@ -47,7 +47,7 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
-    quiz_location = models.JSONField(default=dict())
+    quiz_location = models.JSONField(default=dict(), null=True, blank=True)
 
     # Tracking fields
     removed = models.BooleanField(default=False)

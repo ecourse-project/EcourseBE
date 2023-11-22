@@ -131,6 +131,7 @@ class MatchColumnQuestion(TimeStampedModel):
 # ======================================================Fill Blank======================================================
 class FillBlankQuestion(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.TextField(null=True, blank=True)
     content = models.TextField(null=True, blank=True)
     hidden_words = models.JSONField(null=True, blank=True)
 

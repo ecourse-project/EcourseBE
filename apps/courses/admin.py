@@ -215,7 +215,7 @@ class CourseAdmin(admin.ModelAdmin):
         form = super(CourseAdmin, self).get_form(request, obj, **kwargs)
         filter_condition = AdminCoursePermissons(request.user).user_condition()
         form.base_fields['topic'].queryset = CourseTopic.objects.filter(filter_condition)
-        form.base_fields['lessons_remove'].queryset = Lesson.objects.filter(filter_condition)
+        form.base_fields['lessons_remove'].queryset = Lesson.objects.filter(filter_condition & Q(removed=False))
         return form
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
