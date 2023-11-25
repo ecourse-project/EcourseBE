@@ -82,8 +82,7 @@ class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
         instance = form.instance
         permissions = form.cleaned_data.get("permissions")
         permission_objs = Permission.objects.filter(codename__in=permissions)
-        if permission_objs:
-            instance.user_permissions.set(permission_objs)
+        instance.user_permissions.set(permission_objs)
 
     def has_add_permission(self, request):
         return get_admin_attrs(request, "User", "has_add_permission")
