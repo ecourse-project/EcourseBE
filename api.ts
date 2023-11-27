@@ -485,7 +485,7 @@ export interface AssignQuizArgs {
     lesson_id: string,
     quiz?: Array<{
       id: string,
-      order: number,
+      order: string,
       location: QuizLocationEnum,
     }>
   }>
