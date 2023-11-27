@@ -42,7 +42,7 @@ def get_final_content(hidden_words, substring=ADMIN_DISPLAY_SUBSTRING, res_defau
     if hidden_words:
         return " ".join(
             [
-                w.get("word") if not w.get("hidden")else replace_word(w.get("word"), substring)
+                w.get("word") if not w.get("hidden") else substring  # replace_word(w.get("word"), substring)
                 for w in hidden_words
             ]
         )
@@ -59,7 +59,8 @@ def check_correct(original, word):
     if (
             isinstance(original, str)
             and isinstance(word, str)
-            and remove_punctuation(original).strip().lower() == remove_punctuation(word).strip().lower()
+            and original.lower().strip() == word.lower().strip()
+            # and remove_punctuation(original).strip().lower() == remove_punctuation(word).strip().lower()
     ):
         return True
     return False
