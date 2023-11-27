@@ -147,12 +147,13 @@ def user_correct_question_choices(quiz: Quiz, user, created) -> Dict:
     user_choice_answers_dict = {str(answer.question_id): str(answer.choice_id) for answer in user_choice_answers}
 
     res = {"result": [], "correct": 0, "total": choice_question.count()}
-    for question in choice_question:
-        question_id = str(question.id)
+    for question_mngt in choice_question:
+        question = question_mngt.choices_question
+        question_mngt_id = str(question_mngt.id)
         res["result"].append(
             {
-                "question_id": question_id,
-                "user_answer": user_choice_answers_dict.get(question_id),
+                "question_id": question_mngt_id,
+                "user_answer": user_choice_answers_dict.get(question_mngt_id),
                 "correct_answer": str(question.correct_answer_id) if question.correct_answer else None,
             }
         )

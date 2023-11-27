@@ -133,19 +133,20 @@ def user_correct_question_fill(quiz: Quiz, user, created) -> List:
     user_fill_answers_dict = {str(answer.question_id): answer for answer in user_fill_answers}
 
     res = []
-    for question in fill_question:
-        question_id = str(question.id)
+    for question_mngt in fill_question:
+        question = question_mngt.fill_blank_question
+        question_mngt_id = str(question_mngt.id)
         hidden_words = get_list_hidden(question.hidden_words)
         hidden_words_values = [w["word"] for w in hidden_words]
         info = {
-                "question_id": question_id,
+                "question_id": question_mngt_id,
                 "user_answer": [],
                 "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
                 "correct": 0,
                 "total": len(hidden_words),
         }
 
-        answer = user_fill_answers_dict.get(question_id)
+        answer = user_fill_answers_dict.get(question_mngt_id)
         if answer:
             correct = 0
             user_answer = answer.words or []
