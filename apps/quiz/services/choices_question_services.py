@@ -153,7 +153,7 @@ def user_correct_question_choices(quiz: Quiz, user, created) -> Dict:
             {
                 "question_id": question_id,
                 "user_answer": user_choice_answers_dict.get(question_id),
-                "correct_answer": str(question.correct_answer_id),
+                "correct_answer": str(question.correct_answer_id) if question.correct_answer else None,
             }
         )
     # if not user_choice_answers:
