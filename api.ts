@@ -673,7 +673,7 @@ export const apiURL = {
   createQuiz: () => `api/quiz/`,
   listQuiz: () =>  `api/quiz/`,
   deleteQuiz: (quiz_id) => `api/quiz/delete/?quiz_id=${quiz_id}`,
-  assignQuiz: () =>   `api/quiz/assign`,
+  assignQuiz: () =>   `api/quiz/assign/`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
   quizStartTime: (course_id, lesson_id, quiz_id, is_start) => `api/quiz/start-time/?course_id=${course_id}&lesson_id=${lesson_id}&quiz_id=${quiz_id}&is_start=${is_start}`,
@@ -900,7 +900,7 @@ class CourseService {
     return apiClient.patch(apiURL.editQuestion(), params);
   }
 
-  static deleteQuestion(params: Array<string>): Promise<{}> {
+  static deleteQuestion(params: Array<string>): Promise<any> {
     return apiClient.post(apiURL.deleteQuestion(), params);
   }
 
@@ -916,11 +916,11 @@ class CourseService {
     return apiClient.get(apiURL.listQuiz());
   }
 
-  static assignQuiz(args: AssignQuizArgs): Promise<{}> {
+  static assignQuiz(args: AssignQuizArgs): Promise<any> {
     return apiClient.post(apiURL.assignQuiz(), args);
   }
 
-  static deleteQuiz(quiz_id: string): Promise<{}> {
+  static deleteQuiz(quiz_id: string): Promise<any> {
     return apiClient.get(apiURL.deleteQuiz(quiz_id));
   }
 
