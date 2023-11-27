@@ -128,36 +128,46 @@ def delete_choices_question(question_mngt: QuestionManagement):
 
 
 def user_correct_question_choices(quiz: Quiz, user, created) -> Dict:
-    total_question = quiz.question_mngt.filter(
+    choice_question = quiz.question_mngt.filter(
         Q(
             question_type=QUESTION_TYPE_CHOICES,
             choices_question__isnull=False,
         )
     )
-    if not total_question:
+    if not choice_question:
         return {"result": [], "correct": 0, "total": 0}
 
     user_choice_answers = get_user_choice_answer_queryset().filter(
         Q(
             created=created,
             user=user,
-            question__in=total_question,
+            question__in=choice_question,
         )
     )
+    user_choice_answers_dict = {str(answer.question_id): str(answer.choice_id) for answer in user_choice_answers}
 
-    res = {"result": [], "correct": 0, "total": total_question.count()}
-    if not user_choice_answers:
-        return res
-
-    for answer in user_choice_answers:
-        choices_question = answer.question.choices_question
+    res = {"result": [], "correct": 0, "total": choice_question.count()}
+    for question in choice_question:
+        question_id = str(question.id)
         res["result"].append(
             {
-                "question_id": str(answer.question_id),
-                "user_answer": str(answer.choice_id) if answer.choice else None,
-                "correct_answer": str(choices_question.correct_answer_id) if choices_question.correct_answer else None,
+                "question_id": question_id,
+                "user_answer": user_choice_answers_dict.get(question_id),
+                "correct_answer": str(question.correct_answer_id),
             }
         )
+    # if not user_choice_answers:
+    #     return res
+
+    # for answer in user_choice_answers:
+    #     choices_question = answer.question.choices_question
+    #     res["result"].append(
+    #         {
+    #             "question_id": str(answer.question_id),
+    #             "user_answer": str(answer.choice_id) if answer.choice else None,
+    #             "correct_answer": str(choices_question.correct_answer_id) if choices_question.correct_answer else None,
+    #         }
+    #     )
 
     for result in res["result"]:
         if result["user_answer"] and result["correct_answer"] and result["user_answer"] == result["correct_answer"]:

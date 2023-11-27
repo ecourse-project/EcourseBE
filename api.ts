@@ -73,6 +73,7 @@ export interface User {
   phone?: string;
   role: RoleEnum;
   is_testing_user: boolean;
+  quiz_permission: boolean;
 }
 
 export interface OIsExist {
