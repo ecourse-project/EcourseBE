@@ -130,30 +130,60 @@ def user_correct_question_fill(quiz: Quiz, user, created) -> List:
             question__in=fill_question,
         )
     )
+    user_fill_answers_dict = {str(answer.question_id): answer for answer in user_fill_answers}
 
     res = []
-    for answer in user_fill_answers:
-        question = answer.question.fill_blank_question
-        correct = 0
-        user_answer = answer.words or []
-        user_answer_copy = user_answer.copy()
+    for question in fill_question:
+        question_id = str(question.id)
         hidden_words = get_list_hidden(question.hidden_words)
         hidden_words_values = [w["word"] for w in hidden_words]
-        for word in hidden_words_values:
-            if not user_answer_copy:
-                break
-            if check_correct(word, user_answer_copy[0]):
-                correct += 1
-            user_answer_copy.pop(0)
-
-        res.append(
-            {
-                "question_id": str(answer.question_id),
-                "user_answer": user_answer,
+        info = {
+                "question_id": question_id,
+                "user_answer": [],
                 "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
-                "correct": correct,
+                "correct": 0,
                 "total": len(hidden_words),
-            }
-        )
+        }
+
+        answer = user_fill_answers_dict.get(question_id)
+        if answer:
+            correct = 0
+            user_answer = answer.words or []
+            user_answer_copy = user_answer.copy()
+            for word in hidden_words_values:
+                if not user_answer_copy:
+                    break
+                if check_correct(word, user_answer_copy[0]):
+                    correct += 1
+                user_answer_copy.pop(0)
+
+            info["user_answer"] = user_answer
+            info["correct"] = correct
+
+        res.append(info)
+
+    # for answer in user_fill_answers:
+    #     question = answer.question.fill_blank_question
+    #     correct = 0
+    #     user_answer = answer.words or []
+    #     user_answer_copy = user_answer.copy()
+    #     hidden_words = get_list_hidden(question.hidden_words)
+    #     hidden_words_values = [w["word"] for w in hidden_words]
+    #     for word in hidden_words_values:
+    #         if not user_answer_copy:
+    #             break
+    #         if check_correct(word, user_answer_copy[0]):
+    #             correct += 1
+    #         user_answer_copy.pop(0)
+    #
+    #     res.append(
+    #         {
+    #             "question_id": str(answer.question_id),
+    #             "user_answer": user_answer,
+    #             "correct_answer": [remove_punctuation(w) for w in hidden_words_values],
+    #             "correct": correct,
+    #             "total": len(hidden_words),
+    #         }
+    #     )
 
     return res
