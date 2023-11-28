@@ -54,7 +54,7 @@ def assign_quiz(data: Dict):
     quiz_location = data.get("quiz_location")
     course_id = data.get("course_id")
 
-    if not quiz_location:
+    if quiz_location is None:
         return {}
 
     course = Course.objects.get(pk=course_id)
@@ -62,7 +62,7 @@ def assign_quiz(data: Dict):
     for lesson in lessons:
         lesson_id = str(lesson.pk)
         for obj in quiz_location:
-            if lesson_id == obj["lesson_id"] and obj.get("quiz"):
+            if lesson_id == obj["lesson_id"]:
                 lesson.quiz_location = obj["quiz"]
                 break
 
@@ -189,7 +189,12 @@ def quiz_statistic(quiz_id, user, created):
     total_question = choices_question["total"] + len(valid_match_question) + len(valid_fill_question)
     total_correct = (
             choices_question["correct"]
-            + len([1 for question in valid_match_question if question["correct"] == question["total"]])
+            + len(
+                [
+                    1 for question in valid_match_question
+                    if question["correct"] == question["total"] and len(question["user_answer"]) == question["total"]
+                ]
+            )
             + len([1 for question in valid_fill_question if question["correct"] == question["total"]])
     )
 

@@ -37,7 +37,11 @@ class FillBlankQuestionForm(forms.ModelForm):
                 if self.instance.hidden_words
                 else []
             )
-            self.initial["display_content"] = get_final_content(self.instance.hidden_words, res_default=self.instance.content)
+            self.initial["display_content"] = get_final_content(
+                self.instance.content,
+                self.instance.hidden_words,
+                res_default=self.instance.content
+            )
 
 
 # class QuizManagementForm(forms.ModelForm):

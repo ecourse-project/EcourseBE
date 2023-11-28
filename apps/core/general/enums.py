@@ -427,7 +427,7 @@ ADMIN_DISPLAY = {
             "readonly_fields": [],
             "list_filter": ["course", "is_done_quiz"],
             "search_fields": ["course__name", "course__author__email", "user__email"],
-            "list_display": ["user", "quiz_author", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
+            "list_display": ["user", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz", "quiz_author"],
         },
         "UploadVideo": {
             "has_add_permission": True,
@@ -723,7 +723,7 @@ ADMIN_DISPLAY = {
             ],
             "list_filter": ["course", "is_done_quiz"],
             "search_fields": ["course__name", "course__author__email", "user__email"],
-            "list_display": ["user", "quiz_author", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
+            "list_display": ["user", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz", "quiz_author"],
         },
         "UploadVideo": {
             "has_add_permission": True,

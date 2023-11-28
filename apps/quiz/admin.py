@@ -221,7 +221,7 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
         return get_summary_content(obj.content, 15)
 
     def display_content(self, obj):
-        content = get_final_content(obj.hidden_words, res_default=obj.content)
+        content = get_final_content(obj.content, obj.hidden_words, res_default=obj.content)
         return get_summary_content(content, 15)
 
     def get_readonly_fields(self, request, obj=None):
