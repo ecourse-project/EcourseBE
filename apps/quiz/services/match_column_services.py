@@ -8,7 +8,8 @@ from apps.quiz.enums import (
     ANSWER_TYPE_IMAGE,
 )
 from apps.quiz.models import (
-    QuizManagement,
+    Quiz,
+    QuestionManagement,
     MatchColumnMatchAnswer,
     MatchColumnUserAnswer,
     MatchColumnQuestion,
@@ -17,7 +18,7 @@ from apps.quiz.models import (
 from apps.quiz.enums import QUESTION_TYPE_MATCH
 
 
-def match_column_quiz_data_processing(obj: Dict):
+def match_column_question_data_processing(obj: Dict):
     obj_clone = obj.copy()
 
     if obj_clone.get("content_type") == ANSWER_TYPE_TEXT:
@@ -31,35 +32,36 @@ def match_column_quiz_data_processing(obj: Dict):
     return obj_clone
 
 
-def init_match_question_column(column_data: List[Dict]) -> List[MatchColumnContent]:
+def init_match_question_column(column_data: List[Dict], user) -> List[MatchColumnContent]:
     return [
         MatchColumnContent(
             pk=obj.get("id"),
             content_type=obj.get("content_type", ANSWER_TYPE_TEXT),
             content_text=obj.get("content"),
+            author=user,
         )
         for obj in column_data
     ]
 
 
-def match_question_processing(data: list):
+def match_question_processing(data: list, user):
     res = {}
     for question in data:
         pk = str(uuid4())
-        instance = MatchColumnQuestion(pk=pk, content=question.get("content"))
+        instance = MatchColumnQuestion(pk=pk, content=question.get("content"), author=user)
         res[pk] = {
             "order": question.get("order", 1),
             "time_limit": question.get("time_limit", 10),
             "MatchColumnQuestion": instance,
-            "first_column": init_match_question_column(question.get("first_column")),
-            "second_column": init_match_question_column(question.get("second_column")),
+            "first_column": init_match_question_column(question.get("first_column"), user),
+            "second_column": init_match_question_column(question.get("second_column"), user),
             "correct_answer": question.get("correct_answer"),
         }
     return res
 
 
-def store_match_question(data: list):
-    res = match_question_processing(data)
+def store_match_question(data: list, user):
+    res = match_question_processing(data, user)
     list_question = []
     list_content_instance = []
     list_question_mngt = []
@@ -74,12 +76,13 @@ def store_match_question(data: list):
                     match_question_id=pk,
                     first_content_id=answers[0],
                     second_content_id=answers[1],
+                    author=user,
                 )
-                for answers in info["correct_answer"]
+                for answers in info["correct_answer"] if answers[0] and answers[1]
             ]
         )
         list_question_mngt.append(
-            QuizManagement(
+            QuestionManagement(
                 order=info["order"],
                 question_type=QUESTION_TYPE_MATCH,
                 match_question=info["MatchColumnQuestion"],
@@ -100,9 +103,9 @@ def store_match_question(data: list):
     return list_question_mngt
 
 
-def delete_match_question(quiz_mngt: QuizManagement):
-    if quiz_mngt and quiz_mngt.match_question:
-        question = quiz_mngt.match_question
+def delete_match_question(question_mngt: QuestionManagement):
+    if question_mngt and question_mngt.match_question:
+        question = question_mngt.match_question
         first_column = question.first_column.all()
         second_column = question.second_column.all()
         [content.content_image.delete() for content in first_column if content.content_image]
@@ -110,13 +113,13 @@ def delete_match_question(quiz_mngt: QuizManagement):
         first_column.delete()
         second_column.delete()
         question.delete()
-        quiz_mngt.delete()
+        question_mngt.delete()
 
 
 def get_total_correct_match(match_question: MatchColumnQuestion, first_column, second_column) -> List[List[str]]:
     res = []
     match_answers = MatchColumnMatchAnswer.objects.filter(
-        # match_question=match_question,
+        match_question=match_question,
         first_content__isnull=False,
         second_content__isnull=False,
     )
@@ -131,42 +134,40 @@ def get_total_correct_match(match_question: MatchColumnQuestion, first_column, s
     return res
 
 
-def user_correct_quiz_match(user, course_id, lesson_id, created) -> List[Dict]:
-    match_quiz = QuizManagement.objects.filter(
+def user_correct_question_match(quiz: Quiz, user, created) -> List[Dict]:
+    match_question = quiz.question_mngt.filter(
         Q(
             question_type=QUESTION_TYPE_MATCH,
             match_question__isnull=False,
-            course_id=course_id,
-            lesson_id=lesson_id,
         )
     )
-    if not match_quiz:
+    if not match_question:
         return []
 
     user_match_answers = MatchColumnUserAnswer.objects.filter(
         Q(
             created=created,
             user=user,
-            quiz__in=match_quiz,
+            question__in=match_question,
         )
     )
 
     res = []
-    for quiz in match_quiz:
-        quiz_info = {"quiz_id": str(quiz.id), "user_answer": [], "correct_answer": [], "correct": 0, "total": 0}
+    for question in match_question:
+        question_info = {"question_id": str(question.id), "user_answer": [], "correct_answer": [], "correct": 0, "total": 0}
         correct_match = get_total_correct_match(
-            quiz.match_question,
-            quiz.match_question.first_column.all(),
-            quiz.match_question.second_column.all(),
+            question.match_question,
+            question.match_question.first_column.all(),
+            question.match_question.second_column.all(),
         )
-        quiz_info["correct_answer"].extend(correct_match)
-        quiz_info["total"] = len(correct_match)
-        for answer in user_match_answers.filter(quiz_id=quiz.id):
+        question_info["correct_answer"].extend(correct_match)
+        question_info["total"] = len(correct_match)
+        for answer in user_match_answers.filter(question_id=question.id):
             first = str(answer.first_content_id)
             second = str(answer.second_content_id)
-            quiz_info["user_answer"].append([first, second])
+            question_info["user_answer"].append([first, second])
             if [first, second] in correct_match or [second, first] in correct_match:
-                quiz_info["correct"] += 1
-        res.append(quiz_info)
+                question_info["correct"] += 1
+        res.append(question_info)
 
     return res

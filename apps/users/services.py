@@ -21,7 +21,7 @@ def get_active_users():
     return User.objects.filter(
         is_active=True,
         is_superuser=False,
-        is_staff=False,
+        # is_staff=False,
         last_login__isnull=False,
     )
 

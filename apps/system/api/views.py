@@ -1,6 +1,7 @@
 import json
 import subprocess
 
+from django.db.models import Q
 from django.conf import settings
 from django.db.models import Sum
 from django.shortcuts import render
@@ -17,6 +18,7 @@ from apps.system.services.dir_management import apply_dir_action, get_folder_siz
 from apps.core.system import get_tree_str
 from apps.core.utils import create_serializer_class
 from apps.upload.models import UploadImage, UploadFile, UploadVideo
+from apps.quiz.models import *
 
 
 class SystemInfoView(APIView):
@@ -168,3 +170,23 @@ class ExecuteCommand(APIView):
         }
 
         return render(request, "data/system/command.html", context)
+
+
+def search_page(request):
+    return render(request, 'system/search_bar.html')
+
+
+def search_results(request):
+    name = request.GET.get('name', '')
+    author = request.GET.get('author', '')
+
+    qs = Q()
+    qs &= Q(name__icontains=name) if name else Q()
+    qs &= Q(Q(author__full_name__icontains=author) | Q(author__email__icontains=author))
+
+    results = Quiz.objects.filter(qs)
+
+    context = {
+        'results': results,
+    }
+    return render(request, 'system/search_results.html', context)

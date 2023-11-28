@@ -5,6 +5,7 @@ from model_utils.models import TimeStampedModel
 
 from apps.core.utils import get_summary_content
 from apps.upload.enums import video_ext_list
+from apps.users.models import User
 
 
 class UploadFile(TimeStampedModel):
@@ -16,6 +17,7 @@ class UploadFile(TimeStampedModel):
     ip_address = models.CharField(max_length=128, null=True, blank=True)
     file_embedded_url = models.TextField(null=True, blank=True)
     use_embedded_url = models.BooleanField(default=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ["file_name"]
@@ -39,6 +41,7 @@ class UploadImage(TimeStampedModel):
     image_type = models.CharField(max_length=10, null=True, blank=True)
     ip_address = models.CharField(max_length=128, null=True, blank=True)
     is_avatar = models.BooleanField(default=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ["image_name"]
@@ -80,6 +83,7 @@ class UploadVideo(TimeStampedModel):
     duration = models.PositiveIntegerField(null=True, blank=True, help_text="Seconds")
     use_embedded_url = models.BooleanField(default=False)
     ip_address = models.CharField(max_length=128, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ["order"]
@@ -99,6 +103,7 @@ class UploadFolder(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True)
     folder_path = models.FileField(max_length=255, null=True, blank=True, help_text="(.zip file)")
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.name)

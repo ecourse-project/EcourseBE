@@ -1,10 +1,14 @@
+from django.contrib.auth.models import Permission
 from django.contrib import admin
 from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
+from apps.users.forms import UserForm
 from apps.users.models import *
+from apps.users.choices import MANAGER
 from apps.core.utils import id_generator
 from apps.core.general.backup import change_user_role
+from apps.core.general.admin_site import get_admin_attrs
 
 
 @admin.register(UserDataBackUp)
@@ -40,39 +44,54 @@ class TestUserAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin, DynamicArrayMixin):
-    search_fields = ("email", "full_name", "phone")
-    list_display = (
-        "email",
-        "full_name",
-        "phone",
-        "last_login",
-        "date_joined",
-    )
+    form = UserForm
     filter_horizontal = ("user_permissions",)
-    readonly_fields = ("first_login", "last_login", "date_joined")
 
     def get_fields(self, request, obj=None):
-        fields = super(UserAdmin, self).get_fields(request, obj)
-        removed_fields = ["groups"]
-        if not request.user.is_superuser:
-            removed_fields.extend(
-                ["user_permissions", "is_staff", "is_superuser", "other_data", "username", "password"]
-            )
-        for field in removed_fields:
-            fields.remove(field)
-        return fields
+        return get_admin_attrs(request, "User", "fields")
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "User", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "User", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "User", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "User", "list_display")
 
     def get_queryset(self, request):
         qs = Q(is_testing_user=True)
         if not request.user.is_superuser:
-            qs |= Q(
-                Q(is_superuser=True),
-            )
-        return super(UserAdmin, self).get_queryset(request).filter(~qs)
+            qs |= Q(is_superuser=True)
+            qs |= Q(role=MANAGER) if not request.user.role == MANAGER else Q()
+        return (
+            super(UserAdmin, self)
+            .get_queryset(request)
+            .filter(~qs)
+        )
 
     def save_model(self, request, obj, form, change):
         obj.save()
         change_user_role(obj, form.initial["role"], obj.role)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        instance = form.instance
+        permissions = form.cleaned_data.get("permissions")
+        permission_objs = Permission.objects.filter(codename__in=permissions)
+        instance.user_permissions.set(permission_objs)
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "User", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "User", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "User", "has_delete_permission")
 
 
 @admin.register(UserResetPassword)
@@ -110,6 +129,10 @@ class UserTrackingAdmin(admin.ModelAdmin):
 
 @admin.register(DeviceTracking)
 class DeviceTrackingAdmin(admin.ModelAdmin):
+    search_fields = (
+        "user__email",
+        "user__full_name",
+    )
     list_display = (
         "user",
         "device",

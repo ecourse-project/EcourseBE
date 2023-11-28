@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 
 from apps.users_auth.services import update_user_ip
 from apps.users_auth.choices import LIMIT_IP_PATH
-from apps.users.choices import MANAGER
+from apps.users.choices import MANAGER, TEACHER
 from apps.users.services import tracking_user_api
 
 from apps.configuration.models import Configuration
@@ -28,6 +28,21 @@ class CustomIsAuthenticated(BasePermission):
                 user.save(update_fields=["ip_addresses", "unverified_ip_addresses"])
 
         return has_permission
+
+
+class QuizPermission(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            True if (
+                not request.user.is_anonymous
+                and request.user.is_authenticated
+                and (
+                        request.user.role == MANAGER
+                        or (request.user.role == TEACHER and request.user.quiz_permission)
+                )
+            )
+            else False
+        )
 
 
 class ManagerPermission(BasePermission):

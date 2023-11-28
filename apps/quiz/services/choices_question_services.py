@@ -8,10 +8,11 @@ from apps.quiz.enums import (
     ANSWER_TYPE_IMAGE,
 )
 from apps.quiz.models import (
-    QuizManagement,
-    ChoicesQuizChoiceName,
-    ChoicesQuizQuestion,
-    ChoicesQuizAnswer,
+    Quiz,
+    QuestionManagement,
+    ChoiceName,
+    ChoicesQuestion,
+    ChoicesAnswer,
 )
 from apps.quiz.services.queryset_services import get_user_choice_answer_queryset
 from apps.quiz.enums import QUESTION_TYPE_CHOICES
@@ -31,7 +32,7 @@ def transform_choices_text_to_dict(choices_text: str):
     return choices_dict
 
 
-def choices_quiz_data_processing(obj: Dict):
+def choices_question_data_processing(obj: Dict):
     obj_clone = obj.copy()
 
     # Custom content
@@ -65,100 +66,110 @@ def choices_quiz_data_processing(obj: Dict):
     return obj_clone
 
 
-def choices_question_processing(data: list):
+def choices_question_processing(data: list, user):
     res = {}
     for question in data:
         pk = str(uuid4())
-        correct_answer, _ = ChoicesQuizChoiceName.objects.get_or_create(name=question.get("correct_answer"))
-        instance = ChoicesQuizQuestion(pk=pk, content_text=question.get("content"), correct_answer=correct_answer)
+        correct_answer, _ = ChoiceName.objects.get_or_create(name=question.get("correct_answer"))
+        instance = ChoicesQuestion(pk=pk, content_text=question.get("content"), correct_answer=correct_answer, author=user)
         res[pk] = {
             "order": question.get("order", 1),
             "time_limit": question.get("time_limit", 10),
-            "ChoicesQuizQuestion": instance,
-            "ChoicesQuizAnswer": []
+            "ChoicesQuestion": instance,
+            "ChoicesAnswer": []
         }
         for obj in question.get("choices", []):
-            choice, _ = ChoicesQuizChoiceName.objects.get_or_create(name=obj.get("choice_name", ""))
-            res[pk]["ChoicesQuizAnswer"].append(
-                ChoicesQuizAnswer(
+            choice, _ = ChoiceName.objects.get_or_create(name=obj.get("choice_name", ""))
+            res[pk]["ChoicesAnswer"].append(
+                ChoicesAnswer(
                     answer_text=obj.get("answer"),
                     answer_type=obj.get("answer_type", ANSWER_TYPE_TEXT),
                     choice_name=choice,
+                    author=user,
                 )
             )
     return res
 
 
-def store_choices_question(data: list):
-    res = choices_question_processing(data)
+def store_choices_question(data: list, user):
+    res = choices_question_processing(data, user)
     list_question = []
     list_answer_instance = []
     list_question_mngt = []
     for _, info in res.items():
-        list_question.append(info["ChoicesQuizQuestion"])
-        list_answer_instance.extend(info["ChoicesQuizAnswer"])
+        list_question.append(info["ChoicesQuestion"])
+        list_answer_instance.extend(info["ChoicesAnswer"])
         list_question_mngt.append(
-            QuizManagement(
+            QuestionManagement(
                 order=info["order"],
                 question_type=QUESTION_TYPE_CHOICES,
-                choices_question=info["ChoicesQuizQuestion"],
+                choices_question=info["ChoicesQuestion"],
                 time_limit=info["time_limit"],
             )
         )
 
     if list_answer_instance:
-        ChoicesQuizAnswer.objects.bulk_create(list_answer_instance)
+        ChoicesAnswer.objects.bulk_create(list_answer_instance)
     if list_question:
-        ChoicesQuizQuestion.objects.bulk_create(list_question)
-        [obj.choices.set(res[str(obj.pk)]["ChoicesQuizAnswer"]) for obj in list_question]
+        ChoicesQuestion.objects.bulk_create(list_question)
+        [obj.choices.set(res[str(obj.pk)]["ChoicesAnswer"]) for obj in list_question]
 
     return list_question_mngt
 
 
-def delete_choices_question(quiz_mngt: QuizManagement):
-    if quiz_mngt and quiz_mngt.choices_question:
-        question = quiz_mngt.choices_question
+def delete_choices_question(question_mngt: QuestionManagement):
+    if question_mngt and question_mngt.choices_question:
+        question = question_mngt.choices_question
         choices = question.choices.all()
         for choice in choices:
             choice.answer_image.delete() if choice.answer_image else ""
         choices.delete()
         question.delete()
-        quiz_mngt.delete()
+        question_mngt.delete()
 
 
-def user_correct_quiz_choices(user, course_id, lesson_id, created) -> Dict:
-    total_quiz = QuizManagement.objects.filter(
+def user_correct_question_choices(quiz: Quiz, user, created) -> Dict:
+    choice_question = quiz.question_mngt.filter(
         Q(
             question_type=QUESTION_TYPE_CHOICES,
             choices_question__isnull=False,
-            course_id=course_id,
-            lesson_id=lesson_id,
         )
     )
-    if not total_quiz:
+    if not choice_question:
         return {"result": [], "correct": 0, "total": 0}
 
     user_choice_answers = get_user_choice_answer_queryset().filter(
         Q(
             created=created,
             user=user,
-            quiz__in=total_quiz,
+            question__in=choice_question,
         )
     )
+    user_choice_answers_dict = {str(answer.question_id): str(answer.choice_id) for answer in user_choice_answers}
 
-    res = {"result": [], "correct": 0, "total": total_quiz.count()}
-    if not user_choice_answers:
-        return res
-
-    for answer in user_choice_answers:
-        choices_question = answer.quiz.choices_question
+    res = {"result": [], "correct": 0, "total": choice_question.count()}
+    for question_mngt in choice_question:
+        question = question_mngt.choices_question
+        question_mngt_id = str(question_mngt.id)
         res["result"].append(
             {
-                "quiz_id": str(answer.quiz_id),
-                "user_answer": str(answer.choice_id) if answer.choice else None,
-                "correct_answer": str(choices_question.correct_answer_id) if choices_question.correct_answer else None,
+                "question_id": question_mngt_id,
+                "user_answer": user_choice_answers_dict.get(question_mngt_id),
+                "correct_answer": str(question.correct_answer_id) if question.correct_answer else None,
             }
         )
+    # if not user_choice_answers:
+    #     return res
+
+    # for answer in user_choice_answers:
+    #     choices_question = answer.question.choices_question
+    #     res["result"].append(
+    #         {
+    #             "question_id": str(answer.question_id),
+    #             "user_answer": str(answer.choice_id) if answer.choice else None,
+    #             "correct_answer": str(choices_question.correct_answer_id) if choices_question.correct_answer else None,
+    #         }
+    #     )
 
     for result in res["result"]:
         if result["user_answer"] and result["correct_answer"] and result["user_answer"] == result["correct_answer"]:

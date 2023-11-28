@@ -11,8 +11,8 @@ from apps.upload.models import UploadImage
 from apps.core.utils import get_summary_content
 
 
-# =====================================================Choices quiz=====================================================
-class ChoicesQuizChoiceName(models.Model):
+# =====================================================Choices question=====================================================
+class ChoiceName(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=10)
 
@@ -21,16 +21,17 @@ class ChoicesQuizChoiceName(models.Model):
 
     class Meta:
         ordering = ["name"]
-        verbose_name_plural = "Choices quiz - Choice name"
+        verbose_name_plural = "Choices - Choice name"
         verbose_name = "Choice"
 
 
-class ChoicesQuizAnswer(models.Model):
+class ChoicesAnswer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     answer_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
     answer_text = models.TextField(null=True, blank=True)
     answer_image = models.ForeignKey(UploadImage, on_delete=models.SET_NULL, null=True, blank=True)
-    choice_name = models.ForeignKey(ChoicesQuizChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    choice_name = models.ForeignKey(ChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         answer = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.answer_text or 'None', 9)}"
@@ -40,17 +41,18 @@ class ChoicesQuizAnswer(models.Model):
 
     class Meta:
         ordering = ["choice_name__name"]
-        verbose_name_plural = "Choices quiz - Answers"
+        verbose_name_plural = "Choices - Answers"
         verbose_name = "Answer"
 
 
-class ChoicesQuizQuestion(TimeStampedModel):
+class ChoicesQuestion(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content_text = models.TextField(null=True, blank=True)
     content_image = models.ForeignKey(UploadImage, on_delete=models.SET_NULL, null=True, blank=True)
     content_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
-    choices = models.ManyToManyField(ChoicesQuizAnswer, blank=True)
-    correct_answer = models.ForeignKey(ChoicesQuizChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    choices = models.ManyToManyField(ChoicesAnswer, blank=True)
+    correct_answer = models.ForeignKey(ChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         content = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.content_text or 'None', 9)}"
@@ -60,7 +62,7 @@ class ChoicesQuizQuestion(TimeStampedModel):
 
     class Meta:
         ordering = ["created"]
-        verbose_name_plural = "Choices quiz - Questions"
+        verbose_name_plural = "Choices - Questions"
         verbose_name = "Question"
 
 
@@ -70,6 +72,7 @@ class MatchColumnContent(models.Model):
     content_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
     content_text = models.TextField(null=True, blank=True)
     content_image = models.ForeignKey(UploadImage, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         content = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.content_text or 'None', 9)}"
@@ -88,6 +91,7 @@ class MatchColumnMatchAnswer(models.Model):
     match_question = models.ForeignKey("MatchColumnQuestion", on_delete=models.CASCADE, null=True, blank=True)
     first_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_first")
     second_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_second")
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         first = second = 'None'
@@ -116,8 +120,9 @@ class MatchColumnMatchAnswer(models.Model):
 class MatchColumnQuestion(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(null=True, blank=True)
-    first_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_first_col")
-    second_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_second_col")
+    first_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_first_col", blank=True)
+    second_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_second_col", blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.content or 'None', 10)
@@ -131,8 +136,10 @@ class MatchColumnQuestion(TimeStampedModel):
 # ======================================================Fill Blank======================================================
 class FillBlankQuestion(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.TextField(null=True, blank=True)
     content = models.TextField(null=True, blank=True)
     hidden_words = models.JSONField(null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.content or 'None', 10)
@@ -142,39 +149,31 @@ class FillBlankQuestion(TimeStampedModel):
         verbose_name = "Question"
 
 
-# ======================================================Management======================================================
-class QuizManagement(TimeStampedModel):
+# =======================================================Answers========================================================
+class ChoicesQuestionUserAnswer(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=500, null=True, blank=True)
-    order = models.PositiveSmallIntegerField(default=1)
-    question_type = models.CharField(max_length=20, choices=enums.QUESTION_TYPES, null=True, blank=True)
-    choices_question = models.ForeignKey(ChoicesQuizQuestion, on_delete=models.SET_NULL, null=True, blank=True)
-    match_question = models.ForeignKey(MatchColumnQuestion, on_delete=models.SET_NULL, null=True, blank=True)
-    fill_blank_question = models.ForeignKey(FillBlankQuestion, on_delete=models.SET_NULL, null=True, blank=True)
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
-    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True, blank=True)
-    time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(seconds)")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey("QuestionManagement", on_delete=models.CASCADE)
+    choice = models.ForeignKey(ChoiceName, on_delete=models.SET_NULL, null=True, blank=True, help_text="(Choices answer)")
 
     def __str__(self):
-        return f"{self.order} - {self.course.name if self.course else 'None'}"
+        return str(self.question.pk)
 
     class Meta:
-        ordering = ["course", "order"]
-        verbose_name_plural = "Management"
-        verbose_name = "Quiz"
+        ordering = ["created"]
+        verbose_name_plural = "Choices - User answers"
+        verbose_name = "Answer"
 
 
-# =======================================================Answers========================================================
 class MatchColumnUserAnswer(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(QuizManagement, on_delete=models.CASCADE)
+    question = models.ForeignKey("QuestionManagement", on_delete=models.CASCADE)
     first_content = models.ForeignKey(MatchColumnContent, on_delete=models.SET_NULL, null=True, blank=True, related_name="match_user_answer_from_first")
     second_content = models.ForeignKey(MatchColumnContent, on_delete=models.SET_NULL, null=True, blank=True, related_name="match_user_answer_from_second")
 
     def __str__(self):
-        course_name = self.quiz.course.name if self.quiz and self.quiz.course else "None"
-        return f"{self.user.full_name} - {get_summary_content(course_name)}"
+        return str(self.question.pk)
 
     class Meta:
         ordering = ["created"]
@@ -182,33 +181,50 @@ class MatchColumnUserAnswer(TimeStampedModel):
         verbose_name = "Answer"
 
 
-class ChoicesQuizUserAnswer(TimeStampedModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(QuizManagement, on_delete=models.CASCADE)
-    choice = models.ForeignKey(ChoicesQuizChoiceName, on_delete=models.SET_NULL, null=True, blank=True, help_text="(Choices quiz answer)")
-
-    def __str__(self):
-        course_name = self.quiz.course.name if self.quiz and self.quiz.course else "None"
-        return f"{self.user.full_name} - {get_summary_content(course_name)}"
-
-    class Meta:
-        ordering = ["created"]
-        verbose_name_plural = "Choices quiz - User answers"
-        verbose_name = "Answer"
-
-
 class FillBlankUserAnswer(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(QuizManagement, on_delete=models.CASCADE)
+    question = models.ForeignKey("QuestionManagement", on_delete=models.CASCADE)
     words = ArrayField(models.CharField(max_length=100), null=True, blank=True)
 
     def __str__(self):
-        course_name = self.quiz.course.name if self.quiz and self.quiz.course else "None"
-        return f"{self.user.full_name} - {get_summary_content(course_name)}"
+        return str(self.question.pk)
 
     class Meta:
         ordering = ["created"]
         verbose_name_plural = "Fill blank - User answers"
         verbose_name = "Answer"
+
+
+# ======================================================Management======================================================
+class QuestionManagement(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.PositiveSmallIntegerField(default=1)
+    question_type = models.CharField(max_length=20, choices=enums.QUESTION_TYPES, null=True, blank=True)
+    choices_question = models.ForeignKey(ChoicesQuestion, on_delete=models.SET_NULL, null=True, blank=True)
+    match_question = models.ForeignKey(MatchColumnQuestion, on_delete=models.SET_NULL, null=True, blank=True)
+    fill_blank_question = models.ForeignKey(FillBlankQuestion, on_delete=models.SET_NULL, null=True, blank=True)
+    time_limit = models.PositiveSmallIntegerField(null=True, blank=True, help_text="(seconds)")
+
+    def __str__(self):
+        return f"{self.question_type} - {str(self.id)}"
+
+    class Meta:
+        ordering = ["order"]
+        verbose_name_plural = "Question - Management"
+        verbose_name = "Question"
+
+
+class Quiz(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=300, null=True, blank=True)
+    question_mngt = models.ManyToManyField(QuestionManagement, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return get_summary_content(self.name)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name_plural = "Quiz"
+        verbose_name = "Quiz"

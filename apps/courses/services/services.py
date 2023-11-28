@@ -1,3 +1,4 @@
+from typing import List, Dict
 from django.db.models import Prefetch, Q
 
 from apps.courses.models import (
@@ -20,7 +21,7 @@ class CourseService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
             )
-        ).select_related('topic', 'thumbnail')
+        ).select_related('topic', 'thumbnail', 'author')
 
     def get_courses_by_topic(self, topic: str):
         if topic.strip():
@@ -37,6 +38,14 @@ class CourseService:
                 id__in=list_id, is_selling=True, course_of_class=False,
             )
         return Course.objects.none()
+
+    @staticmethod
+    def convert_structure(structure: List[Dict]):
+        res = {}
+        for obj in structure:
+            if obj.get("lesson_id") and obj.get("quiz"):
+                res[obj.get("lesson_id")] = obj.get("quiz")
+        return res
 
 
 class CourseManagementService:
