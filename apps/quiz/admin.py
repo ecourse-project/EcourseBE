@@ -14,100 +14,125 @@ from apps.quiz.enums import ANSWER_TYPE_TEXT, ANSWER_TYPE_IMAGE
 
 @admin.register(ChoiceName)
 class ChoiceNameAdmin(admin.ModelAdmin):
-    list_display = (
+    list_display = [
         'name',
         'id',
-    )
+    ]
 
 
 @admin.register(ChoicesAnswer)
 class ChoicesAnswerAdmin(admin.ModelAdmin):
-    list_display = (
-        'answer_text',
-        'answer_type',
-        'choice_name',
-        "id",
-    )
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesAnswer", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "ChoicesAnswer", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "ChoicesAnswer", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "ChoicesAnswer", "list_display")
 
     def get_queryset(self, request):
         filter_condition = AdminQuizPermissons(request.user).user_condition()
         return (
             super(ChoicesAnswerAdmin, self)
             .get_queryset(request)
-            .select_related("answer_image", "choice_name")
+            .select_related("answer_image", "choice_name", "author")
             .filter(filter_condition)
         )
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "ChoicesAnswer", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesAnswer", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesAnswer", "has_delete_permission")
 
 
 @admin.register(ChoicesQuestion)
 class ChoicesQuestionAdmin(admin.ModelAdmin):
-    list_display = (
-        'content_text',
-        'content_image_url',
-        'content_type',
-        'correct_answer',
-        "id",
-    )
+    def content_image_url(self, obj):
+        if obj.content_image and obj.content_image.image_path:
+            url = settings.BASE_URL + obj.content_image.image_path.url
+            return format_html(f'<a href="{url}">{url}</a>')
+        return ""
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesQuestion", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "ChoicesQuestion", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "ChoicesQuestion", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "ChoicesQuestion", "list_display")
 
     def get_queryset(self, request):
         filter_condition = AdminQuizPermissons(request.user).user_condition()
         return (
             super(ChoicesQuestionAdmin, self)
             .get_queryset(request)
-            .select_related("content_image", "correct_answer")
+            .select_related("content_image", "correct_answer", "author")
             .filter(filter_condition)
         )
 
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "ChoicesQuestion", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesQuestion", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "ChoicesQuestion", "has_delete_permission")
+
+
+@admin.register(MatchColumnContent)
+class MatchColumnContentAdmin(admin.ModelAdmin):
     def content_image_url(self, obj):
         if obj.content_image and obj.content_image.image_path:
             url = settings.BASE_URL + obj.content_image.image_path.url
             return format_html(f'<a href="{url}">{url}</a>')
         return ""
 
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnContent", "readonly_fields")
 
-@admin.register(MatchColumnContent)
-class MatchColumnContentAdmin(admin.ModelAdmin):
-    list_display = (
-        'content_text',
-        'content_image_url',
-        'content_type',
-        "id",
-    )
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "MatchColumnContent", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "MatchColumnContent", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "MatchColumnContent", "list_display")
 
     def get_queryset(self, request):
         filter_condition = AdminQuizPermissons(request.user).user_condition()
         return (
             super(MatchColumnContentAdmin, self)
             .get_queryset(request)
-            .select_related("content_image")
+            .select_related("content_image", "author")
             .filter(filter_condition)
         )
 
-    def content_image_url(self, obj):
-        if obj.content_image and obj.content_image.image_path:
-            url = settings.BASE_URL + obj.content_image.image_path.url
-            return format_html(f'<a href="{url}">{url}</a>')
-        return ""
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "MatchColumnContent", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnContent", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnContent", "has_delete_permission")
 
 
 @admin.register(MatchColumnMatchAnswer)
 class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
-    list_display = (
-        'match_question',
-        'first',
-        'second',
-        "id",
-    )
-
-    def get_queryset(self, request):
-        filter_condition = AdminQuizPermissons(request.user).user_condition()
-        return (
-            super(MatchColumnMatchAnswerAdmin, self)
-            .get_queryset(request)
-            .select_related("first_content", "second_content")
-            .filter(filter_condition)
-        )
-
     @staticmethod
     def display_content(input_content):
         if input_content and input_content.content_type == ANSWER_TYPE_TEXT:
@@ -124,32 +149,73 @@ class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
     def second(self, obj):
         return self.display_content(obj.second_content)
 
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "list_display")
+
+    def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(MatchColumnMatchAnswerAdmin, self)
+            .get_queryset(request)
+            .select_related("match_question", "first_content", "second_content", "author")
+            .filter(filter_condition)
+        )
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnMatchAnswer", "has_delete_permission")
+
 
 @admin.register(MatchColumnQuestion)
 class MatchColumnQuestionAdmin(admin.ModelAdmin):
-    list_display = (
-        'content',
-        "id",
-    )
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnQuestion", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "MatchColumnQuestion", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "MatchColumnQuestion", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "MatchColumnQuestion", "list_display")
 
     def get_queryset(self, request):
         filter_condition = AdminQuizPermissons(request.user).user_condition()
         return (
             super(MatchColumnQuestionAdmin, self)
             .get_queryset(request)
+            .select_related("author")
             .filter(filter_condition)
         )
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "MatchColumnQuestion", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnQuestion", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "MatchColumnQuestion", "has_delete_permission")
 
 
 @admin.register(FillBlankQuestion)
 class FillBlankQuestionAdmin(admin.ModelAdmin):
-    list_display = (
-        'original_content',
-        'display_content',
-        "id",
-    )
     form = FillBlankQuestionForm
-    readonly_fields = ("hidden_words",)
 
     def original_content(self, obj):
         return get_summary_content(obj.content, 15)
@@ -157,6 +223,18 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
     def display_content(self, obj):
         content = get_final_content(obj.hidden_words, res_default=obj.content)
         return get_summary_content(content, 15)
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_admin_attrs(request, "FillBlankQuestion", "readonly_fields")
+
+    def get_list_filter(self, request):
+        return get_admin_attrs(request, "FillBlankQuestion", "list_filter")
+
+    def get_search_fields(self, request):
+        return get_admin_attrs(request, "FillBlankQuestion", "search_fields")
+
+    def get_list_display(self, request):
+        return get_admin_attrs(request, "FillBlankQuestion", "list_display")
 
     def save_model(self, request, obj, form, change):
         old_instance = FillBlankQuestion.objects.filter(pk=obj.pk).first()
@@ -175,8 +253,18 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
         return (
             super(FillBlankQuestionAdmin, self)
             .get_queryset(request)
+            .select_related("author")
             .filter(filter_condition)
         )
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "FillBlankQuestion", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "FillBlankQuestion", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "FillBlankQuestion", "has_delete_permission")
 
 
 @admin.register(ChoicesQuestionUserAnswer)
@@ -222,6 +310,7 @@ class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
         return (
             super(MatchColumnUserAnswerAdmin, self)
             .get_queryset(request)
+            .select_related("user", "question", "first_content", "second_content")
             .filter(filter_condition)
         )
 
@@ -256,7 +345,17 @@ class QuestionManagementAdmin(admin.ModelAdmin):
         'match_question',
         'fill_blank_question',
         "time_limit",
+        "author",
     )
+
+    def author(self, obj):
+        if obj.choices_question and obj.choices_question.author:
+            return obj.choices_question.author.email
+        elif obj.match_question and obj.match_question.author:
+            return obj.match_question.author.email
+        elif obj.fill_blank_question and obj.fill_blank_question.author:
+            return obj.fill_blank_question.author.email
+        return "-"
 
     def get_fields(self, request, obj=None):
         fields = super(QuestionManagementAdmin, self).get_fields(request, obj)
@@ -322,3 +421,12 @@ class QuizAdmin(admin.ModelAdmin):
             .select_related('author')
             .filter(filter_condition)
         )
+
+    def has_add_permission(self, request):
+        return get_admin_attrs(request, "Quiz", "has_add_permission")
+
+    def has_change_permission(self, request, obj=None):
+        return get_admin_attrs(request, "Quiz", "has_change_permission")
+
+    def has_delete_permission(self, request, obj=None):
+        return get_admin_attrs(request, "Quiz", "has_delete_permission")

@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django_better_admin_arrayfield.models.fields import ArrayField
 from model_utils.models import TimeStampedModel
 
@@ -95,3 +95,13 @@ class DeviceTracking(TimeStampedModel):
     class Meta:
         verbose_name_plural = "Device tracking"
         verbose_name = "Object"
+
+
+class CustomGroup(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150, unique=True)
+    permissions = ArrayField(models.CharField(max_length=50), null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Permission Groups"
+        verbose_name = "Group"
