@@ -1,14 +1,43 @@
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
+from django.contrib.auth.admin import GroupAdmin
 from django.contrib import admin
 from django.db.models import Q
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
-from apps.users.forms import UserForm
+from apps.users.forms import UserForm, CustomGroupForm
 from apps.users.models import *
 from apps.users.choices import MANAGER
 from apps.core.utils import id_generator
 from apps.core.general.backup import change_user_role
 from apps.core.general.admin_site import get_admin_attrs
+
+
+@admin.register(CustomGroup)
+class CustomGroupAdmin(admin.ModelAdmin, DynamicArrayMixin):
+    list_display = (
+        'name',
+    )
+    form = CustomGroupForm
+
+    def save_model(self, request, obj, form, change):
+        permissions = form.cleaned_data.get("user_permissions")
+        obj.permissions = permissions if permissions else None
+
+        obj.save()
+
+        group, _ = Group.objects.get_or_create(name=obj.name)
+        group.permissions.set(Permission.objects.filter(codename__in=permissions))
+
+    def delete_model(self, request, obj):
+        group_instance = Group.objects.filter(name=obj.name).first()
+        if group_instance:
+            group_instance.delete()
+        obj.delete()
+
+    def delete_queryset(self, request, queryset):
+        list_name = queryset.values_list("name", flat=True)
+        Group.objects.filter(name__in=list_name).delete()
+        queryset.delete()
 
 
 @admin.register(UserDataBackUp)
