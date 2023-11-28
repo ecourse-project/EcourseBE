@@ -121,7 +121,7 @@ class FillBlankQuestionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super(FillBlankQuestionSerializer, self).to_representation(instance)
         representation["full_content"] = representation["content"]
-        representation["content"] = get_final_content(instance.hidden_words, RESPONSE_SUBSTRING)
+        representation["content"] = get_final_content(representation["full_content"], instance.hidden_words, RESPONSE_SUBSTRING)
         return question_data_processing(representation)
 
 

@@ -38,15 +38,27 @@ def replace_word(word, substring):
     return f"{first}{substring}{last}"
 
 
-def get_final_content(hidden_words, substring=ADMIN_DISPLAY_SUBSTRING, res_default=""):
-    if hidden_words:
-        return " ".join(
-            [
-                w.get("word") if not w.get("hidden") else substring  # replace_word(w.get("word"), substring)
-                for w in hidden_words
-            ]
-        )
-    return res_default
+def get_final_content(original_content, hidden_words, substring=ADMIN_DISPLAY_SUBSTRING, res_default=""):
+    res = []
+    content_split = original_content.split()
+    for item in zip(content_split, hidden_words):
+        original = item[0]
+        hidden = item[1]
+        if item[1].get("hidden"):
+            original = original.replace(hidden.get("word"), substring)
+        res.append(original)
+
+    return " ".join(res)
+
+
+    # if hidden_words:
+    #     return " ".join(
+    #         [
+    #             w.get("word") if not w.get("hidden") else substring  # replace_word(w.get("word"), substring)
+    #             for w in hidden_words
+    #         ]
+    #     )
+    # return res_default
 
 
 def get_list_hidden(hidden_words):

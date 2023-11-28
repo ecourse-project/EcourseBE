@@ -73,7 +73,7 @@ class QuestionView(APIView):
         quiz_id = request.data.get("quiz_id")
         question_data = request.data.get("question")
         old_question_id = question_data.pop("id")
-        new_question = store_question([question_data])
+        new_question = store_question([question_data], request.user)
         quiz = Quiz.objects.get(pk=quiz_id)
         if new_question and isinstance(new_question, list):
             quiz.question_mngt.add(new_question[0])
