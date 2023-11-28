@@ -19,6 +19,7 @@ class FillBlankQuestionForm(forms.ModelForm):
     class Meta:
         model = FillBlankQuestion
         fields = (
+            "author",
             "content",
             "display_content",
             "hidden_words",

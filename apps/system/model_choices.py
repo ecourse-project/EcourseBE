@@ -113,17 +113,18 @@ import_db_model = {
     "system.systemconfig": SystemConfig,
     "system.storage": Storage,
 
-    # "quiz.choicesquizchoicename": ChoiceName,
-    # "quiz.choicesquizanswer": ChoicesAnswer,
-    # "quiz.choicesquizquestion": ChoicesQuestion,
-    # "quiz.choicesquizuseranswer": ChoicesQuestionUserAnswer,
+    # "quiz.choicename": ChoiceName,
+    # "quiz.choicesanswer": ChoicesAnswer,
+    # "quiz.choicesquestion": ChoicesQuestion,
+    # "quiz.choicesquestionuseranswer": ChoicesQuestionUserAnswer,
     # "quiz.matchcolumncontent": MatchColumnContent,
     # "quiz.matchcolumnmatchanswer": MatchColumnMatchAnswer,
     # "quiz.matchcolumnquestion": MatchColumnQuestion,
     # "quiz.matchcolumnuseranswer": MatchColumnUserAnswer,
     # "quiz.fillblankquestion": FillBlankQuestion,
     # "quiz.fillblankuseranswer": FillBlankUserAnswer,
-    # "quiz.quizmanagement": QuestionManagement,
+    # "quiz.questionmanagement": QuestionManagement,
+    # "quiz.quiz": Quiz,
 
 
     # "classes.class": Class,
