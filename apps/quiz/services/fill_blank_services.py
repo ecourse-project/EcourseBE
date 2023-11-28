@@ -59,14 +59,14 @@ def check_correct(original, word):
     if (
             isinstance(original, str)
             and isinstance(word, str)
-            and original.lower().strip() == word.lower().strip()
-            # and remove_punctuation(original).strip().lower() == remove_punctuation(word).strip().lower()
+            # and original.lower().strip() == word.lower().strip()
+            and remove_punctuation(original).strip().lower() == remove_punctuation(word).strip().lower()
     ):
         return True
     return False
 
 
-def fill_question_processing(data: list):
+def fill_question_processing(data: list, user):
     res = {}
     for question in data:
         pk = str(uuid4())
@@ -74,7 +74,8 @@ def fill_question_processing(data: list):
             pk=pk,
             title=question.get("title"),
             content=question.get("content"),
-            hidden_words=question.get("hidden_words")
+            hidden_words=question.get("hidden_words"),
+            author=user,
         )
         res[pk] = {
             "order": question.get("order", 1),
@@ -84,8 +85,8 @@ def fill_question_processing(data: list):
     return res
 
 
-def store_fill_question(data: list):
-    res = fill_question_processing(data)
+def store_fill_question(data: list, user):
+    res = fill_question_processing(data, user)
     list_question = []
     list_question_mngt = []
     for pk, info in res.items():

@@ -37,7 +37,7 @@ def get_quiz_queryset():
 
 
 def get_user_choice_answer_queryset(qs=None):
-    res = qs if qs else ChoicesQuestionUserAnswer.objects.all()
+    res = qs if qs is not None else ChoicesQuestionUserAnswer.objects.all()
     return res.select_related(
             "user", "question", "choice",
         ).prefetch_related(

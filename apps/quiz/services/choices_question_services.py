@@ -66,12 +66,12 @@ def choices_question_data_processing(obj: Dict):
     return obj_clone
 
 
-def choices_question_processing(data: list):
+def choices_question_processing(data: list, user):
     res = {}
     for question in data:
         pk = str(uuid4())
         correct_answer, _ = ChoiceName.objects.get_or_create(name=question.get("correct_answer"))
-        instance = ChoicesQuestion(pk=pk, content_text=question.get("content"), correct_answer=correct_answer)
+        instance = ChoicesQuestion(pk=pk, content_text=question.get("content"), correct_answer=correct_answer, author=user)
         res[pk] = {
             "order": question.get("order", 1),
             "time_limit": question.get("time_limit", 10),
@@ -85,13 +85,14 @@ def choices_question_processing(data: list):
                     answer_text=obj.get("answer"),
                     answer_type=obj.get("answer_type", ANSWER_TYPE_TEXT),
                     choice_name=choice,
+                    author=user,
                 )
             )
     return res
 
 
-def store_choices_question(data: list):
-    res = choices_question_processing(data)
+def store_choices_question(data: list, user):
+    res = choices_question_processing(data, user)
     list_question = []
     list_answer_instance = []
     list_question_mngt = []

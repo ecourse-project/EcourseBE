@@ -32,35 +32,36 @@ def match_column_question_data_processing(obj: Dict):
     return obj_clone
 
 
-def init_match_question_column(column_data: List[Dict]) -> List[MatchColumnContent]:
+def init_match_question_column(column_data: List[Dict], user) -> List[MatchColumnContent]:
     return [
         MatchColumnContent(
             pk=obj.get("id"),
             content_type=obj.get("content_type", ANSWER_TYPE_TEXT),
             content_text=obj.get("content"),
+            author=user,
         )
         for obj in column_data
     ]
 
 
-def match_question_processing(data: list):
+def match_question_processing(data: list, user):
     res = {}
     for question in data:
         pk = str(uuid4())
-        instance = MatchColumnQuestion(pk=pk, content=question.get("content"))
+        instance = MatchColumnQuestion(pk=pk, content=question.get("content"), author=user)
         res[pk] = {
             "order": question.get("order", 1),
             "time_limit": question.get("time_limit", 10),
             "MatchColumnQuestion": instance,
-            "first_column": init_match_question_column(question.get("first_column")),
-            "second_column": init_match_question_column(question.get("second_column")),
+            "first_column": init_match_question_column(question.get("first_column"), user),
+            "second_column": init_match_question_column(question.get("second_column"), user),
             "correct_answer": question.get("correct_answer"),
         }
     return res
 
 
-def store_match_question(data: list):
-    res = match_question_processing(data)
+def store_match_question(data: list, user):
+    res = match_question_processing(data, user)
     list_question = []
     list_content_instance = []
     list_question_mngt = []
@@ -75,8 +76,9 @@ def store_match_question(data: list):
                     match_question_id=pk,
                     first_content_id=answers[0],
                     second_content_id=answers[1],
+                    author=user,
                 )
-                for answers in info["correct_answer"]
+                for answers in info["correct_answer"] if answers[0] and answers[1]
             ]
         )
         list_question_mngt.append(

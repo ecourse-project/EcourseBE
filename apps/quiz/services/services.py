@@ -30,6 +30,7 @@ from apps.quiz.services.fill_blank_services import (
 from apps.quiz.exceptions import QuizDoesNotExistException
 from apps.configuration.models import Configuration
 from apps.courses.models import Course, Lesson
+from apps.users.models import User
 from apps.core.utils import get_now
 
 
@@ -69,14 +70,14 @@ def assign_quiz(data: Dict):
     return {}
 
 
-def store_question(data: List):
+def store_question(data: List, user: User):
     choices_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_CHOICES]
     match_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_MATCH]
     fill_ques = [obj for obj in data if obj.get("question_type") == QUESTION_TYPE_FILL]
 
-    choices_ques_mngt = store_choices_question(choices_ques)
-    match_ques_mngt = store_match_question(match_ques)
-    fill_ques_mngt = store_fill_question(fill_ques)
+    choices_ques_mngt = store_choices_question(choices_ques, user)
+    match_ques_mngt = store_match_question(match_ques, user)
+    fill_ques_mngt = store_fill_question(fill_ques, user)
 
     all_obj = choices_ques_mngt + match_ques_mngt + fill_ques_mngt
     if all_obj:

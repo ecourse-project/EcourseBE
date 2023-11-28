@@ -318,7 +318,7 @@ class LessonManagementAdmin(admin.ModelAdmin):
         return get_admin_attrs(request, "LessonManagement", "list_display")
 
     def get_queryset(self, request):
-        filter_condition = AdminCoursePermissons(request.user).get_filter_condition("course")
+        filter_condition = AdminCoursePermissons(request.user).user_condition_fk("course")
         return (
             super(LessonManagementAdmin, self)
             .get_queryset(request)
@@ -353,7 +353,7 @@ class CourseDocumentManagementAdmin(admin.ModelAdmin):
         return get_admin_attrs(request, "CourseDocumentManagement", "list_display")
 
     def get_queryset(self, request):
-        filter_condition = AdminCoursePermissons(request.user).get_filter_condition("course")
+        filter_condition = AdminCoursePermissons(request.user).user_condition_fk("course")
         return (
             super(CourseDocumentManagementAdmin, self)
             .get_queryset(request)
@@ -389,7 +389,7 @@ class VideoManagementAdmin(admin.ModelAdmin):
         return get_admin_attrs(request, "VideoManagement", "list_display")
 
     def get_queryset(self, request):
-        filter_condition = AdminCoursePermissons(request.user).get_filter_condition("course")
+        filter_condition = AdminCoursePermissons(request.user).user_condition_fk("course")
         return (
             super(VideoManagementAdmin, self)
             .get_queryset(request)
@@ -409,6 +409,9 @@ class VideoManagementAdmin(admin.ModelAdmin):
 class QuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
     change_form_template = "admin_button/clear_quiz.html"
 
+    def quiz_author(self, obj):
+        return obj.quiz.author.email if obj.quiz and obj.quiz.author else "-"
+
     def get_fields(self, request, obj=None):
         return get_admin_attrs(request, "QuizManagement", "fields")
 
@@ -425,7 +428,7 @@ class QuizManagementAdmin(admin.ModelAdmin, DynamicArrayMixin):
         return get_admin_attrs(request, "QuizManagement", "list_display")
 
     def get_queryset(self, request):
-        filter_condition = AdminCoursePermissons(request.user).get_filter_condition("course")
+        filter_condition = AdminCoursePermissons(request.user).user_condition_fk("course")
         return (
             super(QuizManagementAdmin, self)
             .get_queryset(request)

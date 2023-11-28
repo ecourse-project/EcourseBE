@@ -423,7 +423,7 @@ ADMIN_DISPLAY = {
             "readonly_fields": [],
             "list_filter": ["course", "is_done_quiz"],
             "search_fields": ["course__name", "course__author__email", "user__email"],
-            "list_display": ["user", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
+            "list_display": ["user", "quiz_author", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
         },
         "UploadVideo": {
             "has_add_permission": True,
@@ -500,7 +500,7 @@ ADMIN_DISPLAY = {
             "fields": [
                 "email", "full_name", "avatar", "phone", "role", "first_login", "last_login",
                 "date_joined", "ip_addresses", "unverified_ip_addresses", "other_data", "is_superuser",
-                "is_staff", "is_active", "is_testing_user", "quiz_permission", "groups", "user_permissions", "permissions",
+                "is_staff", "quiz_permission", "is_active", "is_testing_user", "groups", "user_permissions", "permissions",
             ],
             "readonly_fields": [],
             "list_filter": ["role"],
@@ -659,7 +659,7 @@ ADMIN_DISPLAY = {
             ],
             "list_filter": ["course", "is_done_quiz"],
             "search_fields": ["course__name", "course__author__email", "user__email"],
-            "list_display": ["user", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
+            "list_display": ["user", "quiz_author", "course", "lesson", "quiz", "is_done_quiz", "date_done_quiz"],
         },
         "UploadVideo": {
             "has_add_permission": True,
@@ -735,7 +735,7 @@ ADMIN_DISPLAY = {
             "has_delete_permission": True,
             "fields": [
                 "email", "full_name", "avatar", "phone", "role", "first_login", "last_login",
-                "date_joined", "is_staff", "is_active", "is_testing_user", "quiz_permission", "groups", "permissions",
+                "date_joined", "is_staff", "quiz_permission", "is_active", "is_testing_user", "groups", "permissions",
             ],
             "readonly_fields": ["date_joined", "first_login", "last_login"],
             "list_filter": ["role"],

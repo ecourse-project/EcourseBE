@@ -29,11 +29,11 @@ from apps.quiz.certificate.templates import add_info_certificate
 from apps.quiz.models import Quiz
 from apps.courses.models import CourseManagement, QuizManagement, Course
 from apps.core.utils import get_now
-from apps.users_auth.authentication import ManagerPermission
+from apps.users_auth.authentication import QuizPermission
 
 
 class QuizAssignment(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def post(self, request, *args, **kwargs):
         assign_quiz(request.data)
@@ -41,12 +41,12 @@ class QuizAssignment(APIView):
 
 
 class QuizView(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def get(self, request, *args, **kwargs):
         list_quiz = Quiz.objects.prefetch_related(
             Prefetch("question_mngt", queryset=get_question_queryset())
-        )
+        ).filter(author=self.request.user)
         return Response(data=QuizSerializer(list_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):
@@ -55,7 +55,7 @@ class QuizView(APIView):
 
 
 class DeleteQuizView(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def get(self, request, *args, **kwargs):
         delete_quiz(self.request.query_params.get("quiz_id"))
@@ -63,7 +63,7 @@ class DeleteQuizView(APIView):
 
 
 class QuestionView(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def get(self, request, *args, **kwargs):
         qs = get_question_queryset().order_by("order")
@@ -82,7 +82,7 @@ class QuestionView(APIView):
 
     def post(self, request, *args, **kwargs):
         quiz_id = request.data.get("quiz_id")
-        question = store_question([request.data.get("question")])
+        question = store_question([request.data.get("question")], request.user)
         quiz = Quiz.objects.get(pk=quiz_id)
         if question and isinstance(question, list):
             quiz.question_mngt.add(question[0])
@@ -90,7 +90,7 @@ class QuestionView(APIView):
 
 
 class DeleteQuestionView(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def post(self, request, *args, **kwargs):
         delete_question(request.data)  # list_id

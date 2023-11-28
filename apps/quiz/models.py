@@ -31,6 +31,7 @@ class ChoicesAnswer(models.Model):
     answer_text = models.TextField(null=True, blank=True)
     answer_image = models.ForeignKey(UploadImage, on_delete=models.SET_NULL, null=True, blank=True)
     choice_name = models.ForeignKey(ChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         answer = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.answer_text or 'None', 9)}"
@@ -51,6 +52,7 @@ class ChoicesQuestion(TimeStampedModel):
     content_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
     choices = models.ManyToManyField(ChoicesAnswer, blank=True)
     correct_answer = models.ForeignKey(ChoiceName, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         content = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.content_text or 'None', 9)}"
@@ -70,6 +72,7 @@ class MatchColumnContent(models.Model):
     content_type = models.CharField(max_length=20, choices=enums.ANSWER_TYPES, default=enums.ANSWER_TYPE_TEXT)
     content_text = models.TextField(null=True, blank=True)
     content_image = models.ForeignKey(UploadImage, on_delete=models.SET_NULL, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         content = f"{enums.ANSWER_TYPE_TEXT} - {get_summary_content(self.content_text or 'None', 9)}"
@@ -88,6 +91,7 @@ class MatchColumnMatchAnswer(models.Model):
     match_question = models.ForeignKey("MatchColumnQuestion", on_delete=models.CASCADE, null=True, blank=True)
     first_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_first")
     second_content = models.ForeignKey(MatchColumnContent, on_delete=models.CASCADE, null=True, blank=True, related_name="match_answer_from_second")
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         first = second = 'None'
@@ -118,6 +122,7 @@ class MatchColumnQuestion(TimeStampedModel):
     content = models.TextField(null=True, blank=True)
     first_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_first_col", blank=True)
     second_column = models.ManyToManyField(MatchColumnContent, related_name="questions_from_second_col", blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.content or 'None', 10)
@@ -134,6 +139,7 @@ class FillBlankQuestion(TimeStampedModel):
     title = models.TextField(null=True, blank=True)
     content = models.TextField(null=True, blank=True)
     hidden_words = models.JSONField(null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return get_summary_content(self.content or 'None', 10)
@@ -205,7 +211,7 @@ class QuestionManagement(TimeStampedModel):
 
     class Meta:
         ordering = ["order"]
-        verbose_name_plural = "Management"
+        verbose_name_plural = "Question - Management"
         verbose_name = "Question"
 
 

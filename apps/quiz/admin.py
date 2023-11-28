@@ -30,7 +30,13 @@ class ChoicesAnswerAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(ChoicesAnswerAdmin, self).get_queryset(request).select_related("answer_image", "choice_name")
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(ChoicesAnswerAdmin, self)
+            .get_queryset(request)
+            .select_related("answer_image", "choice_name")
+            .filter(filter_condition)
+        )
 
 
 @admin.register(ChoicesQuestion)
@@ -44,7 +50,13 @@ class ChoicesQuestionAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(ChoicesQuestionAdmin, self).get_queryset(request).select_related("content_image", "correct_answer")
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(ChoicesQuestionAdmin, self)
+            .get_queryset(request)
+            .select_related("content_image", "correct_answer")
+            .filter(filter_condition)
+        )
 
     def content_image_url(self, obj):
         if obj.content_image and obj.content_image.image_path:
@@ -63,7 +75,13 @@ class MatchColumnContentAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(MatchColumnContentAdmin, self).get_queryset(request).select_related("content_image")
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(MatchColumnContentAdmin, self)
+            .get_queryset(request)
+            .select_related("content_image")
+            .filter(filter_condition)
+        )
 
     def content_image_url(self, obj):
         if obj.content_image and obj.content_image.image_path:
@@ -82,7 +100,13 @@ class MatchColumnMatchAnswerAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(MatchColumnMatchAnswerAdmin, self).get_queryset(request).select_related("first_content", "second_content")
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(MatchColumnMatchAnswerAdmin, self)
+            .get_queryset(request)
+            .select_related("first_content", "second_content")
+            .filter(filter_condition)
+        )
 
     @staticmethod
     def display_content(input_content):
@@ -109,7 +133,12 @@ class MatchColumnQuestionAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super(MatchColumnQuestionAdmin, self).get_queryset(request)
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(MatchColumnQuestionAdmin, self)
+            .get_queryset(request)
+            .filter(filter_condition)
+        )
 
 
 @admin.register(FillBlankQuestion)
@@ -141,6 +170,14 @@ class FillBlankQuestionAdmin(admin.ModelAdmin):
 
         obj.save()
 
+    def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).user_condition()
+        return (
+            super(FillBlankQuestionAdmin, self)
+            .get_queryset(request)
+            .filter(filter_condition)
+        )
+
 
 @admin.register(ChoicesQuestionUserAnswer)
 class ChoicesQuestionUserAnswerAdmin(admin.ModelAdmin):
@@ -154,7 +191,14 @@ class ChoicesQuestionUserAnswerAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)
 
     def get_queryset(self, request):
-        return get_user_choice_answer_queryset(super(ChoicesQuestionUserAnswerAdmin, self).get_queryset(request))
+        filter_condition = AdminQuizPermissons(request.user).user_condition("question__choices_question__author")
+        return (
+            get_user_choice_answer_queryset(
+                super(ChoicesQuestionUserAnswerAdmin, self)
+                .get_queryset(request)
+                .filter(filter_condition)
+            )
+        )
 
 
 @admin.register(MatchColumnUserAnswer)
@@ -173,6 +217,14 @@ class MatchColumnUserAnswerAdmin(admin.ModelAdmin):
             f"{get_summary_content(obj.first_content.content_text)} - {get_summary_content(obj.second_content.content_text)}"
         )
 
+    def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).user_condition("question__match_question__author")
+        return (
+            super(MatchColumnUserAnswerAdmin, self)
+            .get_queryset(request)
+            .filter(filter_condition)
+        )
+
 
 @admin.register(FillBlankUserAnswer)
 class FillBlankUserAnswerAdmin(admin.ModelAdmin):
@@ -184,6 +236,14 @@ class FillBlankUserAnswerAdmin(admin.ModelAdmin):
         "id",
     )
     readonly_fields = ('created',)
+
+    def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).user_condition("question__fill_blank_question__author")
+        return (
+            super(FillBlankUserAnswerAdmin, self)
+            .get_queryset(request)
+            .filter(filter_condition)
+        )
 
 
 @admin.register(QuestionManagement)
@@ -203,6 +263,7 @@ class QuestionManagementAdmin(admin.ModelAdmin):
         return fields
 
     def get_queryset(self, request):
+        filter_condition = AdminQuizPermissons(request.user).question_mngt_user_condition()
         return (
             super(QuestionManagementAdmin, self).get_queryset(request)
             .only(
@@ -232,6 +293,7 @@ class QuestionManagementAdmin(admin.ModelAdmin):
                 "match_question",
                 "fill_blank_question",
             )
+            .filter(filter_condition)
         )
 
 
