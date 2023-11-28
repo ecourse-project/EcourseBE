@@ -9,3 +9,13 @@ class CompletedQuizException(GenericException):
         if not message:
             message = "Quiz is completed."
         super().__init__(message=message)
+
+
+class QuizDoesNotExistException(GenericException):
+    code = 9000
+    verbose = True
+
+    def __init__(self, message=None):
+        if not message:
+            message = "Quiz does not exist."
+        super().__init__(message=message)

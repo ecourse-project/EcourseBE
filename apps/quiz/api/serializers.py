@@ -2,37 +2,39 @@ from rest_framework import serializers
 
 from apps.upload.api.serializers import UploadImageSerializer
 from apps.quiz.models import (
-    ChoicesQuizChoiceName,
-    ChoicesQuizAnswer,
-    ChoicesQuizQuestion,
+    Quiz,
+    ChoiceName,
+    ChoicesAnswer,
+    ChoicesQuestion,
     MatchColumnContent,
     MatchColumnQuestion,
+    MatchColumnMatchAnswer,
     FillBlankQuestion,
-    QuizManagement,
+    QuestionManagement,
 )
-from apps.quiz.services.choices_question_services import choices_quiz_data_processing
-from apps.quiz.services.match_column_services import match_column_quiz_data_processing
+from apps.quiz.services.choices_question_services import choices_question_data_processing
+from apps.quiz.services.match_column_services import match_column_question_data_processing
 from apps.quiz.services.fill_blank_services import get_final_content
-from apps.quiz.services.services import quiz_data_processing
+from apps.quiz.services.services import question_data_processing
 from apps.quiz.enums import RESPONSE_SUBSTRING
 
 
-class ChoicesQuizChoiceNameSerializer(serializers.ModelSerializer):
+class ChoiceNameSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = ChoicesQuizChoiceName
+        model = ChoiceName
         fields = (
             "id",
             "name",
         )
 
 
-class ChoicesQuizAnswerSerializer(serializers.ModelSerializer):
+class ChoicesAnswerSerializer(serializers.ModelSerializer):
     answer_image = UploadImageSerializer()
-    choice_name = ChoicesQuizChoiceNameSerializer()
+    choice_name = ChoiceNameSerializer()
 
     class Meta:
-        model = ChoicesQuizAnswer
+        model = ChoicesAnswer
         fields = (
             "id",
             "answer_type",
@@ -42,22 +44,24 @@ class ChoicesQuizAnswerSerializer(serializers.ModelSerializer):
         )
 
 
-class ChoicesQuizQuestionSerializer(serializers.ModelSerializer):
-    choices = ChoicesQuizAnswerSerializer(many=True)
+class ChoicesQuestionSerializer(serializers.ModelSerializer):
+    choices = ChoicesAnswerSerializer(many=True)
     content_image = UploadImageSerializer()
+    correct_answer = ChoiceNameSerializer()
 
     class Meta:
-        model = ChoicesQuizQuestion
+        model = ChoicesQuestion
         fields = (
             "content_text",
             "content_image",
             "content_type",
             "choices",
+            "correct_answer",
         )
 
     def to_representation(self, instance):
-        representation = super(ChoicesQuizQuestionSerializer, self).to_representation(instance)
-        return choices_quiz_data_processing(representation)
+        representation = super(ChoicesQuestionSerializer, self).to_representation(instance)
+        return choices_question_data_processing(representation)
 
 
 class MatchColumnContentSerializer(serializers.ModelSerializer):
@@ -74,12 +78,26 @@ class MatchColumnContentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super(MatchColumnContentSerializer, self).to_representation(instance)
-        return match_column_quiz_data_processing(representation)
+        return match_column_question_data_processing(representation)
+
+
+class MatchColumnMatchAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchColumnMatchAnswer
+        fields = (
+            "first_content",
+            "second_content",
+        )
+
+    def to_representation(self, instance):
+        representation = super(MatchColumnMatchAnswerSerializer, self).to_representation(instance)
+        return [representation["first_content"], representation["second_content"]]
 
 
 class MatchColumnQuestionSerializer(serializers.ModelSerializer):
     first_column = MatchColumnContentSerializer(many=True)
     second_column = MatchColumnContentSerializer(many=True)
+    correct_answer = MatchColumnMatchAnswerSerializer(source="matchcolumnmatchanswer_set", many=True)
 
     class Meta:
         model = MatchColumnQuestion
@@ -87,6 +105,7 @@ class MatchColumnQuestionSerializer(serializers.ModelSerializer):
             "content",
             "first_column",
             "second_column",
+            "correct_answer",
         )
 
 
@@ -94,25 +113,27 @@ class FillBlankQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = FillBlankQuestion
         fields = (
+            "title",
             "content",
+            "hidden_words",
         )
 
     def to_representation(self, instance):
         representation = super(FillBlankQuestionSerializer, self).to_representation(instance)
+        representation["full_content"] = representation["content"]
         representation["content"] = get_final_content(instance.hidden_words, RESPONSE_SUBSTRING)
-        return quiz_data_processing(representation)
+        return question_data_processing(representation)
 
 
-class QuizManagementSerializer(serializers.ModelSerializer):
-    choices_question = ChoicesQuizQuestionSerializer()
+class QuestionManagementSerializer(serializers.ModelSerializer):
+    choices_question = ChoicesQuestionSerializer()
     match_question = MatchColumnQuestionSerializer()
     fill_blank_question = FillBlankQuestionSerializer()
 
     class Meta:
-        model = QuizManagement
+        model = QuestionManagement
         fields = (
             "id",
-            "name",
             "order",
             "time_limit",
             "question_type",
@@ -122,5 +143,18 @@ class QuizManagementSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
-        representation = super(QuizManagementSerializer, self).to_representation(instance)
-        return quiz_data_processing(representation)
+        representation = super(QuestionManagementSerializer, self).to_representation(instance)
+        return question_data_processing(representation)
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    questions = QuestionManagementSerializer(source="question_mngt", many=True)
+
+    class Meta:
+        model = Quiz
+        fields = (
+            "id",
+            "name",
+            "questions",
+        )
+        

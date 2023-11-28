@@ -104,7 +104,7 @@ class ClassDetailView(generics.RetrieveAPIView):
         if (
                 Configuration.objects.first().tracking_views
                 and isinstance(instance, ClassManagement)
-                and instance.user_in_class
+                and instance.user_in_class is True
         ):
             instance.views = F("views") + 1
             instance.save(update_fields=['views'])

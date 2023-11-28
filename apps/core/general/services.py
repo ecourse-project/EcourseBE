@@ -6,11 +6,12 @@ from apps.users.models import User
 from apps.documents.models import Document
 from apps.courses.models import (
     Course,
-    LessonQuizManagement,
+    QuizManagement,
     LessonManagement,
     CourseDocumentManagement,
     VideoManagement,
 )
+from apps.courses.services.services import CourseService
 from apps.posts.models import Post
 from apps.classes.services.services import ClassRequestService
 
@@ -19,7 +20,7 @@ from apps.quiz.services.services import (
     response_quiz_statistic,
 )
 from apps.quiz.services.queryset_services import get_quiz_queryset
-from apps.quiz.api.serializers import QuizManagementSerializer
+from apps.quiz.api.serializers import QuizSerializer
 from apps.quiz.enums import (
     QUESTION_TYPE_CHOICES,
     QUESTION_TYPE_MATCH,
@@ -47,8 +48,6 @@ class CustomListDataServices:
                 data = self.add_quiz_detail(data, field)
             if field == enums.LIST_QUIZ:
                 data = self.add_list_quiz(data, field)
-            if field == enums.IS_DONE_QUIZ:
-                data = self.add_is_done_quiz(data, field)
         return data
 
     def filter_available_course_document(self, data: list):
@@ -86,6 +85,7 @@ class CustomDictDataServices:
     def __init__(self, user: User):
         self.user = user
         self.class_request_service = ClassRequestService()
+        self.course_service = CourseService()
 
     def custom_response_dict_data(self, data: dict, **kwargs):
         fields = kwargs.get("fields", [])
@@ -102,8 +102,6 @@ class CustomDictDataServices:
                 data = self.add_quiz_detail(data, field)
             if field == enums.LIST_QUIZ:
                 data = self.add_list_quiz(data, field)
-            if field == enums.IS_DONE_QUIZ:
-                data = self.add_is_done_quiz(data, field)
 
         return data
 
@@ -161,27 +159,19 @@ class CustomDictDataServices:
             lesson_mngt = LessonManagement.objects.filter(lesson_id=lesson['id']).first()
             if lesson_mngt:
                 lesson_obj = lesson_mngt.lesson
+                condition = Q(
+                    user=self.user, course_id=data['id'], lesson_id=lesson['id'],
+                    is_completed=True, is_available=True, enable=True,
+                )
                 data["lessons"][index][doc_field] = (
                     CourseDocumentManagement.objects.filter(
-                        user=self.user,
-                        course_id=data['id'],
-                        lesson_id=lesson['id'],
-                        document__in=lesson_obj.documents.all(),
-                        is_completed=True,
-                        is_available=True,
-                        enable=True,
-                    ).values_list("document", flat=True)
+                        condition & Q(document__in=lesson_obj.documents.all())
+                    ).values_list("document_id", flat=True)
                 )
                 data["lessons"][index][video_field] = (
                     VideoManagement.objects.filter(
-                        user=self.user,
-                        course_id=data["id"],
-                        lesson_id=lesson['id'],
-                        video__in=lesson_obj.videos.all(),
-                        is_completed=True,
-                        is_available=True,
-                        enable=True,
-                    ).values_list("video", flat=True)
+                        condition & Q(video__in=lesson_obj.videos.all())
+                    ).values_list("video_id", flat=True)
                 )
             else:
                 data["lessons"][index][doc_field] = []
@@ -195,7 +185,7 @@ class CustomDictDataServices:
             return data
 
         for index, lesson in enumerate(data["lessons"], start=0):
-            lesson_quiz = LessonQuizManagement.objects.filter(
+            lesson_quiz = QuizManagement.objects.filter(
                 course_mngt__user=self.user,
                 course_mngt__course_id=data['id'],
                 lesson_id=lesson['id']
@@ -209,18 +199,31 @@ class CustomDictDataServices:
             return data
 
         for index, lesson in enumerate(data["lessons"], start=0):
-            lesson_quiz_mngt = LessonQuizManagement.objects.filter(
-                course_mngt__user=self.user, course_mngt__course_id=data["id"], lesson_id=lesson["id"]
-            ).first()
-            if lesson_quiz_mngt and lesson_quiz_mngt.is_done_quiz and lesson_quiz_mngt.date_done_quiz:
-                data["lessons"][index][field] = response_quiz_statistic(
-                    quiz_statistic(
-                        user=self.user,
-                        course_id=data['id'],
-                        lesson_id=lesson["id"],
-                        created=lesson_quiz_mngt.date_done_quiz,
-                    )
+            if not lesson["quiz_location"] or not isinstance(lesson["quiz_location"], list):
+                continue
+
+            quiz_detail = []
+            for quiz in lesson["quiz_location"]:
+                quiz_mngt, _ = QuizManagement.objects.get_or_create(
+                    user=self.user,
+                    course_id=data["id"],
+                    lesson_id=lesson["id"],
+                    quiz_id=quiz["id"],
                 )
+
+                if quiz_mngt and quiz_mngt.is_done_quiz and quiz_mngt.date_done_quiz:
+                    quiz_info = (
+                        response_quiz_statistic(
+                            quiz_statistic(
+                                quiz_id=quiz["id"],
+                                user=self.user,
+                                created=quiz_mngt.date_done_quiz
+                            )
+                        )
+                    )
+                    quiz_detail.append({**quiz_info, **{"is_done_quiz": quiz_mngt.is_done_quiz}})
+            data["lessons"][index][field] = quiz_detail
+
         return data
 
     def add_list_quiz(self, data: dict, field: str):
@@ -228,21 +231,17 @@ class CustomDictDataServices:
             return data
 
         for index, lesson in enumerate(data["lessons"], start=0):
+            if not lesson["quiz_location"] or not isinstance(lesson["quiz_location"], list):
+                continue
+
+            list_quiz_id = [obj["id"] for obj in lesson["quiz_location"]]
             data["lessons"][index][field] = (
-                QuizManagementSerializer(
-                    get_quiz_queryset().filter(
-                        Q(
-                            Q(course_id=data['id'], lesson_id=lesson["id"])
-                            & Q(
-                                Q(question_type=QUESTION_TYPE_CHOICES, choices_question__isnull=False)
-                                | Q(question_type=QUESTION_TYPE_MATCH, match_question__isnull=False)
-                                | Q(question_type=QUESTION_TYPE_FILL, fill_blank_question__isnull=False)
-                            )
-                        )
-                    ),
-                    many=True,
+                QuizSerializer(
+                    instance=get_quiz_queryset().filter(pk__in=list_quiz_id),
+                    many=True
                 ).data
             )
+
         return data
 
     def add_rating(self, data: dict, field: str):

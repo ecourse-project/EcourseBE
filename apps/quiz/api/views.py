@@ -2,78 +2,115 @@ import datetime
 
 from reportlab.lib.units import inch, toLength
 from django.http import FileResponse
+from django.db.models import Prefetch
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.quiz.api.serializers import QuizManagementSerializer
-from apps.quiz.exceptions import CompletedQuizException
+from apps.quiz.api.serializers import (
+    QuestionManagementSerializer,
+    QuizSerializer,
+)
 from apps.quiz.services.services import (
-    store_quiz,
+    add_quiz,
     delete_quiz,
-    edit_quiz,
+    assign_quiz,
+    store_question,
+    delete_question,
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
-    validate_lesson_of_course,
 )
-from apps.quiz.services.queryset_services import get_quiz_queryset
+from apps.quiz.services.queryset_services import get_question_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
 from apps.quiz.certificate.templates import add_info_certificate
-from apps.courses.models import CourseManagement, LessonManagement, LessonQuizManagement, Course
-from apps.courses.exceptions import NoItemException
+from apps.quiz.models import Quiz
+from apps.courses.models import CourseManagement, QuizManagement, Course
 from apps.core.utils import get_now
-from apps.users_auth.authentication import ManagerPermission
+from apps.users_auth.authentication import QuizPermission
+
+
+class QuizAssignment(APIView):
+    permission_classes = (QuizPermission,)
+
+    def post(self, request, *args, **kwargs):
+        assign_quiz(request.data)
+        return Response(data={})
 
 
 class QuizView(APIView):
-    permission_classes = (ManagerPermission,)
+    permission_classes = (QuizPermission,)
 
     def get(self, request, *args, **kwargs):
-        course_id = self.request.query_params.get("course_id")
-        lesson_id = self.request.query_params.get("lesson_id")
-        if not course_id:
-            raise NoItemException("Missing course ID")
-        if not lesson_id:
-            raise NoItemException("Missing lesson ID")
-        qs = get_quiz_queryset().filter(course_id=course_id, lesson_id=lesson_id).order_by("order")
-        return Response(data=QuizManagementSerializer(qs, many=True).data)
-
-    def patch(self, request, *args, **kwargs):
-        new_quiz = edit_quiz(request.data)
-        return Response(data=QuizManagementSerializer(new_quiz, many=True).data)
+        list_quiz = Quiz.objects.prefetch_related(
+            Prefetch("question_mngt", queryset=get_question_queryset())
+        ).filter(author=self.request.user)
+        return Response(data=QuizSerializer(list_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):
-        quiz = store_quiz(request.data)
-        return Response(data=QuizManagementSerializer(quiz, many=True).data)
+        quiz = add_quiz(request.data, request.user)
+        return Response(data=QuizSerializer(quiz).data)
 
-    def delete(self, request, *args, **kwargs):
-        delete_quiz(request.data)
+
+class DeleteQuizView(APIView):
+    permission_classes = (QuizPermission,)
+
+    def get(self, request, *args, **kwargs):
+        delete_quiz(self.request.query_params.get("quiz_id"))
+        return Response(data={})
+
+
+class QuestionView(APIView):
+    permission_classes = (QuizPermission,)
+
+    def get(self, request, *args, **kwargs):
+        qs = get_question_queryset().order_by("order")
+        return Response(data=QuestionManagementSerializer(qs, many=True).data)
+
+    def patch(self, request, *args, **kwargs):
+        quiz_id = request.data.get("quiz_id")
+        question_data = request.data.get("question")
+        old_question_id = question_data.pop("id")
+        new_question = store_question([question_data])
+        quiz = Quiz.objects.get(pk=quiz_id)
+        if new_question and isinstance(new_question, list):
+            quiz.question_mngt.add(new_question[0])
+            delete_question(old_question_id)
+        return Response(data=QuizSerializer(quiz).data)
+
+    def post(self, request, *args, **kwargs):
+        quiz_id = request.data.get("quiz_id")
+        question = store_question([request.data.get("question")], request.user)
+        quiz = Quiz.objects.get(pk=quiz_id)
+        if question and isinstance(question, list):
+            quiz.question_mngt.add(question[0])
+        return Response(data=QuizSerializer(quiz).data)
+
+
+class DeleteQuestionView(APIView):
+    permission_classes = (QuizPermission,)
+
+    def post(self, request, *args, **kwargs):
+        delete_question(request.data)  # list_id
         return Response(data={})
 
 
 class QuizResultView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
-        course_id = data.get('course_id')
-        lesson_id = data.get('lesson_id')
         user = self.request.user
         answers = data.get('user_answers')
-        if not course_id or not lesson_id:
-            raise NoItemException("Missing lesson ID or course ID")
-        course_mngt = CourseManagement.objects.filter(user=user, course_id=course_id).first()
-        if (
-            not course_mngt or not LessonManagement.objects.filter(course_id=course_id, lesson_id=lesson_id)
-        ):
-            raise NoItemException("Lesson does not exist or Lesson does not belong to the course")
-        if LessonQuizManagement.objects.filter(course_mngt=course_mngt, lesson_id=lesson_id, is_done_quiz=True):
-            raise CompletedQuizException
+        quiz_id = data.get('id')
+        course_id = data.get('course_id')
+        lesson_id = data.get('lesson_id')
 
         created, _, _, _ = store_user_answers(user=user, user_answers=answers)
-        user_quiz_info = quiz_statistic(user=user, course_id=course_id, lesson_id=lesson_id, created=created)
-        quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(course_mngt=course_mngt, lesson_id=lesson_id)
+        user_quiz_info = quiz_statistic(quiz_id=quiz_id, user=user, created=created)
+        quiz_mngt, _ = QuizManagement.objects.get_or_create(
+            course_id=course_id, lesson_id=lesson_id, quiz_id=quiz_id, user=user
+        )
         quiz_mngt.is_done_quiz = True
         quiz_mngt.date_done_quiz = created
         quiz_mngt.save(update_fields=["is_done_quiz", "date_done_quiz"])
@@ -88,23 +125,22 @@ class QuizStartTimeView(APIView):
     def get(self, request, *args, **kwargs):
         course_id = self.request.query_params.get('course_id')
         lesson_id = self.request.query_params.get('lesson_id')
+        quiz_id = self.request.query_params.get('quiz_id')
         is_start = self.request.query_params.get('is_start', '').lower() == "true"
         res = None
 
-        course_mngt = validate_lesson_of_course(self.request.user, lesson_id, course_id)
-        if not course_mngt:
-            raise NoItemException("Lesson does not exist or Lesson does not belong to the course")
-
-        lesson_quiz_mngt, _ = LessonQuizManagement.objects.get_or_create(course_mngt=course_mngt, lesson_id=lesson_id)
+        quiz_mngt, _ = QuizManagement.objects.get_or_create(
+            course_id=course_id, lesson_id=lesson_id, quiz_id=quiz_id, user=request.user
+        )
         if is_start:
-            if lesson_quiz_mngt.start_time:
-                res = lesson_quiz_mngt.start_time
+            if quiz_mngt.start_time:
+                res = quiz_mngt.start_time
             else:
                 res = get_now()
-                lesson_quiz_mngt.start_time = res
-                lesson_quiz_mngt.save(update_fields=["start_time"])
+                quiz_mngt.start_time = res
+                quiz_mngt.save(update_fields=["start_time"])
         else:
-            res = lesson_quiz_mngt.start_time if lesson_quiz_mngt.start_time else res
+            res = quiz_mngt.start_time if quiz_mngt.start_time else res
 
         return Response(data={"start_time": res.isoformat() if isinstance(res, datetime.datetime) else None})
 

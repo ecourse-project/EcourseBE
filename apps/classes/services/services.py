@@ -17,7 +17,7 @@ class ClassesService:
                 Prefetch("videos"),
                 Prefetch("documents", queryset=CourseDocument.objects.select_related("file")))
             )
-        ).select_related('topic', 'thumbnail').filter(course_of_class=True)
+        ).select_related('topic', 'thumbnail', 'author').filter(course_of_class=True)
 
     def get_classes_by_topic(self, topic):
         if topic.strip():
@@ -31,7 +31,8 @@ class ClassesService:
 
 
 class ClassRequestService:
-    def get_user_request_status(self, user: User, class_obj: Class) -> str:
+    @staticmethod
+    def get_user_request_status(user: User, class_obj: Class) -> str:
         if ClassRequest.objects.filter(user=user, class_request=class_obj, accepted=True).exists():
             return ACCEPTED
         elif ClassRequest.objects.filter(user=user, class_request=class_obj, accepted=False).exists():
@@ -39,7 +40,8 @@ class ClassRequestService:
         else:
             return AVAILABLE
 
-    def get_request_status_from_multiple_classes(self, user, class_objs):
+    @staticmethod
+    def get_request_status_from_multiple_classes(user, class_objs):
         class_param = "class_request"
         if not isinstance(class_objs, Course) and not isinstance(class_objs, Class):
             class_param = "class_request__in"

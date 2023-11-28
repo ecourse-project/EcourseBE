@@ -1,15 +1,13 @@
+from django.db.models import Q
 from django.db.models.query import QuerySet
 
-from apps.courses.enums import BOUGHT
 from apps.courses.models import (
     LessonManagement,
     CourseDocumentManagement,
     VideoManagement,
-    CourseManagement,
     Course,
     Lesson,
 )
-from apps.courses.services.services import CourseManagementService
 
 from apps.core.general.init_data import (
     UserDataManagementService,
@@ -18,7 +16,40 @@ from apps.core.general.init_data import (
 from apps.core.utils import bulk_create_batch_size
 from apps.users.services import get_active_users
 from apps.users.choices import MANAGER
-from apps.users.models import User
+
+
+class AdminCoursePermissons:
+    def __init__(self, user):
+        self.user = user
+
+    @staticmethod
+    def course_condition():
+        return Q(course_of_class=False)
+
+    @staticmethod
+    def course_condition_fk(fk_field):
+        return Q(**{f"{fk_field}__course_of_class": False})
+
+    def user_condition(self):
+        return (
+            Q(author=self.user)
+            if not self.user.is_superuser and not self.user.role == MANAGER
+            else Q()
+        )
+
+    def user_condition_fk(self, fk_field):
+        return (
+            Q(**{f"{fk_field}__author": self.user})
+            if not self.user.is_superuser and not self.user.role == MANAGER
+            else Q()
+        )
+
+    def get_filter_condition(self, fk_field=None):
+        return (
+            self.course_condition() & self.user_condition()
+            if not fk_field
+            else self.course_condition_fk(fk_field) & self.user_condition_fk(fk_field)
+        )
 
 
 class CourseAdminService:

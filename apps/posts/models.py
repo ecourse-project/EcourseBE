@@ -12,6 +12,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 
 class PostTopic(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
@@ -23,6 +24,7 @@ class PostTopic(models.Model):
 
 class Post(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=300)
     topic = models.ForeignKey(PostTopic, on_delete=models.SET_NULL, null=True, blank=True)
     header = models.ForeignKey("settings.Header", on_delete=models.SET_NULL, null=True, blank=True)

@@ -13,6 +13,11 @@ class User(AbstractUser):
     username = models.CharField(max_length=10, default="ecourse")
     first_name = None
     last_name = None
+    is_staff = models.BooleanField(
+        verbose_name="Admin Permission",
+        default=False,
+        help_text="Designates whether the user can log into this admin site.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ['username']
@@ -23,11 +28,13 @@ class User(AbstractUser):
     avatar = models.CharField(null=True, blank=True, max_length=1000)
     phone = models.CharField(default="", blank=True, max_length=30)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default=STUDENT)
+    quiz_permission = models.BooleanField(default=False)
     ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)  # Verified
     unverified_ip_addresses = ArrayField(models.CharField(max_length=15), null=True, blank=True)
     is_testing_user = models.BooleanField(default=False)
     first_login = models.DateTimeField(blank=True, null=True)
     other_data = models.JSONField(default=dict(), null=True, blank=True)
+
 
     def __str__(self):
         return self.email

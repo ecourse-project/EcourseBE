@@ -60,8 +60,9 @@ export interface OVerifyToken {
 // ===========================================Users===========================================
 
 export enum RoleEnum {
-  MANAGER='MANAGER',
-  STUDENT='STUDENT',
+  MANAGER = 'MANAGER',
+  TEACHER = 'TEACHER',
+  STUDENT = 'STUDENT',
 }
 
 export interface User {
@@ -72,6 +73,7 @@ export interface User {
   phone?: string;
   role: RoleEnum;
   is_testing_user: boolean;
+  quiz_permission: boolean;
 }
 
 export interface OIsExist {
@@ -203,6 +205,11 @@ export enum ProgressStatusEnum {
   DONE = 'DONE',
 }
 
+export enum QuizLocationEnum {
+  VIDEO = 'VIDEO',
+  DOCUMENT = 'DOCUMENT',
+}
+
 export interface UpdateLessonArgs {
   lesson_id: string;
   completed_docs: string[];
@@ -237,9 +244,9 @@ export interface Lesson {
   documents: CourseDocument[];
   docs_completed?: string[];
   videos_completed?: string[];
-  quiz_detail?: QuizResult;
+  quiz_detail?: QuizResult[];
   list_quiz: Quiz[];
-  is_done_quiz: boolean;
+  quiz_location?: Array<{id: string, order: string, location: QuizLocationEnum}>
 }
 
 export interface Course {
@@ -267,6 +274,7 @@ export interface Course {
   request_status?: RequestStatus;
   course_of_class?: boolean;
   test: boolean;
+  author?: string;
 }
 
 // ===========================================Classes===========================================
@@ -417,14 +425,18 @@ export interface MatchQuestion {
   first_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
   second_column: Array<{id: string, content_type: ContentTypeEnum, content: string}>;
   correct_answer?: Array<Array<string>>;
+  question_type: QuestionTypeEnum;
 }
 
 export interface FillBlankQuestion {
   id?: string;
+  title: string;
   order?: number,
   time_limit?: number,
   content: string;
+  full_content: string;
   hidden_words?: Array<{id: number, word: string, hidden: boolean}>;
+  question_type: QuestionTypeEnum;
 }
 
 export interface ChoicesQuestion {
@@ -434,11 +446,12 @@ export interface ChoicesQuestion {
   content: string;
   content_type?: ContentTypeEnum;
   choices: Array<{choice?: string, choice_name: string, answer_type: ContentTypeEnum, answer: string}>
+  question_type: QuestionTypeEnum;
+  correct_answer: {id: string, name: string};
 }
 
-export interface Quiz {
+export interface Question {
   id: string;
-  name: string;
   order: number;
   time_limit?: number;
   question_type: QuestionTypeEnum;
@@ -448,43 +461,62 @@ export interface Quiz {
 
 }
 
+export interface Quiz {
+  id: string;
+  name?: string;
+  questions?: Question[];
+}
+
 export interface UserAnswersArgs {
-  quiz_id: string;
+  question_id: string;
   question_type: QuestionTypeEnum;
   answer: string | Array<string> | Array<Array<string>>;
 }
 
 export interface QuizResultArgs {
+  id: string;
   course_id: string;
   lesson_id: string;
   user_answers: UserAnswersArgs[];
 }
 
-export interface QuizArgs {
-  name: string;
+export interface AssignQuizArgs {
   course_id: string;
-  lesson_id: string;
-  choices_question: Array<ChoicesQuestion>;
-  match_question: Array<MatchQuestion>;
-  fill_blank_question: Array<FillBlankQuestion>;
+  quiz_location: Array<{
+    lesson_id: string,
+    quiz?: Array<{
+      id: string,
+      order: string,
+      location: QuizLocationEnum,
+    }>
+  }>
 }
 
-export interface ChoicesQuizAnswer {
+export interface CreateQuizArgs {
+  name: string;
+}
+
+export interface QuestionArgs {
+  quiz_id: string;
+  question: ChoicesQuestion | MatchQuestion | FillBlankQuestion;
+}
+
+export interface ChoicesQuestionAnswer {
   correct: number;
   total: number;
-  result: Array<{quiz_id: string, user_answer: string, correct_answer?: string}>;
+  result: Array<{question_id: string, user_answer: string, correct_answer?: string}>;
 }
 
-export interface MatchQuizAnswer {
-  quiz_id: string;
+export interface MatchQuestionAnswer {
+  question_id: string;
   correct: number;
   total: number;
   user_answer: Array<Array<string>>;
   correct_answer?: Array<Array<string>>;
 }
 
-export interface FillQuizAnswer {
-  quiz_id: string;
+export interface FillQuestionAnswer {
+  question_id: string;
   correct: number;
   total: number;
   user_answer: Array<string>;
@@ -492,10 +524,13 @@ export interface FillQuizAnswer {
 }
 
 export interface QuizResult {
+  id: string;
+  name?: string;
   mark?: number;
-  choices_quiz: ChoicesQuizAnswer;
-  match_quiz: MatchQuizAnswer[];
-  fill_quiz: FillQuizAnswer[];
+  is_done_quiz: boolean;
+  choices_question: ChoicesQuestionAnswer;
+  match_question: MatchQuestionAnswer[];
+  fill_question: FillQuestionAnswer[];
 }
 
 // ===========================================Setting===========================================
@@ -632,13 +667,17 @@ export const apiURL = {
   documentRatingFilter: (document_id, score) => `document/rating/filter/?document_id=${document_id}&score=${score}`,
   courseRatingFilter: (course_id, score) => `course/rating/filter/?course_id=${course_id}&score=${score}`,
 
+  createQuestion: () => `api/quiz/question/`,
+  editQuestion: () => `api/quiz/question/`,
+  listQuestion: () => `api/quiz/question/`,
+  deleteQuestion: () => `api/quiz/question/delete/`,
   createQuiz: () => `api/quiz/`,
-  editQuiz: () => `api/quiz/`,
-  deleteQuiz: () => `api/quiz/`,
-  listQuiz: (course_id, lesson_id) => `api/quiz/?course_id=${course_id}&lesson_id=${lesson_id}`,
+  listQuiz: () =>  `api/quiz/`,
+  deleteQuiz: (quiz_id) => `api/quiz/delete/?quiz_id=${quiz_id}`,
+  assignQuiz: () =>   `api/quiz/assign/`,
   getQuizResult: () => `api/quiz/result/`,
   downloadCerti: (course_id) => `api/quiz/certi/?course_id=${course_id}`,
-  quizStartTime: (course_id, lesson_id, is_start) => `api/quiz/start-time/?course_id=${course_id}&lesson_id=${lesson_id}&is_start=${is_start}`,
+  quizStartTime: (course_id, lesson_id, quiz_id, is_start) => `api/quiz/start-time/?course_id=${course_id}&lesson_id=${lesson_id}&quiz_id=${quiz_id}&is_start=${is_start}`,
 
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
@@ -787,7 +826,9 @@ class CourseService {
     return apiClient.post(apiURL.calculatePrice(), params);
   }
 
-  static getListCourses(): Promise<{id: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>}[]> {
+  static getListCourses(): Promise<{
+    id: string, author?: string, course_of_class: boolean, name: string, lessons?: Array<{id: string, name: string}>
+  }[]> {
     return apiClient.get(apiURL.getListCourses());
   }
 
@@ -852,20 +893,36 @@ class CourseService {
     return apiClient.get(apiURL.courseRatingFilter(course_id, score));
   }
 
-  static createQuiz(params: QuizArgs): Promise<Quiz[]> {
-    return apiClient.post(apiURL.createQuiz(), params);
+  static createQuestion(params: QuestionArgs): Promise<Quiz> {
+    return apiClient.post(apiURL.createQuestion(), params);
   }
 
-  static editQuiz(params: QuizArgs): Promise<Quiz[]> {
-    return apiClient.patch(apiURL.editQuiz(), params);
+  static editQuestion(params: QuestionArgs): Promise<Quiz> {
+    return apiClient.patch(apiURL.editQuestion(), params);
   }
 
-  static deleteQuiz(list_quiz_id: Array<string>): Promise<{}> {
-    return apiClient.delete(apiURL.deleteQuiz(), list_quiz_id);
+  static deleteQuestion(params: Array<string>): Promise<any> {
+    return apiClient.post(apiURL.deleteQuestion(), params);
   }
 
-  static listQuiz(course_id: string, lesson_id: string): Promise<Quiz[]> {
-    return apiClient.get(apiURL.listQuiz(course_id, lesson_id));
+  static listQuestion(): Promise<Question[]> {
+    return apiClient.get(apiURL.listQuestion());
+  }
+
+  static createQuiz(args: CreateQuizArgs): Promise<Quiz> {
+    return apiClient.post(apiURL.createQuiz(), args);
+  }
+
+  static listQuiz(): Promise<Quiz[]> {
+    return apiClient.get(apiURL.listQuiz());
+  }
+
+  static assignQuiz(args: AssignQuizArgs): Promise<any> {
+    return apiClient.post(apiURL.assignQuiz(), args);
+  }
+
+  static deleteQuiz(quiz_id: string): Promise<any> {
+    return apiClient.get(apiURL.deleteQuiz(quiz_id));
   }
 
   static getQuizResult(params: QuizResultArgs): Promise<QuizResult> {
@@ -876,8 +933,8 @@ class CourseService {
     return apiClient.get(apiURL.downloadCerti(course_id));
   }
 
-  static quizStartTime(course_id: string, lesson_id: string, is_start: boolean): Promise<{start_time?: string}> {
-    return apiClient.get(apiURL.quizStartTime(course_id, lesson_id, is_start));
+  static quizStartTime(course_id: string, lesson_id: string, quiz_id: string, is_start: boolean): Promise<{start_time?: string}> {
+    return apiClient.get(apiURL.quizStartTime(course_id, lesson_id, quiz_id, is_start));
   }
 
   static listHeaders(): Promise<Nav[]> {

@@ -11,6 +11,7 @@ from apps.upload.models import UploadImage, UploadFile, UploadVideo
 
 class CourseTopic(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
@@ -22,6 +23,7 @@ class CourseTopic(TimeStampedModel):
 
 class CourseDocument(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     topic = models.ForeignKey(CourseTopic, related_name="course_docs", on_delete=models.SET_NULL, null=True, blank=True)
@@ -37,6 +39,7 @@ class CourseDocument(TimeStampedModel):
 
 class Lesson(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
     videos = models.ManyToManyField(UploadVideo, blank=True)
@@ -44,6 +47,7 @@ class Lesson(TimeStampedModel):
     lesson_number = models.SmallIntegerField(default=1, null=True, blank=True, verbose_name="order")
     total_documents = models.PositiveSmallIntegerField(default=0)
     total_videos = models.PositiveSmallIntegerField(default=0)
+    quiz_location = models.JSONField(null=True, blank=True)
 
     # Tracking fields
     removed = models.BooleanField(default=False)
@@ -68,6 +72,7 @@ class LessonsRemoved(Lesson):
 
 class Course(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=100)
     topic = models.ForeignKey(CourseTopic, related_name="courses", on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -117,20 +122,24 @@ class CourseManagement(TimeStampedModel):
         return f"{self.course.name} - {self.user.__str__()}"
 
 
-class LessonQuizManagement(TimeStampedModel):
+class QuizManagement(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course_mngt = models.ForeignKey(CourseManagement, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    quiz = models.ForeignKey("quiz.Quiz", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     is_done_quiz = models.BooleanField(default=False)
     date_done_quiz = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     history = ArrayField(models.CharField(max_length=50), null=True, blank=True)
 
     def __str__(self):
-        return f"{self.course_mngt.course.name} - {self.course_mngt.user.__str__()}"
+        return str(self.id)
 
     class Meta:
-        verbose_name_plural = "Management - Lesson quiz"
+        ordering = ["course"]
+        verbose_name_plural = "Management - Quiz"
+        unique_together = ('course', 'lesson', 'quiz', 'user')
 
 
 class LessonManagement(TimeStampedModel):

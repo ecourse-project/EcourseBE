@@ -24,9 +24,10 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "phone",
             "role",
+            "quiz_permission",
             "is_testing_user",
         )
-        read_only_fields = ["email", "role", "is_testing_user"]
+        read_only_fields = ["email", "role", "is_testing_user", "quiz_permission"]
 
     def to_representation(self, obj):
         representation = super(UserSerializer, self).to_representation(obj)

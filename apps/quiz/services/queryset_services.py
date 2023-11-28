@@ -1,17 +1,17 @@
 from django.db.models import Prefetch
 
 from apps.quiz.models import (
-    QuizManagement,
+    Quiz,
+    QuestionManagement,
     MatchColumnContent,
-    ChoicesQuizAnswer,
-    ChoicesQuizUserAnswer,
+    ChoicesAnswer,
+    ChoicesQuestionUserAnswer,
 )
 
 
-def get_quiz_queryset():
-    return QuizManagement.objects.select_related(
-            "course",
-            "choices_question",
+def get_question_queryset():
+    return QuestionManagement.objects.select_related(
+            "choices_question__correct_answer",
             "match_question",
             "fill_blank_question",
         ).prefetch_related(
@@ -25,15 +25,21 @@ def get_quiz_queryset():
             ),
             Prefetch(
                 "choices_question__choices",
-                queryset=ChoicesQuizAnswer.objects.select_related("answer_image", "choice_name")
+                queryset=ChoicesAnswer.objects.select_related("answer_image", "choice_name")
             ),
         )
 
 
+def get_quiz_queryset():
+    return Quiz.objects.prefetch_related(
+        Prefetch("question_mngt", queryset=get_question_queryset())
+    )
+
+
 def get_user_choice_answer_queryset(qs=None):
-    res = qs if qs else ChoicesQuizUserAnswer.objects.all()
+    res = qs if qs is not None else ChoicesQuestionUserAnswer.objects.all()
     return res.select_related(
-            "user", "quiz", "choice",
+            "user", "question", "choice",
         ).prefetch_related(
-            Prefetch("quiz", queryset=get_quiz_queryset())
+            Prefetch("question", queryset=get_question_queryset())
         )
