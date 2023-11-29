@@ -176,12 +176,19 @@ class LessonAdmin(admin.ModelAdmin):
 
         docs_remove = before_documents.difference(after_documents)
         videos_remove = before_videos.difference(after_videos)
+        docs_add = after_documents.difference(before_documents)
+        videos_add = after_videos.difference(before_videos)
 
         if docs_remove or videos_remove:
             if docs_remove:
                 CourseDocumentManagement.objects.filter(lesson=instance, document__in=docs_remove).update(is_available=False)
             if videos_remove:
                 VideoManagement.objects.filter(lesson=instance, video__in=videos_remove).update(is_available=False)
+        if docs_add or videos_add:
+            if docs_add:
+                CourseDocumentManagement.objects.filter(lesson=instance, document__in=docs_add).update(is_available=True)
+            if videos_add:
+                VideoManagement.objects.filter(lesson=instance, video__in=videos_add).update(is_available=True)
 
 
 @admin.register(Course)
