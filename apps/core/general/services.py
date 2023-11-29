@@ -6,6 +6,7 @@ from apps.users.models import User
 from apps.documents.models import Document
 from apps.courses.models import (
     Course,
+    Lesson,
     QuizManagement,
     LessonManagement,
     CourseDocumentManagement,
@@ -15,6 +16,7 @@ from apps.courses.services.services import CourseService
 from apps.posts.models import Post
 from apps.classes.services.services import ClassRequestService
 
+from apps.quiz.models import Quiz
 from apps.quiz.services.services import (
     quiz_statistic,
     response_quiz_statistic,
@@ -199,11 +201,19 @@ class CustomDictDataServices:
             return data
 
         for index, lesson in enumerate(data["lessons"], start=0):
-            if not lesson["quiz_location"] or not isinstance(lesson["quiz_location"], list):
+            quiz_location = lesson["quiz_location"]
+            if not quiz_location or not isinstance(quiz_location, list):
                 continue
 
             quiz_detail = []
-            for quiz in lesson["quiz_location"]:
+            list_idx_remove = []
+            for idx, quiz in enumerate(quiz_location):
+                if not isinstance(quiz, dict) or (isinstance(quiz, dict) and not quiz.get("id")):
+                    continue
+                elif not Quiz.objects.filter(pk=quiz["id"]).exists():
+                    list_idx_remove.append(idx)
+                    continue
+
                 quiz_mngt, _ = QuizManagement.objects.get_or_create(
                     user=self.user,
                     course_id=data["id"],
@@ -222,6 +232,10 @@ class CustomDictDataServices:
                         )
                     )
                     quiz_detail.append({**quiz_info, **{"is_done_quiz": quiz_mngt.is_done_quiz}})
+
+            if list_idx_remove:
+                [quiz_location.pop(idx) for idx in list_idx_remove]
+                Lesson.objects.filter(id=lesson["id"]).update(quiz_location=quiz_location)
             data["lessons"][index][field] = quiz_detail
 
         return data
