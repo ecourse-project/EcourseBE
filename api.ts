@@ -565,6 +565,20 @@ export interface Homepage {
   detail: HomepageDetail;
 }
 
+export interface Home {
+  homepage: Homepage[];
+  category: string[];
+}
+
+export interface SearchItem {
+  id: string;
+  author?: string;
+  name: string;
+  thumbnail?: OImageUpload;
+  content_summary?: string;
+  type: NavTypeEnum;
+}
+
 // ===========================================Post===========================================
 export interface Post {
   id: string;
@@ -682,6 +696,7 @@ export const apiURL = {
   listHeaders: () => `api/settings/headers/`,
   getHome: () => `api/settings/home/`,
   initData: () => `api/settings/init/`,
+  searchItems: (search) => `api/settings/search/?search=${search}`,
 
   getHomeClasses: (limit, page, topic?, class_id?: string[]) => {
     let url = `api/classes/home/?limit=${limit}&page=${page}&topic=${topic}`;
@@ -768,6 +783,10 @@ class CourseService {
 
   static getHomeDocs(params: PaginationParams, topic?: string, document_id?: string[]): Promise<Pagination<Document>> {
     return apiClient.get(apiURL.getHomeDocs(params.limit, params.page, topic, document_id));
+  }
+
+  static searchItems(search: string): Promise<SearchItem> {
+    return apiClient.get(apiURL.searchItems(search));
   }
 
   static getMostDownloadDocs(): Promise<Document[]> {
@@ -941,7 +960,7 @@ class CourseService {
     return apiClient.get(apiURL.listHeaders());
   }
 
-  static getHome(): Promise<Homepage[]> {
+  static getHome(): Promise<Home> {
     return apiClient.get(apiURL.getHome());
   }
 

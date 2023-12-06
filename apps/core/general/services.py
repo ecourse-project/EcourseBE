@@ -1,19 +1,30 @@
 from django.db.models import Q
 
+from apps.users.models import User
+from apps.users.choices import TEACHER
+
 from apps.rating.models import CourseRating
 from apps.rating.api.serializers import RatingSerializer
-from apps.users.models import User
+
 from apps.documents.models import Document
+from apps.documents.services.services import DocumentManagementService
+
 from apps.courses.models import (
     Course,
     Lesson,
     QuizManagement,
+    CourseManagement,
     LessonManagement,
     CourseDocumentManagement,
     VideoManagement,
 )
-from apps.courses.services.services import CourseService
+from apps.courses.api.serializers import ListCourseManagementSerializer
+from apps.courses.services.services import CourseService, CourseManagementService
+
 from apps.posts.models import Post
+from apps.posts.services.services import PostsService
+
+from apps.classes.services.services import ClassesService
 from apps.classes.services.services import ClassRequestService
 
 from apps.quiz.models import Quiz
@@ -29,6 +40,7 @@ from apps.quiz.enums import (
     QUESTION_TYPE_FILL,
 )
 
+from apps.upload.api.serializers import UploadImageSerializer
 from apps.core.general import enums
 
 
@@ -196,10 +208,12 @@ class CustomDictDataServices:
 
         return data
 
+    # User result
     def add_quiz_detail(self, data: dict, field: str):
         if not data.get("lessons"):
             return data
 
+        quiz_location_update = {}
         for index, lesson in enumerate(data["lessons"], start=0):
             quiz_location = lesson["quiz_location"]
             if not quiz_location or not isinstance(quiz_location, list):
@@ -233,13 +247,20 @@ class CustomDictDataServices:
                     )
                     quiz_detail.append({**quiz_info, **{"is_done_quiz": quiz_mngt.is_done_quiz}})
 
+            data["lessons"][index][field] = quiz_detail
             if list_idx_remove:
                 [quiz_location.pop(idx) for idx in list_idx_remove]
-                Lesson.objects.filter(id=lesson["id"]).update(quiz_location=quiz_location)
-            data["lessons"][index][field] = quiz_detail
+                quiz_location_update[lesson["id"]] = quiz_location
+
+        # Update quiz_location if quiz is removed
+        lessons = Lesson.objects.filter(pk__in=quiz_location_update.keys())
+        for lesson in lessons:
+            lesson.quiz_location = quiz_location_update[str(lesson.pk)]
+        Lesson.objects.bulk_update(lessons, fields=["quiz_location"])
 
         return data
 
+    # Quiz info
     def add_list_quiz(self, data: dict, field: str):
         if not data.get("lessons"):
             return data
@@ -271,34 +292,159 @@ class CustomDictDataServices:
         data[field] = response
 
 
-def search_item(item_name: str, search_type: str, user: User) -> dict:
+def search_item_active_user(item_name: str, search_type: str, user: User) -> dict:
     response = {"documents": [], "courses": [], "classes": [], "posts": []}
     if search_type.upper() not in [enums.ALL, enums.DOCUMENT, enums.COURSE, enums.CLASS, enums.POST]:
         return response
+    if isinstance(item_name, str):
+        item_name = item_name.strip()
+
+    doc_service = DocumentManagementService(user)
+    course_service = CourseManagementService(user)
+    class_service = ClassesService()
+    post_service = PostsService()
 
     if search_type.upper() == enums.ALL:
-        response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True).values_list("id", flat=True)
-        response["courses"] = Course.objects.filter(
-            name__icontains=item_name, is_selling=True, course_of_class=False
-        ).values_list("id", flat=True)
-        response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True).values_list("id", flat=True)
-        response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
+        response["documents"] = (
+            doc_service
+            .get_doc_mngt_queryset_by_selling
+            .filter(document__name__icontains=item_name)
+            .values_list("document_id", flat=True)
+        )
+        response["courses"] = (
+            course_service
+            .get_course_mngt_queryset_by_selling
+            .filter(course__name__icontains=item_name)
+            .values_list("course_id", flat=True)
+        )
+        response["classes"] = (
+            class_service
+            .get_all_classes_queryset
+            .filter(name__icontains=item_name)
+            .values_list("id", flat=True)
+        )
+        response["posts"] = (
+            post_service
+            .get_all_posts_queryset
+            .filter(name__icontains=item_name)
+            .values_list("id", flat=True)
+        )
 
     elif search_type.upper() == enums.DOCUMENT:
-        response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True).values_list("id", flat=True)
-
+        response["documents"] = (
+            doc_service
+            .get_doc_mngt_queryset_by_selling
+            .filter(document__name__icontains=item_name)
+            .values_list("document_id", flat=True)
+        )
     elif search_type.upper() == enums.COURSE:
-        response["courses"] = Course.objects.filter(
-            name__icontains=item_name, is_selling=True, course_of_class=False
-        ).values_list("id", flat=True)
-
+        response["courses"] = (
+            course_service
+            .get_course_mngt_queryset_by_selling
+            .filter(course__name__icontains=item_name)
+            .values_list("course_id", flat=True)
+        )
     elif search_type.upper() == enums.CLASS:
-        response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True).values_list("id", flat=True)
-
+        response["classes"] = (
+            class_service
+            .get_all_classes_queryset
+            .filter(name__icontains=item_name)
+            .values_list("id", flat=True)
+        )
     elif search_type.upper() == enums.POST:
-        response["posts"] = Post.objects.filter(name__icontains=item_name).values_list("id", flat=True)
+        response["posts"] = (
+            post_service
+            .get_all_posts_queryset
+            .filter(name__icontains=item_name)
+            .values_list("id", flat=True)
+        )
 
     return response
+
+
+def search_item_anonymous_user(item_name: str, search_type: str) -> dict:
+    response = {"documents": [], "courses": [], "classes": [], "posts": []}
+    if search_type.upper() not in [enums.ALL, enums.DOCUMENT, enums.COURSE, enums.CLASS, enums.POST]:
+        return response
+    if isinstance(item_name, str):
+        item_name = item_name.strip()
+
+    if search_type.upper() == enums.ALL:
+        response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True)
+        response["courses"] = Course.objects.filter(name__icontains=item_name, is_selling=True, course_of_class=False)
+        response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True)
+        response["posts"] = Post.objects.filter(name__icontains=item_name)
+
+    elif search_type.upper() == enums.DOCUMENT:
+        response["documents"] = response["documents"] = Document.objects.filter(name__icontains=item_name, is_selling=True)
+    elif search_type.upper() == enums.COURSE:
+        response["courses"] = Course.objects.filter(name__icontains=item_name, is_selling=True, course_of_class=False)
+    elif search_type.upper() == enums.CLASS:
+        response["classes"] = Course.objects.filter(name__icontains=item_name, course_of_class=True)
+    elif search_type.upper() == enums.POST:
+        response["posts"] = Post.objects.filter(name__icontains=item_name)
+
+    return response
+
+
+def response_search_item(item_name: str, search_type: str, user: User):
+    if user and user.is_authenticated:
+        response = search_item_active_user(item_name, search_type, user)
+        documents = Document.objects.filter(pk__in=response["documents"])
+        courses = Course.objects.filter(pk__in=response["courses"])
+        classes = Course.objects.filter(pk__in=response["classes"])
+        posts = Post.objects.filter(pk__in=response["posts"])
+    else:
+        response = search_item_anonymous_user(item_name, search_type)
+        documents = response["documents"]
+        courses = response["courses"]
+        classes = response["classes"]
+        posts = response["posts"]
+
+    return [
+        *[
+            {
+                "id": str(doc.id),
+                "author": doc.author.full_name if doc.author and doc.author.role == TEACHER else "",
+                "name": doc.name,
+                "thumbnail": UploadImageSerializer(instance=doc.thumbnail).data,
+                "content_summary": "",
+                "type": enums.DOCUMENT,
+            }
+            for doc in documents
+        ],
+        *[
+            {
+                "id": str(course.id),
+                "author": course.author.full_name if course.author and course.author.role == TEACHER else "",
+                "name": course.name,
+                "thumbnail": UploadImageSerializer(instance=course.thumbnail).data,
+                "type": enums.COURSE,
+            }
+            for course in courses
+        ],
+        *[
+            {
+                "id": str(cls.id),
+                "author": cls.author.full_name if cls.author and cls.author.role == TEACHER else "",
+                "name": cls.name,
+                "thumbnail": UploadImageSerializer(instance=cls.thumbnail).data,
+                "type": enums.CLASS,
+            }
+            for cls in classes
+        ],
+        *[
+            {
+                "id": str(post.id),
+                "author": post.author.full_name if post.author and post.author.role == TEACHER else "",
+                "name": post.name,
+                "thumbnail": UploadImageSerializer(instance=post.thumbnail).data,
+                "content_summary": post.content_summary,
+                "type": enums.POST,
+            }
+            for post in posts
+        ]
+    ]
 
 
 def check_existing_instance(model_class, **kwargs):

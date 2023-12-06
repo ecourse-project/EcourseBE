@@ -4,8 +4,10 @@ from rest_framework.views import APIView
 
 from apps.configuration.models import Configuration
 from apps.users.services import tracking_user_device
-from apps.settings.services import get_headers, get_home_page
+from apps.settings.services import get_headers, get_home
 from apps.core.general.init_data import UserDataManagementService
+from apps.core.general.services import response_search_item
+from apps.core.general.enums import ALL
 
 
 class HeaderAPIView(APIView):
@@ -21,7 +23,7 @@ class HomePageAPIView(APIView):
     authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
-        return Response(get_home_page())
+        return Response(get_home())
 
 
 class InitData(APIView):
@@ -34,3 +36,14 @@ class InitData(APIView):
             UserDataManagementService(user).create_multiple_course_mngt_for_user()
 
         return Response(data={"success": True})
+
+
+class SearchItem(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        search = self.request.query_params.get("search", "").strip()
+        return Response(data=response_search_item(search, ALL, user))
+
+

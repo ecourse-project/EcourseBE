@@ -55,3 +55,13 @@ class HomePageDetail(models.Model):
     def __str__(self):
         return self.display_name if self.display_name else "Homepage's display name - None"
 
+
+class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.PositiveSmallIntegerField(default=1)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+        ordering = ['order', "name"]
