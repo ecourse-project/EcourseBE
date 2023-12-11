@@ -574,6 +574,9 @@ export interface SearchItem {
   id: string;
   author?: string;
   name: string;
+  description?: string;
+  created?: string;
+  modified?: string;
   thumbnail?: OImageUpload;
   content_summary?: string;
   type: NavTypeEnum;
@@ -785,7 +788,7 @@ class CourseService {
     return apiClient.get(apiURL.getHomeDocs(params.limit, params.page, topic, document_id));
   }
 
-  static searchItems(search: string): Promise<SearchItem> {
+  static searchItems(search: string): Promise<SearchItem[]> {
     return apiClient.get(apiURL.searchItems(search));
   }
 

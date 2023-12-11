@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 from rest_framework import serializers
 
 from apps.documents.models import Document, DocumentManagement
-from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
 from apps.documents.enums import BOUGHT
 from apps.payment.enums import SUCCESS
 from apps.payment.models import Order
+from apps.upload.api.serializers import UploadFileSerializer, UploadImageSerializer
 from apps.configuration.models import Configuration
+from apps.users.choices import MANAGER
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -74,8 +75,11 @@ class DocumentManagementSerializer(serializers.ModelSerializer):
         return representation
 
     def get_download(self, obj):
+        request = self.context.get("request")
         config = Configuration.objects.first()
         is_unlimited = config.unlimited_document_time if config else True
+        if request and not request.user.is_anonymous and request.user.role == MANAGER:
+            return True
         if not is_unlimited:
             if obj.sale_status == BOUGHT and Configuration.objects.first():
                 user_order = Order.objects.filter(user=obj.user, status=SUCCESS, documents=obj.document).first()

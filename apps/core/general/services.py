@@ -407,8 +407,9 @@ def response_search_item(item_name: str, search_type: str, user: User):
                 "id": str(doc.id),
                 "author": doc.author.full_name if doc.author and doc.author.role == TEACHER else "",
                 "name": doc.name,
+                "description": doc.description,
+                "modified": doc.modified,
                 "thumbnail": UploadImageSerializer(instance=doc.thumbnail).data,
-                "content_summary": "",
                 "type": enums.DOCUMENT,
             }
             for doc in documents
@@ -418,6 +419,8 @@ def response_search_item(item_name: str, search_type: str, user: User):
                 "id": str(course.id),
                 "author": course.author.full_name if course.author and course.author.role == TEACHER else "",
                 "name": course.name,
+                "description": course.description,
+                "modified": course.modified,
                 "thumbnail": UploadImageSerializer(instance=course.thumbnail).data,
                 "type": enums.COURSE,
             }
@@ -428,6 +431,8 @@ def response_search_item(item_name: str, search_type: str, user: User):
                 "id": str(cls.id),
                 "author": cls.author.full_name if cls.author and cls.author.role == TEACHER else "",
                 "name": cls.name,
+                "description": cls.description,
+                "modified": cls.modified,
                 "thumbnail": UploadImageSerializer(instance=cls.thumbnail).data,
                 "type": enums.CLASS,
             }
@@ -439,6 +444,7 @@ def response_search_item(item_name: str, search_type: str, user: User):
                 "author": post.author.full_name if post.author and post.author.role == TEACHER else "",
                 "name": post.name,
                 "thumbnail": UploadImageSerializer(instance=post.thumbnail).data,
+                "created": post.created,
                 "content_summary": post.content_summary,
                 "type": enums.POST,
             }
