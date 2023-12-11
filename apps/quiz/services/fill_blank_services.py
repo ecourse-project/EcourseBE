@@ -39,6 +39,9 @@ def replace_word(word, substring):
 
 
 def get_final_content(original_content, hidden_words, substring=ADMIN_DISPLAY_SUBSTRING, res_default=""):
+    if not isinstance(original_content, str):
+        return ""
+
     res = []
     content_split = original_content.split()
     for item in zip(content_split, hidden_words):
