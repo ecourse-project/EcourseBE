@@ -1,18 +1,16 @@
 import datetime
 from typing import Any, Dict, List, Tuple, Union
 
-from apps.users.choices import MANAGER
+from apps.core.utils import create_serializer_class
 from apps.core.general.enums import DOCUMENT, COURSE, CLASS, POST
-from apps.settings.models import HeaderDetail, Header, HomePageDetail
+from apps.settings.models import HeaderDetail, Header, HomePageDetail, Category
 
 from apps.courses.models import *
-
-
 from apps.documents.models import *
 
 from apps.classes.models import Class
 from apps.posts.models import Post
-from apps.core.utils import create_serializer_class
+
 
 
 def parse_choices(choices: List[Tuple]) -> List[Dict[str, Any]]:
@@ -94,7 +92,20 @@ def get_home_page() -> list:
                 'post_id': [obj["id"] for obj in sorted_data if obj["type"] == POST] or None,
             }
         })
+
     return homepage
+
+
+def get_categories() -> list:
+    categories = Category.objects.all()
+    return [cat.name for cat in categories]
+
+
+def get_home() -> dict:
+    return {
+        "homepage": get_home_page(),
+        "category": get_categories(),
+    }
 
 
 def get_headers() -> list:

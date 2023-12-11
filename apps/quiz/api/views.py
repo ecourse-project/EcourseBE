@@ -3,6 +3,7 @@ import datetime
 from reportlab.lib.units import inch, toLength
 from django.http import FileResponse
 from django.db.models import Prefetch
+from django.db.models import Q
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -22,6 +23,7 @@ from apps.quiz.services.services import (
     store_user_answers,
     quiz_statistic,
     response_quiz_statistic,
+    get_quiz_id_in_course,
 )
 from apps.quiz.services.queryset_services import get_question_queryset
 from apps.quiz.services.certificate_services import insert_text_to_pdf
@@ -30,6 +32,7 @@ from apps.quiz.models import Quiz
 from apps.courses.models import CourseManagement, QuizManagement, Course
 from apps.core.utils import get_now
 from apps.users_auth.authentication import QuizPermission
+from apps.users.choices import MANAGER
 
 
 class QuizAssignment(APIView):
@@ -41,12 +44,21 @@ class QuizAssignment(APIView):
 
 
 class QuizView(APIView):
-    permission_classes = (QuizPermission,)
+    # permission_classes = (QuizPermission,)
 
     def get(self, request, *args, **kwargs):
+        user = self.request.user
+        course_id = self.request.query_params.get("course_id")
+        if not user.is_anonymous and user.role == MANAGER:
+            qs = Q()
+        elif course_id:
+            qs = Q(pk__in=get_quiz_id_in_course(course_id))
+        else:
+            qs = Q(author=user)
+
         list_quiz = Quiz.objects.prefetch_related(
             Prefetch("question_mngt", queryset=get_question_queryset())
-        ).filter(author=self.request.user)
+        ).filter(qs)
         return Response(data=QuizSerializer(list_quiz, many=True).data)
 
     def post(self, request, *args, **kwargs):

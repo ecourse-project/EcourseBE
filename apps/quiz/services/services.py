@@ -241,3 +241,17 @@ def question_data_processing(obj: Dict):
         obj_clone.pop("match_question")
 
     return obj_clone
+
+
+def get_quiz_id_in_course(course_id):
+    course = Course.objects.filter(pk=course_id).first()
+    if not course:
+        return []
+
+    list_quiz_id = []
+    for lesson in course.lessons.all():
+        if not lesson.quiz_location or not isinstance(lesson.quiz_location, list):
+            continue
+        list_quiz_id.extend([obj.get("id") for obj in lesson.quiz_location if isinstance(obj, dict) and obj.get("id")])
+
+    return list_quiz_id

@@ -38,7 +38,7 @@ class ClassListView(generics.ListAPIView):
     def get_queryset(self):
         service = ClassesService()
         topic = self.request.query_params.get("topic")
-        list_id = self.request.query_params.getlist('class_id')
+        list_id = self.request.query_params.getlist("class_id")
         if topic:
             return service.get_classes_by_topic(topic)
         elif list_id:

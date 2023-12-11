@@ -68,7 +68,7 @@ class CourseManagementService:
     @property
     def get_course_mngt_queryset_by_selling(self):
         query = Q(course__is_selling=True)
-        query |= Q(course__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING])
+        query |= Q(Q(course__is_selling=False) & Q(sale_status__in=[BOUGHT, PENDING]))
         return self.get_course_management_queryset.filter(query).order_by('course__name')
 
     def get_courses_mngt_by_list_id(self, list_id: list):

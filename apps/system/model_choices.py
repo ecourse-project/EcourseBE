@@ -96,6 +96,7 @@ import_db_model = {
     "settings.header": Header,
     "settings.headerdetail": HeaderDetail,
     "settings.homepagedetail": HomePageDetail,
+    "settings.category": Category,
 
     "posts.posttopic": PostTopic,
     "posts.post": Post,

@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import admin
@@ -72,7 +73,11 @@ class SystemConfigAdmin(ExtraButtonsMixin, admin.ModelAdmin):
     @button(change_form=True, html_attrs={'style': 'background-color:#417690;color:white'})
     def Export_data(self, request):
         data = get_all_data()
-        filename = SystemConfig.objects.first().data_file_name
+        config = SystemConfig.objects.first()
+        if config and config.data_file_name:
+            filename = config.data_file_name
+        else:
+            filename = f"exported_data_{datetime.now().date().isoformat()}.json"
         if not filename.lower().endswith(".json"):
             filename += ".json"
 

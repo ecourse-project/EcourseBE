@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.settings.models import Header, HeaderDetail, HomePageDetail
+from apps.settings.models import *
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
 
@@ -32,4 +32,12 @@ class HomePageDetailAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "display_name",
         "order",
         "max_items_display",
+    )
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "order",
     )
