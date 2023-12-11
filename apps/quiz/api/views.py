@@ -51,7 +51,7 @@ class QuizView(APIView):
         course_id = self.request.query_params.get("course_id")
         if not user.is_anonymous and user.role == MANAGER:
             qs = Q()
-        elif course_id:
+        elif course_id and course_id != "undefined":
             qs = Q(pk__in=get_quiz_id_in_course(course_id))
         else:
             qs = Q(author=user)
