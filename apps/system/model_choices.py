@@ -113,6 +113,7 @@ import_db_model = {
 
     "system.systemconfig": SystemConfig,
     "system.storage": Storage,
+    "system.visitstatistics": VisitStatistics,
 
     "quiz.choicename": ChoiceName,
     "quiz.choicesanswer": ChoicesAnswer,

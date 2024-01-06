@@ -44,8 +44,8 @@ def get_media_url_from_root_path(file_path):
 
 
 def id_generator(size=8, chars=ascii_letters + digits):
-    size = random.randint(8, 12)
-    return ''.join(random.choice(chars) for _ in range(size))
+    size_range = random.randint(size, 12)
+    return ''.join(random.choice(chars) for _ in range(size_range))
 
 
 def query_debugger(func):

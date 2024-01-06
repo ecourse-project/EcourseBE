@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from admin_extra_buttons.api import ExtraButtonsMixin, button
 from admin_extra_buttons.utils import HttpResponseRedirectToReferrer
 
-from apps.system.models import Storage, SystemConfig
+from apps.system.models import Storage, SystemConfig, VisitStatistics
 from apps.system.services.dir_management import get_folder_size
 from apps.system.choices import MEDIA, SOURCE_FE, SOURCE_BE
 from apps.system.services.database_services import get_all_data
@@ -90,3 +90,11 @@ class SystemConfigAdmin(ExtraButtonsMixin, admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(VisitStatistics)
+class StorageAdmin(ExtraButtonsMixin, admin.ModelAdmin):
+    list_display = (
+        'created',
+        'visit',
+    )

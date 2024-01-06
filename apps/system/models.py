@@ -21,3 +21,12 @@ class SystemConfig(models.Model):
     be_dir_name = models.CharField(max_length=50, default="EcourseBE")
     data_file_name = models.CharField(max_length=100, default="exported_data.json")
 
+
+class VisitStatistics(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    visit = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-created"]
+
+
