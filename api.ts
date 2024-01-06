@@ -789,7 +789,7 @@ class CourseService {
   }
 
   static searchItems(search: string): Promise<SearchItem[]> {
-    return apiClient.get(apiURL.searchItems(search));
+    return apiClient.get(apiURL.searchItems(search || ''));
   }
 
   static getMostDownloadDocs(): Promise<Document[]> {
@@ -936,7 +936,7 @@ class CourseService {
   }
 
   static listQuiz(course_id?: string): Promise<Quiz[]> {
-    return apiClient.get(apiURL.listQuiz(course_id));
+    return apiClient.get(apiURL.listQuiz(course_id || ''));
   }
 
   static assignQuiz(args: AssignQuizArgs): Promise<any> {

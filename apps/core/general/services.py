@@ -358,7 +358,6 @@ def search_item_active_user(item_name: str, search_type: str, user: User) -> dic
             .filter(name__icontains=item_name)
             .values_list("id", flat=True)
         )
-
     return response
 
 

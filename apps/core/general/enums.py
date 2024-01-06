@@ -88,6 +88,10 @@ SUPERUSER_PERMISSION_DISPLAY = {
     "change_systemconfig": "System | Change system config",
     "delete_systemconfig": "System | Delete system config",
     "view_systemconfig": "System | View system config",
+    "add_visitstatistics": "System | Add visit statistics",
+    "change_visitstatistics": "System | Change visit statistics",
+    "delete_visitstatistics": "System | Delete visit statistics",
+    "view_visitstatistics": "System | View visit statistics",
     "add_uploadavatar": "Upload | Add upload avatar",
     "change_uploadavatar": "Upload | Change upload avatar",
     "add_devicetracking": "Users | Add device tracking",
@@ -443,7 +447,7 @@ ADMIN_DISPLAY = {
             ],
             "readonly_fields": [],
             "list_filter": [],
-            "search_fields": ["video_name", "video_type"],
+            "search_fields": ["video_name", "video_type", "video_size"],
             "list_display": [
                 "video_name", "video_path", "video_size", "video_type", "duration", "order", "created", "author"
             ],
@@ -1029,7 +1033,7 @@ ADMIN_DISPLAY = {
             "has_delete_permission": True,
             "fields": [
                 "order", "video_name", "video_path", "video_embedded_url", "use_embedded_url",
-                "video_size", "video_type", "duration", "ip_address",
+                "video_size", "video_type", "duration",
             ],
             "readonly_fields": ["video_size", "video_type", "duration"],
             "list_filter": [],

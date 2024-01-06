@@ -1,17 +1,25 @@
+from io import BytesIO
+import base64
+from matplotlib import pyplot as plt
+import pandas as pd
+
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.shortcuts import render
+
 from apps.users.api.serializers import (
     UserSerializer,
     ChangePasswordSerializer,
 )
+from apps.users.models import User, DeviceTracking
+from apps.users.choices import STUDENT
 from apps.users.exceptions import UserNotExistException
 from apps.users import services
-from apps.users.models import User
-from apps.users.choices import STUDENT
-from django.conf import settings
-from django.core.mail import send_mail
 from apps.users.choices import (
     PASSWORD_RESET_EMAIL_TITLE,
     PASSWORD_RESET_EMAIL_MESSAGE,
@@ -101,3 +109,34 @@ class ChangePasswordView(generics.RetrieveUpdateAPIView):
             instance._prefetched_objects_cache = {}
 
         return Response({"detail": "Password has been changed!"}, status=status.HTTP_200_OK)
+
+
+class VisitStatisticsView(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        device_tracking = DeviceTracking.objects.all()
+        data = {
+            'date': [obj.date().isoformat() for obj in device_tracking.values_list("created", flat=True)],
+        }
+        df = pd.DataFrame(data)
+        record_counts = df['date'].value_counts().sort_index()
+        plt.figure(figsize=(150, 10))
+        plt.plot(record_counts.index, record_counts.values, marker='o', linestyle='-')
+
+        for date, count in zip(record_counts.index, record_counts.values):
+            plt.annotate(f'{count}', (date, count), textcoords="offset points", xytext=(0, 10), ha='center')
+
+        plt.title('Visit Statistics')
+        plt.xlabel('Date')
+        plt.ylabel('Number of Records')
+        plt.grid(True)
+
+        image_stream = BytesIO()
+        plt.savefig(image_stream, format='png')
+        plt.close()
+
+        image_base64 = base64.b64encode(image_stream.getvalue()).decode('utf-8')
+
+        return render(request, "users/visit_statistics.html", {'image_base64': image_base64})

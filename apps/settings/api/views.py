@@ -1,13 +1,17 @@
+from django.db.models import F
+
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.system.models import VisitStatistics
 from apps.configuration.models import Configuration
 from apps.users.services import tracking_user_device
 from apps.settings.services import get_headers, get_home
 from apps.core.general.init_data import UserDataManagementService
 from apps.core.general.services import response_search_item
 from apps.core.general.enums import ALL
+from apps.core.utils import get_now
 
 
 class HeaderAPIView(APIView):
@@ -23,6 +27,13 @@ class HomePageAPIView(APIView):
     authentication_classes = ()
 
     def get(self, request, *args, **kwargs):
+        now = get_now()
+        visit_statistic = VisitStatistics.objects.filter(created__date=now.date()).first()
+        if not visit_statistic:
+            visit_statistic = VisitStatistics.objects.create()
+        visit_statistic.visit = F("visit") + 1
+        visit_statistic.save(update_fields=["visit"])
+
         return Response(get_home())
 
 

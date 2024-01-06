@@ -7,4 +7,5 @@ urlpatterns = [
     path("exists/", views.UserExistView.as_view(), name="user-exists"),
     path("password-reset/", views.PasswordResetView.as_view()),
     path("password-change/", views.ChangePasswordView.as_view()),
+    path("visits/", views.VisitStatisticsView.as_view()),
 ]
