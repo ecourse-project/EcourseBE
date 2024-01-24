@@ -11,6 +11,7 @@ class Configuration(models.Model):
     unlimited_ip_addresses = models.BooleanField(default=False)
     display_mark = models.BooleanField(default=True)
     display_correct_answer = models.BooleanField(default=True)
+    new_post_display = models.PositiveSmallIntegerField(default=0)
 
     # Tracking config
     tracking_api = models.BooleanField(default=False)
