@@ -4,13 +4,15 @@ from typing import Any, Dict, List, Tuple, Union
 from apps.core.utils import create_serializer_class
 from apps.core.general.enums import DOCUMENT, COURSE, CLASS, POST
 from apps.settings.models import HeaderDetail, Header, HomePageDetail, Category
+from apps.upload.api.serializers import UploadImageSerializer
+from apps.users.choices import TEACHER
+from apps.configuration.models import Configuration
 
 from apps.courses.models import *
 from apps.documents.models import *
 
 from apps.classes.models import Class
 from apps.posts.models import Post
-
 
 
 def parse_choices(choices: List[Tuple]) -> List[Dict[str, Any]]:
@@ -73,6 +75,21 @@ def get_first_n_object_by_created(documents, courses, classes, posts, n=9):
     return sorted_data[:n]
 
 
+def get_n_new_post(n=0):
+    posts = Post.objects.all().order_by("-created")[:n]
+    return [
+        {
+            "id": str(post.id),
+            "author": post.author.full_name if post.author and post.author.role == TEACHER else "",
+            "name": post.name,
+            "thumbnail": UploadImageSerializer(instance=post.thumbnail).data,
+            "created": post.created,
+            "content_summary": post.content_summary,
+        }
+        for post in posts
+    ]
+
+
 def get_home_page() -> list:
     homepage = []
     for obj in HomePageDetail.objects.all():
@@ -102,9 +119,11 @@ def get_categories() -> list:
 
 
 def get_home() -> dict:
+    config = Configuration.objects.first()
     return {
         "homepage": get_home_page(),
         "category": get_categories(),
+        "new_post": get_n_new_post(config.new_post_display if config else 0),
     }
 
 

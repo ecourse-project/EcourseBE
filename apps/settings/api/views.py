@@ -56,5 +56,3 @@ class SearchItem(APIView):
         user = request.user
         search = self.request.query_params.get("search", "").strip()
         return Response(data=response_search_item(search, ALL, user))
-
-
